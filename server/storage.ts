@@ -1,7 +1,8 @@
 import { db } from "./db";
 import { 
-  players, mockDrafts, mockDraftPicks, adpHistory, odds,
+  players, analysts, mockDrafts, mockDraftPicks, adpHistory, odds,
   type Player, type InsertPlayer,
+  type Analyst, type InsertAnalyst,
   type MockDraft, type InsertMockDraft,
   type MockDraftPick, type InsertMockDraftPick,
   type AdpHistory, type InsertAdpHistory,
@@ -14,9 +15,12 @@ export interface IStorage {
   getPlayer(id: number): Promise<Player | undefined>;
   createPlayer(player: InsertPlayer): Promise<Player>;
   
+  getAnalysts(): Promise<Analyst[]>;
+  createAnalyst(analyst: InsertAnalyst): Promise<Analyst>;
+
   getPlayerAdpHistory(playerId: number): Promise<AdpHistory[]>;
   getPlayerOddsHistory(playerId: number): Promise<Odds[]>;
-  getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, pickNumber: number, publishedAt?: string }>>;
+  getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, analystId?: number | null, pickNumber: number, publishedAt?: string }>>;
   
   getMockDrafts(): Promise<MockDraft[]>;
   createMockDraft(mockDraft: InsertMockDraft): Promise<MockDraft>;
@@ -64,6 +68,15 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async getAnalysts(): Promise<Analyst[]> {
+    return await db.select().from(analysts).orderBy(desc(analysts.huddleScore5Year));
+  }
+
+  async createAnalyst(analyst: InsertAnalyst): Promise<Analyst> {
+    const [created] = await db.insert(analysts).values(analyst as any).returning();
+    return created;
+  }
+
   async getPlayerAdpHistory(playerId: number): Promise<AdpHistory[]> {
     return await db.select().from(adpHistory).where(eq(adpHistory.playerId, playerId)).orderBy(asc(adpHistory.date));
   }
@@ -100,9 +113,10 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, pickNumber: number, publishedAt?: string }>> {
+  async getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, analystId?: number | null, pickNumber: number, publishedAt?: string }>> {
     const rankings = await db.select({
       sourceName: mockDrafts.sourceName,
+      analystId: mockDrafts.analystId,
       pickNumber: mockDraftPicks.pickNumber,
       publishedAt: mockDrafts.publishedAt,
     })
@@ -113,6 +127,7 @@ export class DatabaseStorage implements IStorage {
     
     return rankings.map(r => ({
       sourceName: r.sourceName,
+      analystId: r.analystId,
       pickNumber: r.pickNumber,
       publishedAt: r.publishedAt ? r.publishedAt.toISOString() : undefined,
     }));

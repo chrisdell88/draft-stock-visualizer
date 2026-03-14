@@ -3,7 +3,8 @@ import {
   players, 
   mockDrafts, 
   odds,
-  adpHistory
+  adpHistory,
+  analysts
 } from './schema';
 
 export const errorSchemas = {
@@ -52,6 +53,15 @@ export const api = {
         404: errorSchemas.notFound,
       }
     }
+  },
+  analysts: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/analysts' as const,
+      responses: {
+        200: z.array(z.custom<typeof analysts.$inferSelect>()),
+      },
+    },
   },
   mockDrafts: {
     list: {
