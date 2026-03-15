@@ -43,8 +43,10 @@ export async function fetchHtml(url: string): Promise<string> {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
       "Accept": "text/html,application/xhtml+xml,application/xhtml+xml",
       "Accept-Language": "en-US,en;q=0.9",
+      "Referer": "https://www.google.com/",
     },
-    timeout: 20000,
+    timeout: 25000,
+    maxRedirects: 10,
   });
   return response.data;
 }
@@ -65,32 +67,27 @@ export interface ScraperModule {
   run(players: Player[]): Promise<ScraperResult>;
 }
 
-import { scrapeWalterfootballWalt } from "./walterfootball";
-import { scrapeWalterfootballCharlie } from "./walterfootball";
+import { scrapeWalterfootballWalt, scrapeWalterfootballCharlie } from "./walterfootball";
 import { scrapeTankathon } from "./tankathon";
-import { scrapeMddb } from "./mddb";
+import { scrapeMddbConsensus, scrapeMddbBigBoard, scrapeMcShay, scrapeFreedman } from "./nflmdb_generic";
+import { scrapeMcCrystal, scrapeDonahue } from "./sharp";
+import { scrapeZierlein, scrapeBrooks, scrapeDavis } from "./nflcom";
+import { scrapeMockDraftNfl } from "./mockdraftnfl";
 
 export const SCRAPERS: ScraperModule[] = [
-  {
-    sourceKey: "walterfootball_walt",
-    displayName: "WalterFootball (Walt)",
-    run: scrapeWalterfootballWalt,
-  },
-  {
-    sourceKey: "walterfootball_charlie",
-    displayName: "WalterFootball (Charlie Campbell)",
-    run: scrapeWalterfootballCharlie,
-  },
-  {
-    sourceKey: "tankathon",
-    displayName: "Tankathon Big Board",
-    run: scrapeTankathon,
-  },
-  {
-    sourceKey: "mddb_consensus",
-    displayName: "MDDB Consensus Mock Draft",
-    run: scrapeMddb,
-  },
+  { sourceKey: "walterfootball_walt",    displayName: "WalterFootball (Walt)",            run: scrapeWalterfootballWalt },
+  { sourceKey: "walterfootball_charlie", displayName: "WalterFootball (Charlie Campbell)", run: scrapeWalterfootballCharlie },
+  { sourceKey: "tankathon",             displayName: "Tankathon Big Board",               run: scrapeTankathon },
+  { sourceKey: "mddb_consensus",        displayName: "MDDB Consensus Mock Draft",          run: scrapeMddbConsensus },
+  { sourceKey: "mddb_bigboard",         displayName: "MDDB Consensus Big Board",           run: scrapeMddbBigBoard },
+  { sourceKey: "mcshay_report",         displayName: "Todd McShay Mock Draft",             run: scrapeMcShay },
+  { sourceKey: "fantasypros_freedman",  displayName: "FantasyLife (Freedman)",             run: scrapeFreedman },
+  { sourceKey: "sharp_mccrystal",       displayName: "Ryan McCrystal (Sharp Football)",    run: scrapeMcCrystal },
+  { sourceKey: "sharp_donahue",         displayName: "Brendan Donahue (Sharp Football)",   run: scrapeDonahue },
+  { sourceKey: "nfl_zierlein",          displayName: "Lance Zierlein (NFL.com)",           run: scrapeZierlein },
+  { sourceKey: "nfl_brooks",            displayName: "Bucky Brooks (NFL.com)",             run: scrapeBrooks },
+  { sourceKey: "nfl_davis",             displayName: "Charles Davis (NFL.com)",            run: scrapeDavis },
+  { sourceKey: "mockdraftnfl",          displayName: "MockDraftNFL Consensus",             run: scrapeMockDraftNfl },
 ];
 
 // ─── Run a single scraper ────────────────────────────────────────────────

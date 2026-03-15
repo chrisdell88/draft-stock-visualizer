@@ -20,6 +20,8 @@ export interface IStorage {
   createAnalyst(analyst: InsertAnalyst): Promise<Analyst>;
   getAnalystByName(name: string): Promise<Analyst | undefined>;
   getAnalystBySourceKey(sourceKey: string): Promise<Analyst | undefined>;
+  fixNullSourceKeys(nameToKey: Record<string, string>): Promise<number>;
+  getMockDraftPickCount(mockDraftId: number): Promise<number>;
 
   getPlayerAdpHistory(playerId: number): Promise<AdpHistory[]>;
   getPlayerOddsHistory(playerId: number): Promise<Odds[]>;
@@ -104,6 +106,28 @@ export class DatabaseStorage implements IStorage {
   async getAnalystBySourceKey(sourceKey: string): Promise<Analyst | undefined> {
     const [analyst] = await db.select().from(analysts).where(eq(analysts.sourceKey, sourceKey));
     return analyst;
+  }
+
+  async fixNullSourceKeys(nameToKey: Record<string, string>): Promise<number> {
+    const all = await db.select().from(analysts);
+    let fixed = 0;
+    for (const analyst of all) {
+      if (analyst.sourceKey) continue;
+      const key = nameToKey[analyst.name];
+      if (key) {
+        await db.update(analysts).set({ sourceKey: key }).where(eq(analysts.id, analyst.id));
+        fixed++;
+      }
+    }
+    return fixed;
+  }
+
+  async getMockDraftPickCount(mockDraftId: number): Promise<number> {
+    const [row] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(mockDraftPicks)
+      .where(eq(mockDraftPicks.mockDraftId, mockDraftId));
+    return row?.count ?? 0;
   }
 
   async getPlayerAdpHistory(playerId: number): Promise<AdpHistory[]> {

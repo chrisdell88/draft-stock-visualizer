@@ -266,6 +266,8 @@ export async function registerRoutes(
   ensureEnhancedData().catch(console.error);
   ensureTimeWindowData().catch(console.error);
   expandPlayerRoster().catch(console.error);
+  ensureSourceKeysFix().catch(console.error);
+  ensureExtraAnalysts().catch(console.error);
 
   // ─── Daily cron: scrape all sources at 6:00 AM ET ──────────────────────
   cron.schedule("0 11 * * *", async () => {
@@ -762,8 +764,13 @@ async function ensureEnhancedData() {
     }
   }
 
-  // Init scrape job records for all 4 auto-scrapers
-  const scrapeSourceKeys = ["walterfootball_walt", "walterfootball_charlie", "tankathon", "mddb_consensus"];
+  // Init scrape job records for all auto-scrapers
+  const scrapeSourceKeys = [
+    "walterfootball_walt", "walterfootball_charlie", "tankathon",
+    "mddb_consensus", "mddb_bigboard", "mcshay_report", "fantasypros_freedman",
+    "sharp_mccrystal", "sharp_donahue", "nfl_zierlein", "nfl_brooks", "nfl_davis",
+    "mockdraftnfl",
+  ];
   for (const sourceKey of scrapeSourceKeys) {
     await storage.upsertScrapeJob({ sourceKey, status: "pending", notes: "Auto-initialized by server" });
   }
@@ -1143,5 +1150,71 @@ async function ensureTimeWindowData() {
       });
     }
     console.log("[TIMEWINDOW] Added Mar 15 expanded odds data for all 20 prospects.");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIX: Patch null sourceKeys for early-seeded analysts
+// ═══════════════════════════════════════════════════════════════════════════
+async function ensureSourceKeysFix() {
+  const nameToKey: Record<string, string> = {
+    "Daniel Jeremiah":       "nfl_jeremiah",
+    "Todd McShay":           "mcshay_report",
+    "Mel Kiper Jr.":         "espn_kiper",
+    "Trevor Sikkema":        "pff_sikkema",
+    "Ryan Wilson":           "cbs_wilson",
+    "Dane Brugler":          "athletic_brugler",
+    "Jason Boris":           "times_news_boris",
+    "Cory Rindone":          "huddle_rindone",
+    "Jared Smola":           "draftsharks_smola",
+    "Scott Smith":           "4for4_smith",
+    "Brendan Donahue":       "sharp_donahue",
+    "Josh Norris":           "underdog_norris",
+    "Kyle Crabbs":           "33rd_team_crabbs",
+    "Lance Zierlein":        "nfl_zierlein",
+    "Peter Schrager":        "nfl_schrager",
+    "Rob Staton":            "seahawks_staton",
+    "Grinding the Mocks (EDP)": "gtm_consensus",
+    "MDDB Consensus":        "mddb_consensus",
+  };
+  const fixed = await storage.fixNullSourceKeys(nameToKey);
+  if (fixed > 0) console.log(`[SOURCEKEY FIX] Updated ${fixed} analyst sourceKeys.`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEED: Add extra analysts (MockDraftNFL, MDDB BigBoard, etc.)
+// Guard: check for mockdraftnfl analyst
+// ═══════════════════════════════════════════════════════════════════════════
+async function ensureExtraAnalysts() {
+  const analysts = await storage.getAnalysts();
+  const exists = (key: string) => analysts.some(a => a.sourceKey === key);
+
+  if (!exists("mockdraftnfl")) {
+    await storage.createAnalyst({
+      name: "MockDraftNFL Consensus",
+      outlet: "mockdraftnfl.com",
+      huddleScore2025: null,
+      accuracyWeight: 0.80,
+      isConsensus: 1,
+      sourceKey: "mockdraftnfl",
+      notes: "Crowd-sourced consensus mock draft from mockdraftnfl.com.",
+    });
+  }
+
+  if (!exists("mddb_bigboard")) {
+    await storage.createAnalyst({
+      name: "MDDB Consensus Big Board",
+      outlet: "nflmockdraftdatabase.com",
+      huddleScore2025: null,
+      accuracyWeight: 0.90,
+      isConsensus: 1,
+      sourceKey: "mddb_bigboard",
+      notes: "NFL Mock Draft Database consensus big board from 800+ analyst rankings.",
+    });
+  }
+
+  // Also init scrape jobs for extra analysts
+  for (const sourceKey of ["mockdraftnfl", "mddb_bigboard"]) {
+    await storage.upsertScrapeJob({ sourceKey, status: "pending", notes: "Auto-initialized" });
   }
 }
