@@ -59,6 +59,17 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/players/:id/positionrank", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid player ID" });
+      const rank = await storage.getPositionRank(id);
+      res.json(rank ?? { rank: null, total: null, position: null });
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get(api.analysts.list.path, async (req, res) => {
     try {
       const result = await storage.getAnalysts();
@@ -80,7 +91,8 @@ export async function registerRoutes(
   // ─── Draft Board Matrix ─────────────────────────────────────────────────
   app.get("/api/matrix", async (req, res) => {
     try {
-      const data = await storage.getMatrixData();
+      const boardTypeFilter = (req.query.boardType as string) ?? null;
+      const data = await storage.getMatrixData(boardTypeFilter);
 
       // Generate short column header name per draft
       const SOURCE_SHORT: Record<string, string> = {
@@ -232,6 +244,7 @@ export async function registerRoutes(
   seedDatabase().catch(console.error);
   ensureEnhancedData().catch(console.error);
   ensureTimeWindowData().catch(console.error);
+  expandPlayerRoster().catch(console.error);
 
   // ─── Daily cron: scrape all sources at 6:00 AM ET ──────────────────────
   cron.schedule("0 11 * * *", async () => {
@@ -740,6 +753,216 @@ async function ensureEnhancedData() {
 // ═══════════════════════════════════════════════════════════════════════════
 // SEED: Time-window data — Mar 12 ADP snapshot + expanded Mar 15 odds
 // ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPAND: Add 30 more 2026 prospects + extend mock picks + ADP history
+// Guard: checks for Tetairoa McMillan before running
+// ═══════════════════════════════════════════════════════════════════════════
+async function expandPlayerRoster() {
+  // Wait for base seed to finish
+  let attempts = 0;
+  while (attempts < 30) {
+    const ps = await storage.getPlayers();
+    if (ps.length >= 20) break;
+    await new Promise(r => setTimeout(r, 500));
+    attempts++;
+  }
+
+  const existing = await storage.getPlayers();
+  if (existing.find(p => p.name === "Tetairoa McMillan")) return; // already ran
+
+  // ─── Mark DJ big boards + Tankathon as boardType="bigboard" ──────────────
+  await storage.updateMockDraftBoardTypes();
+
+  const pm = new Map(existing.map(p => [p.name, p]));
+
+  // ─── 30 NEW PLAYERS (2026 Draft class, rounds 1-2) ───────────────────────
+  type NP = typeof existing[0];
+  const newPlayers: NP[] = [];
+  const add = async (data: Parameters<typeof storage.createPlayer>[0]) => {
+    const p = await storage.createPlayer(data);
+    newPlayers.push(p);
+    pm.set(p.name, p);
+    return p;
+  };
+
+  // Late round 1 (picks ~21-32)
+  const pMcMillan  = await add({ name: "Tetairoa McMillan",   college: "Arizona",        position: "WR",   height: "6'4\"",    weight: 211, fortyYard: "4.36", rasScore: "9.28", benchPress: null, verticalJump: "40.5", broadJump: 123, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pBanks     = await add({ name: "Kelvin Banks Jr.",     college: "Texas",          position: "OT",   height: "6'4½\"",   weight: 316, fortyYard: "5.20", rasScore: "8.92", benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pWalker    = await add({ name: "Jalon Walker",         college: "Georgia",        position: "EDGE", height: "6'2\"",    weight: 240, fortyYard: "4.51", rasScore: "9.41", benchPress: null, verticalJump: "38.5", broadJump: 118, coneDrill: "7.01", shuttleRun: "4.21", imageUrl: null });
+  const pFannin    = await add({ name: "Harold Fannin Jr.",    college: "Bowling Green",  position: "TE",   height: "6'3½\"",   weight: 249, fortyYard: "4.58", rasScore: "9.62", benchPress: 22,   verticalJump: "37.0", broadJump: 119, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pEmmanwori = await add({ name: "Nick Emmanwori",       college: "South Carolina", position: "S",    height: "6'3\"",    weight: 222, fortyYard: "4.34", rasScore: "9.84", benchPress: null, verticalJump: "41.5", broadJump: 128, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pEgbuka    = await add({ name: "Emeka Egbuka",         college: "Ohio State",     position: "WR",   height: "6'1\"",    weight: 205, fortyYard: "4.49", rasScore: null,   benchPress: null, verticalJump: "38.0", broadJump: 117, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pKennard   = await add({ name: "Kyle Kennard",         college: "Georgia",        position: "EDGE", height: "6'4\"",    weight: 248, fortyYard: "4.62", rasScore: null,   benchPress: null, verticalJump: "36.5", broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pStewart   = await add({ name: "Shemar Stewart",       college: "Texas A&M",      position: "DL",   height: "6'5\"",    weight: 300, fortyYard: "4.91", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pScourton  = await add({ name: "Nic Scourton",         college: "Purdue",         position: "EDGE", height: "6'4\"",    weight: 272, fortyYard: "4.76", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pErsery    = await add({ name: "Aireontae Ersery",     college: "Minnesota",      position: "OT",   height: "6'6\"",    weight: 332, fortyYard: "5.12", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pPorter    = await add({ name: "Darien Porter",        college: "Iowa State",     position: "CB",   height: "6'2\"",    weight: 194, fortyYard: "4.29", rasScore: "9.93", benchPress: null, verticalJump: "42.0", broadJump: 130, coneDrill: "6.82", shuttleRun: "4.08", imageUrl: null });
+
+  // Round 2 range (picks ~33-65)
+  const pLagway    = await add({ name: "DJ Lagway",            college: "Florida",        position: "QB",   height: "6'2\"",    weight: 220, fortyYard: "4.68", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pBooker    = await add({ name: "Tyler Booker",         college: "Alabama",        position: "OG",   height: "6'5\"",    weight: 334, fortyYard: "5.39", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pHairston  = await add({ name: "Maxwell Hairston",     college: "Kentucky",       position: "CB",   height: "6'0\"",    weight: 186, fortyYard: "4.24", rasScore: "9.94", benchPress: null, verticalJump: "41.0", broadJump: 131, coneDrill: "6.79", shuttleRun: "4.04", imageUrl: null });
+  const pHarmon    = await add({ name: "Derrick Harmon",       college: "Oregon",         position: "DT",   height: "6'4½\"",   weight: 314, fortyYard: "4.83", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pJackson   = await add({ name: "Landon Jackson",       college: "Arkansas",       position: "EDGE", height: "6'6½\"",   weight: 261, fortyYard: "4.69", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pStarks    = await add({ name: "Malaki Starks",        college: "Georgia",        position: "S",    height: "6'0\"",    weight: 197, fortyYard: "4.40", rasScore: null,   benchPress: null, verticalJump: "38.5", broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pOladejo   = await add({ name: "Oluwafemi Oladejo",    college: "UCLA",           position: "EDGE", height: "6'3\"",    weight: 255, fortyYard: "4.54", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pArroyo    = await add({ name: "Elijah Arroyo",        college: "Miami",          position: "TE",   height: "6'5\"",    weight: 249, fortyYard: "4.49", rasScore: null,   benchPress: 22,   verticalJump: "37.5", broadJump: 116, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pHunter    = await add({ name: "Jarquez Hunter",       college: "Auburn",         position: "RB",   height: "5'10\"",   weight: 207, fortyYard: "4.37", rasScore: null,   benchPress: null, verticalJump: "39.0", broadJump: 121, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pSwinson   = await add({ name: "Bradyn Swinson",       college: "LSU",            position: "EDGE", height: "6'4\"",    weight: 254, fortyYard: "4.58", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pMbow      = await add({ name: "Marcus Mbow",          college: "Purdue",         position: "OT",   height: "6'4½\"",   weight: 308, fortyYard: "5.24", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pKing      = await add({ name: "Kobe King",            college: "Penn State",     position: "OG",   height: "6'4\"",    weight: 324, fortyYard: "5.42", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pBurch     = await add({ name: "Jordan Burch",         college: "Georgia",        position: "DL",   height: "6'4½\"",   weight: 294, fortyYard: "4.95", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pHenderson = await add({ name: "TreVeyon Henderson",   college: "Ohio State",     position: "RB",   height: "5'10\"",   weight: 208, fortyYard: "4.38", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: 119, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pBech      = await add({ name: "Jack Bech",            college: "TCU",            position: "WR",   height: "6'1½\"",   weight: 215, fortyYard: "4.47", rasScore: "9.13", benchPress: null, verticalJump: "38.5", broadJump: 120, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pThornton  = await add({ name: "Dont'e Thornton Jr.",  college: "Penn State",     position: "WR",   height: "6'4\"",    weight: 199, fortyYard: "4.29", rasScore: "9.81", benchPress: null, verticalJump: "39.0", broadJump: 124, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pPendleton = await add({ name: "Sam Pendleton",        college: "Michigan",       position: "OG",   height: "6'5\"",    weight: 319, fortyYard: "5.38", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pCJWest    = await add({ name: "CJ West",              college: "Indiana",        position: "DT",   height: "6'3\"",    weight: 307, fortyYard: "4.89", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+  const pSorrell   = await add({ name: "Barryn Sorrell",       college: "Texas",          position: "EDGE", height: "6'2½\"",   weight: 256, fortyYard: "4.65", rasScore: null,   benchPress: null, verticalJump: null,   broadJump: null, coneDrill: null,   shuttleRun: null,   imageUrl: null });
+
+  // ─── ADP SNAPSHOTS for new players ───────────────────────────────────────
+  // Adding Mar 8 (7d ref) + Mar 15 (current) for all new players
+  const d_mar8  = new Date("2026-03-08");
+  const d_mar12 = new Date("2026-03-12");
+  const d_mar15 = new Date("2026-03-15");
+
+  // [player, mar8ADP, mar12ADP, mar15ADP]
+  const newAdp: [NP, string, string, string][] = [
+    [pMcMillan,  "22.0",  "21.4",  "20.8"],
+    [pBanks,     "22.5",  "21.9",  "21.6"],
+    [pWalker,    "25.0",  "23.8",  "22.8"],  // combine riser
+    [pFannin,    "25.5",  "25.1",  "24.6"],
+    [pEmmanwori, "28.0",  "26.8",  "25.8"],  // big safety rising
+    [pEgbuka,    "27.0",  "26.7",  "26.4"],
+    [pKennard,   "28.5",  "28.2",  "27.9"],
+    [pStewart,   "29.5",  "29.2",  "28.8"],
+    [pScourton,  "30.5",  "30.1",  "29.6"],
+    [pErsery,    "32.0",  "31.6",  "31.1"],
+    [pPorter,    "35.0",  "33.6",  "32.4"],  // 4.29 forty → big riser
+    [pLagway,    "33.0",  "33.6",  "34.1"],  // slight fall after combine
+    [pBooker,    "37.0",  "36.6",  "36.2"],
+    [pHairston,  "40.0",  "38.8",  "37.8"],  // 4.24 forty → big riser
+    [pHarmon,    "40.5",  "39.8",  "39.1"],
+    [pJackson,   "41.5",  "40.9",  "40.3"],
+    [pStarks,    "43.0",  "42.4",  "41.8"],
+    [pOladejo,   "44.5",  "43.9",  "43.2"],
+    [pArroyo,    "46.0",  "45.4",  "44.9"],
+    [pHunter,    "47.0",  "46.5",  "46.1"],
+    [pSwinson,   "48.5",  "48.2",  "47.8"],
+    [pMbow,      "50.5",  "49.9",  "49.4"],
+    [pKing,      "52.0",  "51.5",  "51.1"],
+    [pBurch,     "54.0",  "53.3",  "52.6"],
+    [pHenderson, "55.0",  "54.6",  "54.2"],
+    [pBech,      "57.0",  "56.4",  "55.8"],
+    [pThornton,  "59.0",  "58.2",  "57.4"],
+    [pPendleton, "62.0",  "61.4",  "60.8"],
+    [pCJWest,    "65.0",  "64.2",  "63.4"],
+    [pSorrell,   "66.5",  "65.8",  "65.1"],
+  ];
+
+  for (const [player, mar8, mar12, mar15] of newAdp) {
+    await storage.addAdpHistory({ playerId: player.id, adpValue: mar8,  date: d_mar8  });
+    await storage.addAdpHistory({ playerId: player.id, adpValue: mar12, date: d_mar12 });
+    await storage.addAdpHistory({ playerId: player.id, adpValue: mar15, date: d_mar15 });
+  }
+
+  // ─── EXTEND EXISTING MOCK DRAFTS with new player picks ────────────────────
+  const allDrafts = await storage.getMockDrafts();
+  const findDraft = (key: string) => allDrafts.find(d => d.sourceKey === key);
+
+  const waltDraft    = findDraft("walterfootball_walt");
+  const charlieDraft = findDraft("walterfootball_charlie");
+  const tankDraft    = findDraft("tankathon");
+  const djV3Draft    = allDrafts.filter(d => d.sourceKey === "nfl_jeremiah")
+                                .sort((a,b) => b.id - a.id)[0]; // most recent DJ
+
+  // Walt (3/7): fill gaps in picks 9,14,17,20-23,25,27-32
+  if (waltDraft) {
+    type WP = [NP, number];
+    const waltNew: WP[] = [
+      [pMcMillan, 9], [pFannin, 14], [pBanks, 17],
+      [pm.get("Monroe Freeling")!, 20], [pWalker, 21], [pEmmanwori, 22],
+      [pEgbuka, 23], [pKennard, 25], [pStewart, 27], [pScourton, 28],
+      [pPorter, 29], [pErsery, 30], [pHairston, 31], [pArroyo, 32],
+      [pLagway, 34], [pBooker, 35], [pHarmon, 37], [pJackson, 38],
+      [pStarks, 40], [pOladejo, 42], [pHunter, 45], [pSwinson, 47],
+    ];
+    await storage.createMockDraftPicks(
+      waltNew.filter(([p]) => p != null).map(([p, n]) => ({ mockDraftId: waltDraft.id, playerId: p.id, pickNumber: n }))
+    );
+  }
+
+  // Charlie (3/9): fill gaps in picks 13-15,17,19-22,24-26,29-32
+  if (charlieDraft) {
+    type CP = [NP, number];
+    const charlieNew: CP[] = [
+      [pMcMillan, 13], [pBanks, 14], [pFannin, 15], [pWalker, 17],
+      [pEmmanwori, 19], [pEgbuka, 20], [pKennard, 21], [pStewart, 22],
+      [pScourton, 24], [pErsery, 25], [pPorter, 26], [pHairston, 29],
+      [pArroyo, 30], [pStarks, 31], [pOladejo, 32],
+      [pLagway, 33], [pBooker, 36], [pHarmon, 37], [pJackson, 40],
+      [pHunter, 44], [pSwinson, 46],
+    ];
+    await storage.createMockDraftPicks(
+      charlieNew.map(([p, n]) => ({ mockDraftId: charlieDraft.id, playerId: p.id, pickNumber: n }))
+    );
+  }
+
+  // Tankathon Big Board (3/14): extend from pick 13
+  if (tankDraft) {
+    const tankExist = pm.get("Jermod McCoy");
+    type TP = [NP | undefined, number];
+    const tankNew: TP[] = [
+      [tankExist, 13], [pMcMillan, 14], [pBanks, 15], [pWalker, 16], [pFannin, 17],
+      [pm.get("Dillon Thieneman"), 18], [pm.get("Monroe Freeling"), 19],
+      [pm.get("Kenyon Sadiq"), 20], [pEmmanwori, 21], [pm.get("Jordyn Tyson"), 22],
+      [pm.get("Olaivavega Ioane"), 23], [pEgbuka, 24], [pKennard, 25],
+      [pm.get("Denzel Boston"), 26], [pStewart, 27], [pScourton, 28],
+      [pm.get("Jeff Caldwell"), 29], [pErsery, 30], [pPorter, 31], [pHairston, 32],
+      [pLagway, 33], [pBooker, 35], [pHarmon, 37], [pJackson, 38],
+      [pStarks, 39], [pOladejo, 41], [pArroyo, 43], [pHunter, 45],
+      [pSwinson, 47], [pMbow, 49],
+    ];
+    await storage.createMockDraftPicks(
+      tankNew.filter(([p]) => p != null).map(([p, n]) => ({ mockDraftId: tankDraft.id, playerId: p!.id, pickNumber: n }))
+    );
+  }
+
+  // DJ v3 big board: fill gaps + extend to top-50
+  if (djV3Draft) {
+    type DP = [NP | undefined, number];
+    const djNew: DP[] = [
+      [pMcMillan, 20], [pBanks, 22], [pFannin, 23], [pWalker, 24],
+      [pEmmanwori, 25], [pEgbuka, 26], [pKennard, 27], [pStewart, 28],
+      [pScourton, 29], [pErsery, 30], [pPorter, 31], [pHairston, 32],
+      [pLagway, 33], [pBooker, 34], [pHarmon, 36], [pJackson, 38],
+      [pStarks, 39], [pOladejo, 41], [pArroyo, 43], [pHunter, 46],
+      [pSwinson, 47], [pMbow, 49],
+    ];
+    await storage.createMockDraftPicks(
+      djNew.filter(([p]) => p != null).map(([p, n]) => ({ mockDraftId: djV3Draft.id, playerId: p!.id, pickNumber: n }))
+    );
+  }
+
+  // ─── Odds for new high-profile players ───────────────────────────────────
+  const d_mar15_odds = new Date("2026-03-15");
+  const newOdds: [NP, string, string, string][] = [
+    [pMcMillan,  "DraftKings", "first_round", "-600"],
+    [pBanks,     "FanDuel",    "first_round", "-550"],
+    [pWalker,    "BetMGM",     "first_round", "-500"],
+    [pFannin,    "DraftKings", "first_round", "-400"],
+    [pEmmanwori, "Caesars",    "first_round", "-350"],
+    [pPorter,    "DraftKings", "first_round", "-200"],
+    [pHairston,  "BetMGM",     "first_round", "-160"],
+    [pLagway,    "FanDuel",    "first_round", "+120"],
+  ];
+  for (const [player, book, market, odds] of newOdds) {
+    await storage.addOddsHistory({ playerId: player.id, bookmaker: book, marketType: market, odds, date: d_mar15_odds });
+  }
+
+  console.log(`[EXPAND] Added ${newPlayers.length} new prospects (50 total). Extended Walt/Charlie/Tank/DJ picks through round 2.`);
+}
+
 async function ensureTimeWindowData() {
   // Wait for players to be seeded
   const allPlayers = await storage.getPlayers();

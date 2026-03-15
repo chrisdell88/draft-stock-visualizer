@@ -9,7 +9,7 @@ Full-stack financial-market-style app that automatically scrapes 30+ analyst moc
 - **Scrapers**: Cheerio + Axios for HTML scraping; node-cron for daily automation
 
 ## Database Schema (`shared/schema.ts`)
-- `players` — 20 tracked prospects with combine data
+- `players` — 50 tracked prospects with combine data
 - `analysts` — 41 sources with accuracy weights (Huddle Report data)
 - `mockDrafts` — 8 mock drafts (DJ v1/v2/v3, GTM, MDDB, Walt 3/7, Charlie 3/9, Tankathon 3/14)
 - `mockDraftPicks` — individual player picks per mock
@@ -37,10 +37,11 @@ Full-stack financial-market-style app that automatically scrapes 30+ analyst moc
 
 ## Pages
 - `/` — Dashboard: scrolling market ticker, biggest movers (risers/fallers with ADP Δ), position breakdown, source coverage
-- `/players` — Full prospect leaderboard with filters/search
-- `/players/:id` — Player detail with ADP chart (gradient fill), analyst rankings table, combine stats
-- `/sources` — Analyst leaderboard (sortable), auto-scraper status cards, "Run All Scrapers" button
-- `/mock-drafts` — Data pipeline view with all 8 mock drafts
+- `/players` — Full prospect leaderboard with position filter pills (showing count + heat), sortable by ADP/RAS/Name/Movement, stock-market signal column (BUY/SELL/HOLD), ADP movement bars
+- `/big-boards` — Big boards matrix (analyst talent rankings, not team mocks)
+- `/sources` — Analyst accuracy leaderboard (41 sources), scrape status cards, manual trigger buttons
+- `/players/:id` — Player detail: gradient AreaChart ADP trend, split mock/big-board rankings panels, analyst divergence bars, combine stats, position rank
+- `/mock-drafts` — Mock draft matrix: all sources as columns, players as rows, color-coded pick cells
 
 ## Analyst Sources (41 total)
 Includes: Jason Boris (best 5-yr), Charlie Campbell (#1 in 2024), GTM Consensus, MDDB Consensus, PFF Sikkema, Sharp Donahue, ETR Daigle, ITA Amico, ESPN Kiper/Miller/Reid/Yates, NFL Jeremiah/Zierlein/Brooks/Davis/Band, SI Breer, Athletic Brugler/Standig/Feldman, UD Norris/Winks, Tankathon, and more.

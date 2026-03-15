@@ -1,31 +1,34 @@
 import { useRoute } from "wouter";
 import { usePlayer, usePlayerTrends, usePlayerRankings } from "@/hooks/use-players";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
-import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   Legend,
-  ReferenceLine
+  ReferenceLine,
 } from "recharts";
-import { Loader2, ArrowLeft, Ruler, Scale, GraduationCap, Target, TrendingUp, TrendingDown, Minus, Activity, BarChart2, Trophy } from "lucide-react";
+import { Loader2, ArrowLeft, Ruler, Scale, Activity, BarChart2, Trophy, TrendingUp, TrendingDown, Target, Award } from "lucide-react";
 import { Link } from "wouter";
 import { useMemo } from "react";
 
-// Convert American odds string to implied probability (0–100)
+// ── Helpers ────────────────────────────────────────────────────────────────
 function americanToProb(oddsStr: string): number {
   const n = parseInt(oddsStr, 10);
   if (isNaN(n)) return 50;
-  if (n < 0) return Math.round((-n / (-n + 100)) * 100 * 10) / 10;
-  return Math.round((100 / (n + 100)) * 100 * 10) / 10;
+  return n < 0
+    ? Math.round((-n / (-n + 100)) * 100 * 10) / 10
+    : Math.round((100 / (n + 100)) * 100 * 10) / 10;
 }
 
-// Map marketType to a readable label
 function marketLabel(mt: string): string {
   const map: Record<string, string> = {
     first_overall: "#1 Overall",
@@ -37,32 +40,85 @@ function marketLabel(mt: string): string {
   return map[mt] ?? mt;
 }
 
-// Color per drafter for the chart
-const DRAFTER_COLORS: Record<string, string> = {
-  "Daniel Jeremiah (NFL.com) v1.0": "#60a5fa",
-  "Daniel Jeremiah (NFL.com) v2.0": "#34d399",
-  "Daniel Jeremiah (NFL.com) v3.0": "#f59e0b",
-  "Grinding the Mocks (EDP Consensus)": "#a78bfa",
-  "MDDB Consensus Mock Draft": "#f472b6",
+// Comprehensive source key → short name map
+const SOURCE_SHORT: Record<string, string> = {
+  nfl_jeremiah:          "DJ",
+  mcshay_report:         "McShay",
+  espn_kiper:            "Kiper",
+  pff_sikkema:           "PFF",
+  cbs_wilson:            "Wilson",
+  athletic_brugler:      "Brugler",
+  times_news_boris:      "Boris",
+  huddle_rindone:        "Rindone",
+  draftsharks_smola:     "Smola",
+  "4for4_smith":         "Smith",
+  sharp_donahue:         "Donahue",
+  underdog_norris:       "Norris",
+  "33rd_team_crabbs":    "Crabbs",
+  nfl_zierlein:          "Zierlein",
+  nfl_schrager:          "Schrager",
+  seahawks_staton:       "Staton",
+  gtm_consensus:         "GTM",
+  mddb_consensus:        "MDDB",
+  walterfootball_walt:   "Walt",
+  walterfootball_charlie:"Charlie",
+  tankathon:             "Tankathon",
+  espn_reid:             "Reid",
+  espn_miller:           "Miller",
+  espn_yates:            "Yates",
+  si_breer:              "Breer",
+  blueprint_dell:        "Dell",
+  nfl_brooks:            "Brooks",
+  nfl_davis:             "Davis",
+  nfl_band:              "Band",
+  underdog_winks:        "Winks",
+  sharp_mccrystal:       "McCrystal",
+  den_allbright:         "Allbright",
+  athletic_staff:        "Athletic",
+  athletic_standig:      "Standig",
+  athletic_feldman:      "Feldman",
+  etr_daigle:            "ETR",
+  etr_silva:             "Silva",
+  ita_amico:             "ITA",
+  fantasypros_freedman:  "FP",
+  fantasy_law_guarisco:  "FLG",
+  br_scouts:             "B/R",
 };
 
-const DRAFTER_SHORT: Record<string, string> = {
-  "Daniel Jeremiah (NFL.com) v1.0": "DJ v1.0",
-  "Daniel Jeremiah (NFL.com) v2.0": "DJ v2.0",
-  "Daniel Jeremiah (NFL.com) v3.0": "DJ v3.0",
-  "Grinding the Mocks (EDP Consensus)": "GTM EDP",
-  "MDDB Consensus Mock Draft": "MDDB",
+const SOURCE_COLORS: string[] = [
+  "#60a5fa","#34d399","#f59e0b","#a78bfa","#f472b6",
+  "#fb923c","#38bdf8","#4ade80","#fbbf24","#c084fc",
+  "#e879f9","#2dd4bf","#f87171","#94a3b8",
+];
+
+function getShortName(sourceKey: string | null | undefined, sourceName: string): string {
+  if (sourceKey && SOURCE_SHORT[sourceKey]) return SOURCE_SHORT[sourceKey];
+  // Fallback: parse from sourceName
+  const nameParts = sourceName.split(/[\s(—]/);
+  return nameParts[0].slice(0, 8);
+}
+
+// ── Position badge color ───────────────────────────────────────────────────
+const POS_COLOR: Record<string, string> = {
+  QB: "#f59e0b", RB: "#34d399", WR: "#60a5fa", TE: "#a78bfa",
+  OT: "#fb923c", OG: "#fb923c", IOL: "#fb923c", C: "#fb923c",
+  EDGE: "#f472b6", DL: "#f472b6", DT: "#f472b6",
+  LB: "#38bdf8", CB: "#4ade80", S: "#4ade80",
 };
 
 export default function PlayerDetail() {
   const [, params] = useRoute("/players/:id");
   const id = parseInt(params?.id || "0");
-  
+
   const { data: player, isLoading: playerLoading } = usePlayer(id);
   const { data: trends, isLoading: trendsLoading } = usePlayerTrends(id);
   const { data: rankings, isLoading: rankingsLoading } = usePlayerRankings(id);
+  const { data: posRank } = useQuery<{ rank: number | null; total: number | null; position: string | null }>({
+    queryKey: [`/api/players/${id}/positionrank`],
+    enabled: id > 0,
+  });
 
-  // Build ADP trend data (consensus EDP over time)
+  // ── ADP trend chart data ──────────────────────────────────────────────────
   const adpChartData = useMemo(() => {
     if (!trends?.adp?.length) return [];
     return trends.adp.map(entry => ({
@@ -71,7 +127,7 @@ export default function PlayerDetail() {
     }));
   }, [trends]);
 
-  // Build odds chart data (implied probability over time, grouped by marketType)
+  // ── Odds chart data ───────────────────────────────────────────────────────
   const oddsChartData = useMemo(() => {
     if (!trends?.odds?.length) return [];
     const dateMap = new Map<string, any>();
@@ -81,28 +137,39 @@ export default function PlayerDetail() {
       const key = `prob_${entry.marketType}`;
       if (!dateMap.get(d)[key]) {
         dateMap.get(d)[key] = americanToProb(entry.odds);
-        dateMap.get(d)[`label_${entry.marketType}`] = marketLabel(entry.marketType);
       }
     });
     return Array.from(dateMap.values());
   }, [trends]);
 
-  // Get unique market types for odds chart
   const oddsMarkets = useMemo(() => {
     if (!trends?.odds?.length) return [];
     return Array.from(new Set(trends.odds.map(e => e.marketType)));
   }, [trends]);
 
-  // Current ADP (latest snapshot)
+  // ── ADP trend stats ───────────────────────────────────────────────────────
   const currentAdp = adpChartData.length > 0 ? adpChartData[adpChartData.length - 1].adp : null;
-  const prevAdp = adpChartData.length > 1 ? adpChartData[adpChartData.length - 2].adp : null;
-  const trend = currentAdp && prevAdp ? (currentAdp < prevAdp ? 'up' : currentAdp > prevAdp ? 'down' : 'flat') : 'flat';
+  const prevAdp    = adpChartData.length > 1 ? adpChartData[adpChartData.length - 2].adp : null;
+  const trend      = currentAdp && prevAdp ? (currentAdp < prevAdp ? "up" : currentAdp > prevAdp ? "down" : "flat") : "flat";
+  const totalChange = adpChartData.length >= 2
+    ? adpChartData[0].adp - adpChartData[adpChartData.length - 1].adp
+    : null;
 
-  // Sorted rankings by pick number
+  // ── Rankings split: mock drafts vs big boards ─────────────────────────────
   const sortedRankings = useMemo(() => {
     if (!rankings) return [];
     return [...rankings].sort((a, b) => a.pickNumber - b.pickNumber);
   }, [rankings]);
+
+  const mockRankings = useMemo(() => sortedRankings.filter(r => r.boardType !== "bigboard"), [sortedRankings]);
+  const boardRankings = useMemo(() => sortedRankings.filter(r => r.boardType === "bigboard"), [sortedRankings]);
+
+  // High / Low consensus from all rankings
+  const highOn = sortedRankings.length > 0 ? sortedRankings[0] : null;
+  const lowOn  = sortedRankings.length > 0 ? sortedRankings[sortedRankings.length - 1] : null;
+  const avgPick = sortedRankings.length > 0
+    ? Math.round((sortedRankings.reduce((s, r) => s + r.pickNumber, 0) / sortedRankings.length) * 10) / 10
+    : null;
 
   if (playerLoading || !player) {
     return (
@@ -114,18 +181,21 @@ export default function PlayerDetail() {
     );
   }
 
+  const posColor = POS_COLOR[player.position ?? ""] ?? "#94a3b8";
+
   const combineStats = [
-    { label: "40-Yard", value: player.fortyYard ? `${Number(player.fortyYard).toFixed(2)}s` : null },
-    { label: "Vertical", value: player.verticalJump ? `${player.verticalJump}"` : null },
-    { label: "Bench Press", value: player.benchPress ? `${player.benchPress} reps` : null },
-    { label: "3-Cone", value: player.coneDrill ? `${Number(player.coneDrill).toFixed(2)}s` : null },
-    { label: "Shuttle", value: player.shuttleRun ? `${Number(player.shuttleRun).toFixed(2)}s` : null },
-    { label: "Broad Jump", value: player.broadJump ? `${player.broadJump}"` : null },
+    { label: "40-Yard",    value: player.fortyYard    ? `${Number(player.fortyYard).toFixed(2)}s`    : null },
+    { label: "Vertical",   value: player.verticalJump ? `${player.verticalJump}"`                    : null },
+    { label: "Bench",      value: player.benchPress   ? `${player.benchPress} reps`                  : null },
+    { label: "3-Cone",     value: player.coneDrill    ? `${Number(player.coneDrill).toFixed(2)}s`    : null },
+    { label: "Shuttle",    value: player.shuttleRun   ? `${Number(player.shuttleRun).toFixed(2)}s`   : null },
+    { label: "Broad Jump", value: player.broadJump    ? `${player.broadJump}"`                       : null },
   ].filter(s => s.value !== null);
 
   return (
     <Layout>
-      <div className="mb-6" data-testid="back-link-container">
+      {/* Back link */}
+      <div className="mb-6">
         <Link href="/players" data-testid="link-back-to-board" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Board
@@ -133,68 +203,80 @@ export default function PlayerDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* ── Left Column ─────────────────────────────── */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Player Identity Card */}
+        {/* ── LEFT COLUMN ──────────────────────────────────────────────── */}
+        <div className="lg:col-span-1 space-y-5">
+
+          {/* Identity Card */}
           <div className="glass-card rounded-2xl p-6 relative overflow-hidden" data-testid="player-identity-card">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-            
+            <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -mr-12 -mt-12 pointer-events-none"
+                 style={{ backgroundColor: `${posColor}20` }} />
+
             <div className="flex flex-col items-center text-center">
               {player.imageUrl ? (
-                <img src={player.imageUrl} alt={player.name} className="w-28 h-28 rounded-full object-cover border-4 border-white/10 shadow-xl mb-4" />
+                <img src={player.imageUrl} alt={player.name}
+                     className="w-28 h-28 rounded-full object-cover border-4 border-white/10 shadow-xl mb-4" />
               ) : (
-                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/30 flex items-center justify-center font-display text-4xl font-bold text-primary mb-4 shadow-xl">
-                  {player.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                <div className="w-28 h-28 rounded-full border-2 border-white/10 flex items-center justify-center font-display text-4xl font-bold mb-4 shadow-xl"
+                     style={{ background: `linear-gradient(135deg, ${posColor}30, ${posColor}10)`, borderColor: `${posColor}40`, color: posColor }}>
+                  {player.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
               )}
               <h1 className="text-2xl font-display font-bold text-white" data-testid="text-player-name">{player.name}</h1>
               <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs font-mono font-bold bg-primary/20 text-primary border border-primary/30 rounded-full px-3 py-0.5" data-testid="text-player-position">{player.position}</span>
+                <span className="text-xs font-mono font-bold rounded-full px-3 py-0.5"
+                      style={{ backgroundColor: `${posColor}20`, color: posColor, border: `1px solid ${posColor}40` }}
+                      data-testid="text-player-position">
+                  {player.position}
+                </span>
                 <span className="text-xs text-muted-foreground">{player.college}</span>
               </div>
             </div>
 
             {/* Key Stats Row */}
-            <div className="grid grid-cols-3 gap-3 mt-6">
+            <div className="grid grid-cols-3 gap-2 mt-6">
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center text-center">
-                <p className="text-xs text-muted-foreground uppercase font-mono mb-1">ADP</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-mono mb-1">ADP</p>
                 <p className="font-bold text-white font-mono text-lg" data-testid="text-current-adp">
-                  {currentAdp !== null ? currentAdp.toFixed(1) : '–'}
+                  {currentAdp !== null ? currentAdp.toFixed(1) : "–"}
                 </p>
-                {trend !== 'flat' && (
-                  <span className={`text-xs ${trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {trend === 'up' ? '▲' : '▼'}
+                {trend !== "flat" && (
+                  <span className={`text-xs font-mono ${trend === "up" ? "text-emerald-400" : "text-red-400"}`}>
+                    {trend === "up" ? "▲" : "▼"}
                   </span>
                 )}
               </div>
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center text-center">
-                <p className="text-xs text-muted-foreground uppercase font-mono mb-1">RAS</p>
-                <p className="font-bold text-white font-mono text-lg" data-testid="text-ras-score">
-                  {player.rasScore ? Number(player.rasScore).toFixed(2) : '–'}
+                <p className="text-[10px] text-muted-foreground uppercase font-mono mb-1">RAS</p>
+                <p className="font-bold font-mono text-lg" style={{ color: player.rasScore ? (Number(player.rasScore) >= 9 ? "#4ade80" : Number(player.rasScore) >= 7 ? "#f59e0b" : "#94a3b8") : "#94a3b8" }}
+                   data-testid="text-ras-score">
+                  {player.rasScore ? Number(player.rasScore).toFixed(2) : "–"}
                 </p>
               </div>
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center text-center">
-                <p className="text-xs text-muted-foreground uppercase font-mono mb-1">40-yd</p>
-                <p className="font-bold text-white font-mono text-lg" data-testid="text-forty-yard">
-                  {player.fortyYard ? Number(player.fortyYard).toFixed(2) : '–'}
+                <p className="text-[10px] text-muted-foreground uppercase font-mono mb-1">Pos Rank</p>
+                <p className="font-bold text-white font-mono text-lg" data-testid="text-position-rank">
+                  {posRank?.rank ? `#${posRank.rank}` : "–"}
                 </p>
+                {posRank?.total && posRank.rank && (
+                  <span className="text-[10px] text-muted-foreground font-mono">of {posRank.total}</span>
+                )}
               </div>
             </div>
 
             {/* Height / Weight */}
-            <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="grid grid-cols-2 gap-2 mt-2">
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
                 <Ruler className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-muted-foreground font-mono">Height</p>
-                  <p className="font-mono text-white text-sm font-semibold" data-testid="text-height">{player.height || '–'}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">Height</p>
+                  <p className="font-mono text-white text-sm font-semibold" data-testid="text-height">{player.height || "–"}</p>
                 </div>
               </div>
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
                 <Scale className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-muted-foreground font-mono">Weight</p>
-                  <p className="font-mono text-white text-sm font-semibold" data-testid="text-weight">{player.weight ? `${player.weight} lbs` : '–'}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">Weight</p>
+                  <p className="font-mono text-white text-sm font-semibold" data-testid="text-weight">{player.weight ? `${player.weight} lbs` : "–"}</p>
                 </div>
               </div>
             </div>
@@ -202,146 +284,207 @@ export default function PlayerDetail() {
 
           {/* Combine Measurables */}
           {combineStats.length > 0 && (
-            <div className="glass-card rounded-2xl p-6" data-testid="combine-stats-card">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="glass-card rounded-2xl p-5" data-testid="combine-stats-card">
+              <div className="flex items-center gap-2 mb-3">
                 <Activity className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Combine Measurables</h3>
+                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Combine</h3>
               </div>
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 {combineStats.map(stat => (
-                  <div key={stat.label} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0" data-testid={`stat-${stat.label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
-                    <span className="text-sm text-muted-foreground font-mono">{stat.label}</span>
-                    <span className="text-sm font-mono font-bold text-white">{stat.value}</span>
+                  <div key={stat.label} className="bg-white/5 rounded-lg p-2 border border-white/5"
+                       data-testid={`stat-${stat.label.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+                    <p className="text-[10px] text-muted-foreground font-mono mb-0.5">{stat.label}</p>
+                    <p className="text-sm font-mono font-bold text-white">{stat.value}</p>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Mock Drafter Rankings */}
-          {!rankingsLoading && sortedRankings.length > 0 && (
-            <div className="glass-card rounded-2xl p-6" data-testid="drafter-rankings-card">
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">By Mock Drafter</h3>
+          {/* High / Low Consensus */}
+          {sortedRankings.length >= 2 && (
+            <div className="glass-card rounded-2xl p-5" data-testid="consensus-card">
+              <div className="flex items-center gap-2 mb-3">
+                <Target className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Analyst Consensus</h3>
               </div>
-              <div className="space-y-2">
-                {sortedRankings.map(r => {
-                  const short = DRAFTER_SHORT[r.sourceName] ?? r.sourceName;
-                  const color = DRAFTER_COLORS[r.sourceName] ?? '#94a3b8';
+              <div className="space-y-3">
+                {avgPick && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground font-mono">Avg Pick</span>
+                    <span className="font-mono font-bold text-white text-sm">#{avgPick}</span>
+                  </div>
+                )}
+                {highOn && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3 text-emerald-400" />Highest On
+                    </span>
+                    <div className="text-right">
+                      <span className="font-mono font-bold text-emerald-400 text-sm">#{highOn.pickNumber}</span>
+                      <span className="text-[10px] text-muted-foreground font-mono ml-2">{getShortName(highOn.sourceKey, highOn.sourceName)}</span>
+                    </div>
+                  </div>
+                )}
+                {lowOn && lowOn !== highOn && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                      <TrendingDown className="w-3 h-3 text-red-400" />Lowest On
+                    </span>
+                    <div className="text-right">
+                      <span className="font-mono font-bold text-red-400 text-sm">#{lowOn.pickNumber}</span>
+                      <span className="text-[10px] text-muted-foreground font-mono ml-2">{getShortName(lowOn.sourceKey, lowOn.sourceName)}</span>
+                    </div>
+                  </div>
+                )}
+                {highOn && lowOn && lowOn !== highOn && (
+                  <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                    <span className="text-xs text-muted-foreground font-mono">Spread</span>
+                    <span className="font-mono font-bold text-amber-400 text-sm">
+                      #{highOn.pickNumber}–#{lowOn.pickNumber} ({lowOn.pickNumber - highOn.pickNumber} picks)
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mock Draft Rankings */}
+          {!rankingsLoading && mockRankings.length > 0 && (
+            <div className="glass-card rounded-2xl p-5" data-testid="mock-rankings-card">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Mock Drafts</h3>
+              </div>
+              <div className="space-y-1.5">
+                {mockRankings.map((r, i) => {
+                  const short = getShortName(r.sourceKey, r.sourceName);
+                  const color = SOURCE_COLORS[i % SOURCE_COLORS.length];
                   return (
-                    <div key={r.sourceName} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0" data-testid={`ranking-${short.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
-                      <span className="text-sm font-mono" style={{ color }}>{short}</span>
+                    <div key={`${r.sourceKey}-${r.pickNumber}`} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0"
+                         data-testid={`mock-rank-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+                      <span className="text-xs font-mono" style={{ color }}>{short}</span>
                       <span className="text-sm font-mono font-bold text-white">#{r.pickNumber}</span>
                     </div>
                   );
                 })}
               </div>
-              {/* Spread bar showing divergence */}
-              {sortedRankings.length >= 2 && (() => {
-                const picks = sortedRankings.map(r => r.pickNumber);
-                const min = Math.min(...picks);
-                const max = Math.max(...picks);
-                return max - min > 0 ? (
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <p className="text-xs text-muted-foreground font-mono mb-1">Analyst Spread</p>
-                    <p className="font-mono text-sm font-bold text-amber-400" data-testid="text-analyst-spread">#{min} – #{max} ({max - min} pick spread)</p>
-                  </div>
-                ) : null;
-              })()}
+            </div>
+          )}
+
+          {/* Big Board Rankings */}
+          {!rankingsLoading && boardRankings.length > 0 && (
+            <div className="glass-card rounded-2xl p-5" data-testid="bigboard-rankings-card">
+              <div className="flex items-center gap-2 mb-3">
+                <Award className="w-4 h-4 text-violet-400" />
+                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Big Boards</h3>
+              </div>
+              <div className="space-y-1.5">
+                {boardRankings.map((r, i) => {
+                  const short = getShortName(r.sourceKey, r.sourceName);
+                  const color = ["#a78bfa","#c084fc","#8b5cf6","#7c3aed"][i % 4];
+                  return (
+                    <div key={`${r.sourceKey}-${r.pickNumber}`} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0"
+                         data-testid={`board-rank-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+                      <span className="text-xs font-mono" style={{ color }}>{short}</span>
+                      <span className="text-sm font-mono font-bold text-white">#{r.pickNumber}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
-        {/* ── Right Column ─────────────────────────────── */}
+        {/* ── RIGHT COLUMN ─────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
-          {/* ADP Trend Chart */}
+
+          {/* ADP Trend Chart (gradient area) */}
           <div className="glass-card rounded-2xl p-6" data-testid="adp-trend-card">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <BarChart2 className="w-4 h-4 text-primary" />
                 <h2 className="text-lg font-display font-semibold text-white">Consensus ADP Trend</h2>
               </div>
-              <span className="text-xs text-muted-foreground font-mono">Source: Grinding the Mocks EDP</span>
+              <div className="flex items-center gap-3">
+                {totalChange !== null && Math.abs(totalChange) > 0.2 && (
+                  <span className={`text-sm font-mono font-bold ${totalChange > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {totalChange > 0 ? "▲" : "▼"} {Math.abs(totalChange).toFixed(1)} pick
+                    {Math.abs(totalChange) !== 1 ? "s" : ""} {totalChange > 0 ? "risen" : "fallen"}
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground font-mono">GTM EDP</span>
+              </div>
             </div>
-            
+
             {trendsLoading ? (
-              <div className="h-[260px] flex items-center justify-center">
+              <div className="h-[240px] flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
             ) : adpChartData.length > 0 ? (
-              <div className="h-[260px] w-full" data-testid="chart-adp-trend">
+              <div className="h-[240px] w-full" data-testid="chart-adp-trend">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={adpChartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+                  <AreaChart data={adpChartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+                    <defs>
+                      <linearGradient id="adpGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="rgba(255,255,255,0.2)" 
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'var(--font-mono)' }} 
-                      tickMargin={8}
-                    />
-                    <YAxis 
-                      reversed={true}
-                      stroke="rgba(255,255,255,0.2)"
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'var(--font-mono)' }}
-                      tickFormatter={(v) => `#${v}`}
-                      domain={['dataMin - 1', 'dataMax + 1']}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--card))', 
-                        borderColor: 'rgba(255,255,255,0.12)',
-                        borderRadius: '8px',
-                        color: 'white',
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: '12px',
-                      }}
+                    <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)"
+                           tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "var(--font-mono)" }}
+                           tickMargin={8} />
+                    <YAxis reversed={true} stroke="rgba(255,255,255,0.2)"
+                           tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "var(--font-mono)" }}
+                           tickFormatter={v => `#${v}`} domain={["dataMin - 1", "dataMax + 1"]} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "rgba(255,255,255,0.12)", borderRadius: "8px", color: "white", fontFamily: "var(--font-mono)", fontSize: "12px" }}
                       formatter={(v: any) => [`#${Number(v).toFixed(1)}`, "ADP"]}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="adp" 
-                      name="ADP" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2.5}
-                      dot={{ r: 5, fill: 'hsl(var(--background))', stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
-                      activeDot={{ r: 7, fill: 'hsl(var(--primary))' }}
-                    />
-                  </LineChart>
+                    <Area type="monotone" dataKey="adp" stroke="hsl(var(--primary))" strokeWidth={2.5}
+                          fill="url(#adpGrad)"
+                          dot={{ r: 5, fill: "hsl(var(--background))", stroke: "hsl(var(--primary))", strokeWidth: 2 }}
+                          activeDot={{ r: 7, fill: "hsl(var(--primary))" }} />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[260px] flex items-center justify-center text-muted-foreground border border-dashed border-white/10 rounded-xl text-sm font-mono">
+              <div className="h-[240px] flex items-center justify-center text-muted-foreground border border-dashed border-white/10 rounded-xl text-sm font-mono">
                 No ADP history available
               </div>
             )}
           </div>
 
-          {/* Mock Drafter Comparison Chart */}
+          {/* Analyst Divergence Bars */}
           {!rankingsLoading && sortedRankings.length > 1 && (
             <div className="glass-card rounded-2xl p-6" data-testid="drafter-comparison-card">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-primary" />
                 <h2 className="text-lg font-display font-semibold text-white">Analyst Divergence</h2>
+                <span className="text-xs text-muted-foreground font-mono ml-auto">where each source has this player</span>
               </div>
-              <p className="text-xs text-muted-foreground font-mono mb-4">Where each mock drafter has this prospect ranked</p>
-              <div className="space-y-3">
-                {sortedRankings.map(r => {
-                  const short = DRAFTER_SHORT[r.sourceName] ?? r.sourceName;
-                  const color = DRAFTER_COLORS[r.sourceName] ?? '#94a3b8';
-                  const maxPick = Math.max(...sortedRankings.map(x => x.pickNumber));
-                  const pct = Math.max(5, Math.round((1 - (r.pickNumber - 1) / Math.max(maxPick, 32)) * 100));
+              <div className="space-y-2.5">
+                {sortedRankings.map((r, i) => {
+                  const short = getShortName(r.sourceKey, r.sourceName);
+                  const color = r.boardType === "bigboard" ? "#a78bfa" : SOURCE_COLORS[i % SOURCE_COLORS.length];
+                  const maxPick = Math.max(...sortedRankings.map(x => x.pickNumber), 32);
+                  const pct = Math.max(5, Math.round((1 - (r.pickNumber - 1) / maxPick) * 100));
                   return (
-                    <div key={r.sourceName} data-testid={`bar-${short.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
+                    <div key={`${r.sourceKey}-${r.pickNumber}`}
+                         data-testid={`bar-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
                       <div className="flex justify-between text-xs font-mono mb-1">
-                        <span style={{ color }}>{short}</span>
+                        <span style={{ color }}>
+                          {short}
+                          {r.boardType === "bigboard" && (
+                            <span className="ml-1 text-[9px] text-violet-400 uppercase">board</span>
+                          )}
+                        </span>
                         <span className="text-white font-bold">Pick #{r.pickNumber}</span>
                       </div>
-                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${pct}%`, backgroundColor: color }}
-                        />
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700"
+                             style={{ width: `${pct}%`, backgroundColor: color }} />
                       </div>
                     </div>
                   );
@@ -360,41 +503,28 @@ export default function PlayerDetail() {
                 </div>
                 <span className="text-xs text-muted-foreground font-mono">American odds → %</span>
               </div>
-              <div className="h-[240px] w-full" data-testid="chart-odds">
+              <div className="h-[220px] w-full" data-testid="chart-odds">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={oddsChartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="rgba(255,255,255,0.2)" 
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'var(--font-mono)' }} 
-                    />
-                    <YAxis
-                      stroke="rgba(255,255,255,0.2)"
-                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'var(--font-mono)' }}
-                      tickFormatter={(v) => `${v}%`}
-                      domain={[0, 100]}
-                    />
+                    <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)"
+                           tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "var(--font-mono)" }} />
+                    <YAxis stroke="rgba(255,255,255,0.2)"
+                           tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "var(--font-mono)" }}
+                           tickFormatter={v => `${v}%`} domain={[0, 100]} />
                     <ReferenceLine y={50} stroke="rgba(255,255,255,0.15)" strokeDasharray="4 4" />
                     <Tooltip
-                      contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'rgba(255,255,255,0.12)', borderRadius: '8px', color: 'white', fontFamily: 'var(--font-mono)', fontSize: '12px' }}
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "rgba(255,255,255,0.12)", borderRadius: "8px", color: "white", fontFamily: "var(--font-mono)", fontSize: "12px" }}
                       formatter={(v: any, name: string) => [`${Number(v).toFixed(1)}%`, name]}
                     />
-                    <Legend wrapperStyle={{ paddingTop: '12px', fontFamily: 'var(--font-mono)', fontSize: '11px' }} />
+                    <Legend wrapperStyle={{ paddingTop: "12px", fontFamily: "var(--font-mono)", fontSize: "11px" }} />
                     {oddsMarkets.map((mt, i) => {
-                      const colors = ['#34d399','#60a5fa','#f59e0b','#f472b6','#a78bfa'];
+                      const colors = ["#34d399","#60a5fa","#f59e0b","#f472b6","#a78bfa"];
                       return (
-                        <Line
-                          key={mt}
-                          type="monotone"
-                          dataKey={`prob_${mt}`}
-                          name={marketLabel(mt)}
-                          stroke={colors[i % colors.length]}
-                          strokeWidth={2}
-                          dot={{ r: 4, fill: 'hsl(var(--background))', strokeWidth: 2 }}
-                          activeDot={{ r: 6 }}
-                          connectNulls
-                        />
+                        <Line key={mt} type="monotone" dataKey={`prob_${mt}`} name={marketLabel(mt)}
+                              stroke={colors[i % colors.length]} strokeWidth={2}
+                              dot={{ r: 4, fill: "hsl(var(--background))", strokeWidth: 2 }}
+                              activeDot={{ r: 6 }} connectNulls />
                       );
                     })}
                   </LineChart>

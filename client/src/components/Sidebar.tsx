@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Activity, Users, Database, LayoutDashboard, TrendingUp, Radio } from "lucide-react";
+import { Activity, Users, LayoutDashboard, TrendingUp, Radio, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -9,8 +9,9 @@ export default function Sidebar() {
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/players", label: "Prospects", icon: Users },
-    { href: "/sources", label: "Sources", icon: Radio },
-    { href: "/mock-drafts", label: "Data Pipeline", icon: Database },
+    { href: "/big-boards", label: "Big Boards", icon: Award },
+    { href: "/mock-drafts", label: "Mock Drafts", icon: Activity },
+    { href: "/sources", label: "Sources & Scrapers", icon: Radio },
   ];
 
   return (

@@ -23,7 +23,9 @@ export interface IStorage {
 
   getPlayerAdpHistory(playerId: number): Promise<AdpHistory[]>;
   getPlayerOddsHistory(playerId: number): Promise<Odds[]>;
-  getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, analystId?: number | null, pickNumber: number, publishedAt?: string }>>;
+  getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, sourceKey?: string | null, boardType?: string | null, analystId?: number | null, pickNumber: number, publishedAt?: string }>>;
+  getPositionRank(playerId: number): Promise<{ rank: number; total: number; position: string | null } | null>;
+  updateMockDraftBoardTypes(): Promise<void>;
   
   getMockDrafts(): Promise<MockDraft[]>;
   createMockDraft(mockDraft: InsertMockDraft): Promise<MockDraft>;
@@ -148,9 +150,11 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  async getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, analystId?: number | null, pickNumber: number, publishedAt?: string }>> {
+  async getPlayerRankings(playerId: number): Promise<Array<{ sourceName: string, sourceKey?: string | null, boardType?: string | null, analystId?: number | null, pickNumber: number, publishedAt?: string }>> {
     const rankings = await db.select({
       sourceName: mockDrafts.sourceName,
+      sourceKey: mockDrafts.sourceKey,
+      boardType: mockDrafts.boardType,
       analystId: mockDrafts.analystId,
       pickNumber: mockDraftPicks.pickNumber,
       publishedAt: mockDrafts.publishedAt,
@@ -159,13 +163,41 @@ export class DatabaseStorage implements IStorage {
     .innerJoin(mockDrafts, eq(mockDraftPicks.mockDraftId, mockDrafts.id))
     .where(eq(mockDraftPicks.playerId, playerId))
     .orderBy(desc(mockDrafts.publishedAt));
+
+    // Deduplicate: keep only the most recent pick per sourceKey
+    const seen = new Set<string>();
+    const deduped: typeof rankings = [];
+    for (const r of rankings) {
+      const key = r.sourceKey ?? r.sourceName;
+      if (!seen.has(key)) { seen.add(key); deduped.push(r); }
+    }
     
-    return rankings.map(r => ({
+    return deduped.map(r => ({
       sourceName: r.sourceName,
+      sourceKey: r.sourceKey,
+      boardType: r.boardType,
       analystId: r.analystId,
       pickNumber: r.pickNumber,
       publishedAt: r.publishedAt ? r.publishedAt.toISOString() : undefined,
     }));
+  }
+
+  async getPositionRank(playerId: number): Promise<{ rank: number; total: number; position: string | null } | null> {
+    const player = await this.getPlayer(playerId);
+    if (!player?.position) return null;
+    const enriched = await this.getPlayers();
+    const samePos = enriched.filter(p => p.position === player.position && p.currentAdp != null);
+    samePos.sort((a, b) => (a.currentAdp ?? 99) - (b.currentAdp ?? 99));
+    const rank = samePos.findIndex(p => p.id === playerId) + 1;
+    return rank > 0 ? { rank, total: samePos.length, position: player.position } : null;
+  }
+
+  async updateMockDraftBoardTypes(): Promise<void> {
+    // DJ big boards and Tankathon are talent rankings, not team-based mock drafts
+    await db.update(mockDrafts).set({ boardType: "bigboard" } as any)
+      .where(eq(mockDrafts.sourceKey, "nfl_jeremiah"));
+    await db.update(mockDrafts).set({ boardType: "bigboard" } as any)
+      .where(eq(mockDrafts.sourceKey, "tankathon"));
   }
 
   async getScrapeJobs(): Promise<ScrapeJob[]> {
@@ -275,15 +307,19 @@ export class DatabaseStorage implements IStorage {
     return movers.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 12);
   }
 
-  async getMatrixData(): Promise<{
+  async getMatrixData(boardTypeFilter?: string | null): Promise<{
     players: (Player & { currentAdp?: number; trend?: string; adpChange?: number })[];
     drafts: (typeof mockDrafts.$inferSelect)[];
     analysts: (typeof analysts.$inferSelect)[];
     picks: Record<number, Record<number, number>>; // picks[playerId][draftId] = pickNumber
   }> {
+    const draftsQuery = boardTypeFilter
+      ? db.select().from(mockDrafts).where(eq(mockDrafts.boardType, boardTypeFilter)).orderBy(desc(mockDrafts.publishedAt))
+      : db.select().from(mockDrafts).orderBy(desc(mockDrafts.publishedAt));
+
     const [allPlayers, allDrafts, allAnalysts, allPicks] = await Promise.all([
       this.getPlayers(),
-      db.select().from(mockDrafts).orderBy(desc(mockDrafts.publishedAt)),
+      draftsQuery,
       db.select().from(analysts).orderBy(desc(analysts.accuracyWeight)),
       db.select().from(mockDraftPicks),
     ]);

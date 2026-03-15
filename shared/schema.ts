@@ -40,6 +40,7 @@ export const mockDrafts = pgTable("mock_drafts", {
   analystId: integer("analyst_id"),
   url: text("url"),
   publishedAt: timestamp("published_at").defaultNow(),
+  boardType: text("board_type").default("mock"), // "mock" | "bigboard"
 });
 
 export const mockDraftPicks = pgTable("mock_draft_picks", {
