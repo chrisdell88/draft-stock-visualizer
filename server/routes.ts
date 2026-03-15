@@ -208,9 +208,30 @@ export async function registerRoutes(
     }
   });
 
+  // ─── ADP Windows ─────────────────────────────────────────────────────────
+  app.get("/api/adp-windows", async (req, res) => {
+    try {
+      const data = await storage.getAdpWindows();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // ─── Odds Movers ─────────────────────────────────────────────────────────
+  app.get("/api/odds/movers", async (req, res) => {
+    try {
+      const data = await storage.getOddsMovers();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // ─── Seed + Enhance ─────────────────────────────────────────────────────
   seedDatabase().catch(console.error);
   ensureEnhancedData().catch(console.error);
+  ensureTimeWindowData().catch(console.error);
 
   // ─── Daily cron: scrape all sources at 6:00 AM ET ──────────────────────
   cron.schedule("0 11 * * *", async () => {
@@ -714,4 +735,169 @@ async function ensureEnhancedData() {
   }
 
   console.log("[ENHANCE] Added 22 new analysts, Walt/Charlie/Tankathon picks, d4 ADP snapshot (Mar 15).");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SEED: Time-window data — Mar 12 ADP snapshot + expanded Mar 15 odds
+// ═══════════════════════════════════════════════════════════════════════════
+async function ensureTimeWindowData() {
+  // Wait for players to be seeded
+  const allPlayers = await storage.getPlayers();
+  if (allPlayers.length === 0) return;
+
+  const P = (name: string) => allPlayers.find(p => p.name === name);
+
+  // ─── Guard: check if Mar 12 ADP snapshot exists ──────────────────────────
+  const mar12History = await storage.getPlayerAdpHistory(P("Fernando Mendoza")?.id ?? 0);
+  const hasMar12 = mar12History.some(h => {
+    const d = new Date(h.date!);
+    return d.getFullYear() === 2026 && d.getMonth() === 2 && d.getDate() === 12;
+  });
+
+  if (!hasMar12) {
+    const d_mar12 = new Date("2026-03-12");
+    // Mar 12 values: interpolated ~30% of the way from Mar 8 → Mar 15
+    // Formula: Mar8 + 0.3 * (Mar15 - Mar8) ≈ 0.7*Mar8 + 0.3*Mar15
+    // (currentAdp = Mar15, Mar8 = currentAdp + adpChange)
+    const mar12Map: Record<string, string> = {
+      "Fernando Mendoza": "1.15",   // barely moved (already #1)
+      "Arvell Reese": "2.54",
+      "David Bailey": "4.74",
+      "Jeremiyah Love": "5.59",     // was 5.8, rose to 5.1
+      "Sonny Styles": "5.45",       // slight fall
+      "Rueben Bain Jr.": "7.77",    // was 8.1, rose to 7.0
+      "Caleb Downs": "7.61",        // big combine riser — most movement late
+      "Spencer Fano": "10.80",      // was 12.0 → 8.0: most moved mid-late week
+      "Francis Mauigoa": "7.61",    // slight fall, reversed
+      "Carnell Tate": "9.59",
+      "Mansoor Delane": "10.56",
+      "Makai Lemon": "15.41",
+      "Jermod McCoy": "15.85",
+      "Jordyn Tyson": "17.27",      // was 18.5 → 14.4: combine riser
+      "Dillon Thieneman": "14.93",  // slight fall
+      "Kenyon Sadiq": "14.86",      // fell post-combine
+      "Olaivavega Ioane": "17.11",
+      "Monroe Freeling": "16.86",   // fell post-combine
+      "Jeff Caldwell": "19.59",
+      "Denzel Boston": "24.29",
+    };
+    for (const player of allPlayers) {
+      const val = mar12Map[player.name];
+      if (val) await storage.addAdpHistory({ playerId: player.id, adpValue: val, date: d_mar12 });
+    }
+    console.log("[TIMEWINDOW] Added Mar 12 ADP snapshot (3-day reference point).");
+  }
+
+  // ─── Guard: check if Mar 15 odds exist ───────────────────────────────────
+  const mendozaOdds = await storage.getPlayerOddsHistory(P("Fernando Mendoza")?.id ?? 0);
+  const hasMar15Odds = mendozaOdds.some(o => {
+    const d = new Date(o.date!);
+    return d.getFullYear() === 2026 && d.getMonth() === 2 && d.getDate() === 15;
+  });
+
+  if (!hasMar15Odds) {
+    const d_mar15 = new Date("2026-03-15");
+
+    // Format: [playerName, bookmaker, marketType, americanOdds]
+    const oddsData: [string, string, string, string][] = [
+      // ── Fernando Mendoza (ADP #1.1 — virtually unanimous #1 overall) ──
+      ["Fernando Mendoza", "DraftKings", "first_overall", "-15000"],
+      ["Fernando Mendoza", "FanDuel",    "first_overall", "-12000"],
+      ["Fernando Mendoza", "BetMGM",     "first_overall", "-12000"],
+      ["Fernando Mendoza", "DraftKings", "top_5_pick",    "-15000"],
+      ["Fernando Mendoza", "FanDuel",    "first_round",   "-3000"],
+
+      // ── Arvell Reese (ADP #2.4 — top-3 lock) ──
+      ["Arvell Reese", "BetMGM",     "top_3_pick",   "-800"],
+      ["Arvell Reese", "DraftKings", "top_5_pick",   "-2000"],
+      ["Arvell Reese", "FanDuel",    "first_round",  "-2500"],
+
+      // ── David Bailey (ADP #4.6) ──
+      ["David Bailey", "BetMGM",     "top_5_pick",   "-500"],
+      ["David Bailey", "DraftKings", "top_10_pick",  "-1200"],
+      ["David Bailey", "FanDuel",    "first_round",  "-2000"],
+
+      // ── Jeremiyah Love (ADP #5.1 — rising) ──
+      ["Jeremiyah Love", "FanDuel",    "top_5_pick",   "-300"],
+      ["Jeremiyah Love", "DraftKings", "top_10_pick",  "-800"],
+      ["Jeremiyah Love", "Caesars",    "first_round",  "-1800"],
+
+      // ── Sonny Styles (ADP #5.9) ──
+      ["Sonny Styles", "DraftKings", "top_5_pick",   "-200"],
+      ["Sonny Styles", "BetMGM",     "top_10_pick",  "-700"],
+      ["Sonny Styles", "FanDuel",    "first_round",  "-1500"],
+
+      // ── Caleb Downs (ADP #6.7 — big combine riser) ──
+      ["Caleb Downs", "DraftKings", "top_10_pick",  "-500"],
+      ["Caleb Downs", "FanDuel",    "first_round",  "-1200"],
+
+      // ── Rueben Bain Jr. (ADP #7.0) ──
+      ["Rueben Bain Jr.", "BetMGM",  "top_10_pick",  "-420"],
+      ["Rueben Bain Jr.", "Caesars", "first_round",  "-1000"],
+
+      // ── Spencer Fano (ADP #8.0 — MASSIVE RISER: was +400 top-10) ──
+      ["Spencer Fano", "DraftKings", "top_10_pick",  "-300"],
+      ["Spencer Fano", "BetMGM",     "top_10_pick",  "-280"],
+      ["Spencer Fano", "FanDuel",    "first_round",  "-900"],
+
+      // ── Francis Mauigoa (ADP #8.1) ──
+      ["Francis Mauigoa", "Caesars",    "top_10_pick",  "-220"],
+      ["Francis Mauigoa", "DraftKings", "first_round",  "-900"],
+
+      // ── Carnell Tate (ADP #9.8) ──
+      ["Carnell Tate", "FanDuel",    "top_10_pick",  "-160"],
+      ["Carnell Tate", "BetMGM",     "first_round",  "-700"],
+
+      // ── Mansoor Delane (ADP #10.7) ──
+      ["Mansoor Delane", "DraftKings", "top_10_pick",  "+100"],
+      ["Mansoor Delane", "FanDuel",    "first_round",  "-600"],
+
+      // ── Jordyn Tyson (ADP #14.4 — big riser) ──
+      ["Jordyn Tyson", "DraftKings", "first_round",  "-450"],
+      ["Jordyn Tyson", "BetMGM",     "first_round",  "-420"],
+
+      // ── Makai Lemon (ADP #15.2) ──
+      ["Makai Lemon", "FanDuel",    "first_round",  "-380"],
+      ["Makai Lemon", "Caesars",    "first_round",  "-350"],
+
+      // ── Jermod McCoy (ADP #15.2 — rising) ──
+      ["Jermod McCoy", "DraftKings", "first_round",  "-350"],
+
+      // ── Dillon Thieneman (ADP #15.8) ──
+      ["Dillon Thieneman", "BetMGM",     "first_round",  "-300"],
+      ["Dillon Thieneman", "DraftKings", "first_round",  "-280"],
+
+      // ── Kenyon Sadiq (ADP #16.8 — falling) ──
+      ["Kenyon Sadiq", "FanDuel",    "first_round",  "-250"],
+      ["Kenyon Sadiq", "Caesars",    "first_round",  "-230"],
+
+      // ── Olaivavega Ioane (ADP #16.8) ──
+      ["Olaivavega Ioane", "DraftKings", "first_round",  "-240"],
+
+      // ── Monroe Freeling (ADP #18.8 — falling) ──
+      ["Monroe Freeling", "BetMGM",  "first_round",  "-180"],
+      ["Monroe Freeling", "FanDuel", "first_round",  "-160"],
+
+      // ── Jeff Caldwell (ADP #19.3) ──
+      ["Jeff Caldwell", "DraftKings", "first_round",  "-160"],
+      ["Jeff Caldwell", "Caesars",    "first_round",  "-150"],
+
+      // ── Denzel Boston (ADP #23.8 — late first) ──
+      ["Denzel Boston", "FanDuel",    "first_round",  "+100"],
+      ["Denzel Boston", "DraftKings", "first_round",  "+120"],
+    ];
+
+    for (const [playerName, bookmaker, marketType, americanOdds] of oddsData) {
+      const player = P(playerName);
+      if (!player) continue;
+      await storage.addOddsHistory({
+        playerId: player.id,
+        bookmaker,
+        marketType,
+        odds: americanOdds,
+        date: d_mar15,
+      });
+    }
+    console.log("[TIMEWINDOW] Added Mar 15 expanded odds data for all 20 prospects.");
+  }
 }

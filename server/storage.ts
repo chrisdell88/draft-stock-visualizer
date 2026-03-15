@@ -172,6 +172,109 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(scrapeJobs).orderBy(asc(scrapeJobs.sourceKey));
   }
 
+  async getAdpWindows(): Promise<Array<{
+    id: number;
+    name: string;
+    position: string | null;
+    college: string | null;
+    currentAdp: number | null;
+    change3d: number | null;
+    change7d: number | null;
+    change30d: number | null;
+  }>> {
+    const allPlayers = await db.select().from(players);
+    const allHistory = await db.select().from(adpHistory).orderBy(desc(adpHistory.date));
+
+    const historyByPlayer = new Map<number, (typeof allHistory)>();
+    for (const h of allHistory) {
+      if (!historyByPlayer.has(h.playerId)) historyByPlayer.set(h.playerId, []);
+      historyByPlayer.get(h.playerId)!.push(h);
+    }
+
+    return allPlayers.map(player => {
+      const history = historyByPlayer.get(player.id) ?? [];
+      if (history.length === 0) return { ...player, currentAdp: null, change3d: null, change7d: null, change30d: null };
+
+      const currentAdp = Number(history[0].adpValue);
+      const currentDateMs = new Date(history[0].date!).getTime();
+
+      const findChange = (daysAgo: number, toleranceDays: number): number | null => {
+        const targetMs = currentDateMs - daysAgo * 86400000;
+        const toleranceMs = toleranceDays * 86400000;
+        let best: (typeof history)[0] | null = null;
+        let bestDiff = Infinity;
+        for (const h of history.slice(1)) {
+          const hMs = new Date(h.date!).getTime();
+          const diff = Math.abs(hMs - targetMs);
+          if (diff <= toleranceMs && diff < bestDiff) { bestDiff = diff; best = h; }
+        }
+        return best ? Math.round((Number(best.adpValue) - currentAdp) * 10) / 10 : null;
+      };
+
+      return {
+        ...player,
+        currentAdp,
+        change3d:  findChange(3, 3),
+        change7d:  findChange(7, 5),
+        change30d: findChange(23, 12),
+      };
+    });
+  }
+
+  async getOddsMovers(): Promise<Array<{
+    playerId: number;
+    playerName: string;
+    position: string | null;
+    bookmaker: string;
+    marketType: string;
+    currentOdds: string;
+    prevOdds: string;
+    currentProb: number;
+    prevProb: number;
+    change: number;
+  }>> {
+    const allPlayers = await db.select().from(players);
+    const allOdds = await db.select().from(odds).orderBy(desc(odds.date));
+
+    const playerMap = new Map(allPlayers.map(p => [p.id, p]));
+
+    const grouped = new Map<string, (typeof allOdds)>();
+    for (const o of allOdds) {
+      const key = `${o.playerId}_${o.bookmaker}_${o.marketType}`;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(o);
+    }
+
+    const americanToProb = (s: string): number => {
+      const n = parseInt(s, 10);
+      if (isNaN(n)) return 50;
+      return Math.round((n < 0 ? (-n / (-n + 100)) : (100 / (n + 100))) * 1000) / 10;
+    };
+
+    const movers: Array<{
+      playerId: number; playerName: string; position: string | null; bookmaker: string;
+      marketType: string; currentOdds: string; prevOdds: string;
+      currentProb: number; prevProb: number; change: number;
+    }> = [];
+
+    for (const [, entries] of grouped.entries()) {
+      if (entries.length < 2) continue;
+      const cur = entries[0]; const prev = entries[1];
+      const player = playerMap.get(cur.playerId);
+      if (!player) continue;
+      const cp = americanToProb(cur.odds), pp = americanToProb(prev.odds);
+      movers.push({
+        playerId: cur.playerId, playerName: player.name, position: player.position,
+        bookmaker: cur.bookmaker, marketType: cur.marketType,
+        currentOdds: cur.odds, prevOdds: prev.odds,
+        currentProb: cp, prevProb: pp,
+        change: Math.round((cp - pp) * 10) / 10,
+      });
+    }
+
+    return movers.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 12);
+  }
+
   async getMatrixData(): Promise<{
     players: (Player & { currentAdp?: number; trend?: string; adpChange?: number })[];
     drafts: (typeof mockDrafts.$inferSelect)[];
