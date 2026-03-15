@@ -67,7 +67,8 @@ async function runNflcomScraper(
 
   const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
   if (existing) {
-    return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
+    const pickCount = await storage.getMockDraftPickCount(existing.id);
+    return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
   }
 
   const html = await fetchHtml(url);
@@ -100,6 +101,90 @@ async function runNflcomScraper(
       }
 
       pickNum++;
+    }
+  }
+
+  if (dbPicks.length > 0) {
+    await storage.createMockDraftPicks(dbPicks);
+  }
+
+  return { sourceKey, picksFound: dbPicks.length, newMockCreated: true, mockDraftId: mockDraft.id };
+}
+
+// ─── Daniel Jeremiah Top-50 Big Board ─────────────────────────────────────
+
+const JEREMIAH_TOP50_URL =
+  "https://www.nfl.com/news/daniel-jeremiah-s-top-50-2026-nfl-draft-prospect-rankings-3-0";
+
+// Extracts ranked players + headshots from the Jeremiah Top-50 article.
+// Player order from unique alt-text appearances = ranking order.
+function parseJeremiahBigBoard(html: string): Array<{ playerName: string; headshotUrl: string | null }> {
+  const results: Array<{ playerName: string; headshotUrl: string | null }> = [];
+  const seen = new Set<string>();
+
+  const imgPattern = /<img[^>]+alt="([A-Z][a-z]+(?:\s[A-Z][^"]{1,30})?)"[^>]*>/g;
+  let m: RegExpExecArray | null;
+
+  while ((m = imgPattern.exec(html)) !== null) {
+    const name = m[1].trim();
+    if (
+      seen.has(name) ||
+      name.length < 4 ||
+      /NFL|Logo|Author|Team|Image|Icon/i.test(name)
+    ) {
+      continue;
+    }
+    seen.add(name);
+
+    const start = Math.max(0, m.index - 50);
+    const window = html.substring(start, m.index + m[0].length + 400);
+    const shot = window.match(/god-prospect-headshots\/([0-9]{4})\/([a-f0-9-]{30,40})/);
+    const headshotUrl = shot ? `${HEADSHOT_BASE}/${shot[1]}/${shot[2]}` : null;
+    results.push({ playerName: name, headshotUrl });
+  }
+
+  return results;
+}
+
+export async function scrapeJeremiahBigBoard(players: Player[]): Promise<ScraperResult> {
+  const sourceKey = "nfl_jeremiah_bigboard";
+  const today = new Date().toISOString().slice(0, 10);
+
+  const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
+  if (existing) {
+    const pickCount = await storage.getMockDraftPickCount(existing.id);
+    return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
+  }
+
+  const html = await fetchHtml(JEREMIAH_TOP50_URL);
+  const entries = parseJeremiahBigBoard(html);
+
+  // Look up analyst by base key "nfl_jeremiah"
+  const analyst = await storage.getAnalystBySourceKey("nfl_jeremiah");
+  const mockDraft = await storage.createMockDraft({
+    sourceName: `Daniel Jeremiah Top-50 — ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}`,
+    sourceKey,
+    analystId: analyst?.id,
+    url: JEREMIAH_TOP50_URL,
+    boardType: "bigboard",
+  });
+
+  const dbPicks: Array<{ mockDraftId: number; playerId: number; pickNumber: number }> = [];
+  let rankNum = 1;
+
+  for (const { playerName, headshotUrl } of entries) {
+    const matched = matchPlayer(playerName, players);
+    if (matched) {
+      dbPicks.push({ mockDraftId: mockDraft.id, playerId: matched.id, pickNumber: rankNum });
+
+      if (headshotUrl && !matched.imageUrl) {
+        await db.update(playersTable)
+          .set({ imageUrl: headshotUrl })
+          .where(eq(playersTable.id, matched.id));
+        matched.imageUrl = headshotUrl;
+      }
+
+      rankNum++;
     }
   }
 

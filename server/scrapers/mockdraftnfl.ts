@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import { fetchHtml, matchPlayer, type ScraperResult } from "./index";
+import { fetchHtml, ensurePlayer, type ScraperResult } from "./index";
 import * as cheerio from "cheerio";
 import { type Player } from "@shared/schema";
 
@@ -10,34 +10,47 @@ import { type Player } from "@shared/schema";
 // </h2>
 // Pick number = order of appearance in the article.
 
-function parseMockDraftNfl(html: string): Array<{ pickNumber: number; playerName: string }> {
+interface MDNPick {
+  pickNumber: number;
+  playerName: string;
+  position: string | null;
+  college: string | null;
+}
+
+function parseMockDraftNfl(html: string): MDNPick[] {
   const $ = cheerio.load(html);
-  const picks: Array<{ pickNumber: number; playerName: string }> = [];
+  const picks: MDNPick[] = [];
 
   $("h2").each((_i, el) => {
     const fullText = $(el).text().trim();
     if (!fullText) return;
 
-    // Split on newlines to get separate lines
     const lines = fullText.split(/\n|\r/).map(l => l.trim()).filter(Boolean);
 
     // Structure: lines[0] = "1. Las Vegas Raiders", lines[1] = "Fernando Mendoza, QB, Indiana"
     if (lines.length >= 2) {
-      const playerLine = lines[1];
-      const commaIdx = playerLine.indexOf(",");
-      const playerName = commaIdx > -1 ? playerLine.slice(0, commaIdx).trim() : playerLine.trim();
-      if (playerName && playerName.length > 2) {
-        picks.push({ pickNumber: picks.length + 1, playerName });
+      const parts = lines[1].split(",").map(s => s.trim());
+      const playerName = parts[0] ?? "";
+      if (playerName.length > 2) {
+        picks.push({
+          pickNumber: picks.length + 1,
+          playerName,
+          position: parts[1] ?? null,
+          college: parts[2] ?? null,
+        });
       }
     } else {
-      // Fallback: single-line h2 that might be "N. Team: PlayerName, Pos"
       const colonIdx = fullText.indexOf(":");
       if (colonIdx > -1) {
-        const after = fullText.slice(colonIdx + 1).trim();
-        const commaIdx = after.indexOf(",");
-        const playerName = commaIdx > -1 ? after.slice(0, commaIdx).trim() : after;
-        if (playerName && playerName.length > 2) {
-          picks.push({ pickNumber: picks.length + 1, playerName });
+        const parts = fullText.slice(colonIdx + 1).trim().split(",").map(s => s.trim());
+        const playerName = parts[0] ?? "";
+        if (playerName.length > 2) {
+          picks.push({
+            pickNumber: picks.length + 1,
+            playerName,
+            position: parts[1] ?? null,
+            college: parts[2] ?? null,
+          });
         }
       }
     }
@@ -54,7 +67,7 @@ export async function scrapeMockDraftNfl(players: Player[]): Promise<ScraperResu
   if (existing) {
     const pickCount = await storage.getMockDraftPickCount(existing.id);
     if (pickCount > 0) {
-      return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
+      return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
     }
     // Existing mock has 0 picks — delete and re-create
   }
@@ -72,11 +85,11 @@ export async function scrapeMockDraftNfl(players: Player[]): Promise<ScraperResu
   });
 
   const dbPicks: Array<{ mockDraftId: number; playerId: number; pickNumber: number }> = [];
-  for (const { pickNumber, playerName } of picks) {
-    const matched = matchPlayer(playerName, players);
-    if (matched) {
-      dbPicks.push({ mockDraftId: mockDraft.id, playerId: matched.id, pickNumber });
-    }
+  let currentPlayers = players;
+  for (const { pickNumber, playerName, position, college } of picks) {
+    const { player, players: updated } = await ensurePlayer(playerName, currentPlayers, position, college);
+    currentPlayers = updated;
+    dbPicks.push({ mockDraftId: mockDraft.id, playerId: player.id, pickNumber });
   }
 
   if (dbPicks.length > 0) {

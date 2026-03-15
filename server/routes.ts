@@ -189,6 +189,17 @@ export async function registerRoutes(
     }
   });
 
+  // ─── Headshot scraper ───────────────────────────────────────────────────
+  app.post("/api/scrape/headshots", async (req, res) => {
+    try {
+      const { scrapeAllHeadshots } = await import("./scrapers/headshots");
+      const stats = await scrapeAllHeadshots();
+      res.json({ message: "Headshots updated", ...stats });
+    } catch (err) {
+      res.status(500).json({ message: "Headshot scrape failed", error: String(err) });
+    }
+  });
+
   // ─── Run specific scraper ───────────────────────────────────────────────
   app.post("/api/scrape/:sourceKey", async (req, res) => {
     try {
@@ -769,10 +780,14 @@ async function ensureEnhancedData() {
     "walterfootball_walt", "walterfootball_charlie", "tankathon",
     "mddb_consensus", "mddb_bigboard", "mcshay_report", "fantasypros_freedman",
     "sharp_mccrystal", "sharp_donahue", "nfl_zierlein", "nfl_brooks", "nfl_davis",
-    "mockdraftnfl",
+    "nfl_jeremiah_bigboard", "mockdraftnfl",
   ];
+  const existingJobs = await storage.getScrapeJobs();
+  const existingKeys = new Set(existingJobs.map(j => j.sourceKey));
   for (const sourceKey of scrapeSourceKeys) {
-    await storage.upsertScrapeJob({ sourceKey, status: "pending", notes: "Auto-initialized by server" });
+    if (!existingKeys.has(sourceKey)) {
+      await storage.upsertScrapeJob({ sourceKey, status: "pending", notes: "Auto-initialized by server" });
+    }
   }
 
   console.log("[ENHANCE] Added 22 new analysts, Walt/Charlie/Tankathon picks, d4 ADP snapshot (Mar 15).");

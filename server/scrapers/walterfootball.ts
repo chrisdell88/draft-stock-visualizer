@@ -1,11 +1,18 @@
 import { storage } from "../storage";
-import { fetchHtml, matchPlayer, type ScraperResult } from "./index";
+import { fetchHtml, ensurePlayer, type ScraperResult } from "./index";
 import * as cheerio from "cheerio";
 import { type Player } from "@shared/schema";
 
-// WalterFootball pages use div.player-info[data-number] for each pick.
-// Each div has data-number = pick number, and contains a <strong><a> with player text.
-async function parseWalterfootballPage(url: string): Promise<Array<{ pickNumber: number; playerName: string }>> {
+interface WFPick {
+  pickNumber: number;
+  playerName: string;
+  position: string | null;
+  college: string | null;
+}
+
+// WalterFootball pages use div[data-number] for each pick.
+// The <strong><a> link text is "Player Name, Pos, College"
+async function parseWalterfootballPage(url: string): Promise<WFPick[]> {
   let html: string;
   try {
     html = await fetchHtml(url);
@@ -13,51 +20,53 @@ async function parseWalterfootballPage(url: string): Promise<Array<{ pickNumber:
     return [];
   }
   const $ = cheerio.load(html);
-  const picks: Array<{ pickNumber: number; playerName: string }> = [];
+  const picks: WFPick[] = [];
 
-  // Primary: div.player-info with data-number attribute
   $("div[data-number]").each((_i, el) => {
     const pickNum = parseInt($(el).attr("data-number") ?? "0", 10);
     if (isNaN(pickNum) || pickNum < 1 || pickNum > 300) return;
 
-    // Look for strong > a (the player link) or just strong text
     let playerName = "";
+    let position: string | null = null;
+    let college: string | null = null;
+
     const link = $(el).find("strong a").first();
     if (link.length) {
-      const text = link.text().trim();
-      const commaIdx = text.indexOf(",");
-      playerName = commaIdx > -1 ? text.slice(0, commaIdx).trim() : text;
+      const parts = link.text().trim().split(",").map(s => s.trim());
+      playerName = parts[0] ?? "";
+      position = parts[1] ?? null;
+      college = parts[2] ?? null;
     } else {
-      // Fallback: strong text with "Team: Player, Pos, College" format
       const strong = $(el).find("strong").first().text().trim();
       const colonIdx = strong.indexOf(":");
       if (colonIdx > -1) {
-        const afterColon = strong.slice(colonIdx + 1).trim();
-        const commaIdx = afterColon.indexOf(",");
-        playerName = commaIdx > -1 ? afterColon.slice(0, commaIdx).trim() : afterColon;
+        const parts = strong.slice(colonIdx + 1).trim().split(",").map(s => s.trim());
+        playerName = parts[0] ?? "";
+        position = parts[1] ?? null;
+        college = parts[2] ?? null;
       }
     }
 
     if (playerName && playerName.length > 2) {
-      picks.push({ pickNumber: pickNum, playerName });
+      picks.push({ pickNumber: pickNum, playerName, position, college });
     }
   });
 
-  // Fallback: table row approach (some older page formats)
+  // Fallback: table row approach for older page formats
   if (picks.length === 0) {
     $("table tr").each((_i, row) => {
       const cells = $(row).find("td");
       if (cells.length < 3) return;
-      const pickNumText = $(cells[0]).text().trim().replace(".", "");
-      const pickNum = parseInt(pickNumText, 10);
+      const pickNum = parseInt($(cells[0]).text().trim().replace(".", ""), 10);
       if (isNaN(pickNum) || pickNum < 1 || pickNum > 300) return;
       const thirdCell = $(cells[2]).text().trim();
       const colonIdx = thirdCell.indexOf(":");
       if (colonIdx < 0) return;
-      const afterColon = thirdCell.slice(colonIdx + 1).trim();
-      const commaIdx = afterColon.indexOf(",");
-      const playerName = commaIdx > -1 ? afterColon.slice(0, commaIdx).trim() : afterColon;
-      if (playerName && playerName.length > 2) picks.push({ pickNumber: pickNum, playerName });
+      const parts = thirdCell.slice(colonIdx + 1).trim().split(",").map(s => s.trim());
+      const playerName = parts[0] ?? "";
+      if (playerName.length > 2) {
+        picks.push({ pickNumber: pickNum, playerName, position: parts[1] ?? null, college: parts[2] ?? null });
+      }
     });
   }
 
@@ -76,7 +85,8 @@ async function runWalterfootball(
 
   const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
   if (existing) {
-    return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
+    const pickCount = await storage.getMockDraftPickCount(existing.id);
+    return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
   }
 
   // Scrape all pages in parallel
@@ -102,11 +112,11 @@ async function runWalterfootball(
   });
 
   const dbPicks: Array<{ mockDraftId: number; playerId: number; pickNumber: number }> = [];
-  for (const { pickNumber, playerName } of allPicks) {
-    const matched = matchPlayer(playerName, players);
-    if (matched) {
-      dbPicks.push({ mockDraftId: mockDraft.id, playerId: matched.id, pickNumber });
-    }
+  let currentPlayers = players;
+  for (const { pickNumber, playerName, position, college } of allPicks) {
+    const { player, players: updated } = await ensurePlayer(playerName, currentPlayers, position, college);
+    currentPlayers = updated;
+    dbPicks.push({ mockDraftId: mockDraft.id, playerId: player.id, pickNumber });
   }
 
   if (dbPicks.length > 0) {

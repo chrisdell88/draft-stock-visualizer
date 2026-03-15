@@ -35,6 +35,28 @@ export function matchPlayer(name: string, playerList: Player[]): Player | undefi
   return match;
 }
 
+// Ensure a player exists — match first, auto-create with pos/college if not found.
+// Returns the player and the (potentially expanded) player list for subsequent calls.
+export async function ensurePlayer(
+  name: string,
+  players: Player[],
+  position?: string | null,
+  college?: string | null
+): Promise<{ player: Player; created: boolean; players: Player[] }> {
+  const matched = matchPlayer(name, players);
+  if (matched) return { player: matched, created: false, players };
+
+  const newPlayer = await storage.createPlayer({
+    name,
+    position: position ?? null,
+    college: college ?? null,
+  });
+
+  const updated = [...players, newPlayer];
+  console.log(`[ensurePlayer] Auto-created: ${name} (${position ?? "?"}, ${college ?? "?"})`);
+  return { player: newPlayer, created: true, players: updated };
+}
+
 // ─── HTTP Fetch ────────────────────────────────────────────────────────────
 
 export async function fetchHtml(url: string): Promise<string> {
@@ -71,23 +93,24 @@ import { scrapeWalterfootballWalt, scrapeWalterfootballCharlie } from "./walterf
 import { scrapeTankathon } from "./tankathon";
 import { scrapeMddbConsensus, scrapeMddbBigBoard, scrapeMcShay, scrapeFreedman } from "./nflmdb_generic";
 import { scrapeMcCrystal, scrapeDonahue } from "./sharp";
-import { scrapeZierlein, scrapeBrooks, scrapeDavis } from "./nflcom";
+import { scrapeZierlein, scrapeBrooks, scrapeDavis, scrapeJeremiahBigBoard } from "./nflcom";
 import { scrapeMockDraftNfl } from "./mockdraftnfl";
 
 export const SCRAPERS: ScraperModule[] = [
-  { sourceKey: "walterfootball_walt",    displayName: "WalterFootball (Walt)",            run: scrapeWalterfootballWalt },
-  { sourceKey: "walterfootball_charlie", displayName: "WalterFootball (Charlie Campbell)", run: scrapeWalterfootballCharlie },
-  { sourceKey: "tankathon",             displayName: "Tankathon Big Board",               run: scrapeTankathon },
-  { sourceKey: "mddb_consensus",        displayName: "MDDB Consensus Mock Draft",          run: scrapeMddbConsensus },
-  { sourceKey: "mddb_bigboard",         displayName: "MDDB Consensus Big Board",           run: scrapeMddbBigBoard },
-  { sourceKey: "mcshay_report",         displayName: "Todd McShay Mock Draft",             run: scrapeMcShay },
-  { sourceKey: "fantasypros_freedman",  displayName: "FantasyLife (Freedman)",             run: scrapeFreedman },
-  { sourceKey: "sharp_mccrystal",       displayName: "Ryan McCrystal (Sharp Football)",    run: scrapeMcCrystal },
-  { sourceKey: "sharp_donahue",         displayName: "Brendan Donahue (Sharp Football)",   run: scrapeDonahue },
-  { sourceKey: "nfl_zierlein",          displayName: "Lance Zierlein (NFL.com)",           run: scrapeZierlein },
-  { sourceKey: "nfl_brooks",            displayName: "Bucky Brooks (NFL.com)",             run: scrapeBrooks },
-  { sourceKey: "nfl_davis",             displayName: "Charles Davis (NFL.com)",            run: scrapeDavis },
-  { sourceKey: "mockdraftnfl",          displayName: "MockDraftNFL Consensus",             run: scrapeMockDraftNfl },
+  { sourceKey: "walterfootball_walt",    displayName: "WalterFootball (Walt)",             run: scrapeWalterfootballWalt },
+  { sourceKey: "walterfootball_charlie", displayName: "WalterFootball (Charlie Campbell)",  run: scrapeWalterfootballCharlie },
+  { sourceKey: "tankathon",             displayName: "Tankathon Big Board",                run: scrapeTankathon },
+  { sourceKey: "mddb_consensus",        displayName: "MDDB Consensus Mock Draft",           run: scrapeMddbConsensus },
+  { sourceKey: "mddb_bigboard",         displayName: "MDDB Consensus Big Board",            run: scrapeMddbBigBoard },
+  { sourceKey: "mcshay_report",         displayName: "Todd McShay Mock Draft",              run: scrapeMcShay },
+  { sourceKey: "fantasypros_freedman",  displayName: "FantasyLife (Freedman)",              run: scrapeFreedman },
+  { sourceKey: "sharp_mccrystal",       displayName: "Ryan McCrystal (Sharp Football)",     run: scrapeMcCrystal },
+  { sourceKey: "sharp_donahue",         displayName: "Brendan Donahue (Sharp Football)",    run: scrapeDonahue },
+  { sourceKey: "nfl_zierlein",          displayName: "Lance Zierlein (NFL.com)",            run: scrapeZierlein },
+  { sourceKey: "nfl_brooks",            displayName: "Bucky Brooks (NFL.com)",              run: scrapeBrooks },
+  { sourceKey: "nfl_davis",             displayName: "Charles Davis (NFL.com)",             run: scrapeDavis },
+  { sourceKey: "nfl_jeremiah_bigboard", displayName: "Daniel Jeremiah Top-50 (NFL.com)",   run: scrapeJeremiahBigBoard },
+  { sourceKey: "mockdraftnfl",          displayName: "MockDraftNFL Consensus",              run: scrapeMockDraftNfl },
 ];
 
 // ─── Run a single scraper ────────────────────────────────────────────────

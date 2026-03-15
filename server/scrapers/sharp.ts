@@ -1,53 +1,43 @@
 import { storage } from "../storage";
-import { fetchHtml, matchPlayer, type ScraperResult } from "./index";
+import { fetchHtml, ensurePlayer, type ScraperResult } from "./index";
 import { type Player } from "@shared/schema";
 
 // Sharp Football Analysis mock drafts use h3 headings with pattern:
 // <h3 id="no1">1. Las Vegas Raiders, Top Draft Pick Prediction: Fernando Mendoza, QB, Indiana</h3>
 // or similar "Pick Prediction:" format
 
-function parseSharpFootballPicks(html: string): Array<{ pickNumber: number; playerName: string }> {
-  const picks: Array<{ pickNumber: number; playerName: string }> = [];
+interface SharpPick {
+  pickNumber: number;
+  playerName: string;
+  position: string | null;
+  college: string | null;
+}
 
-  // Primary pattern: "Top Draft Pick Prediction: Name, Pos, College"
-  const predPattern = /id="no(\d+)"[^>]*>[\s\S]*?(?:Top Draft Pick Prediction|Pick Prediction|Predicted Pick):\s*([^,<]+)/gi;
+function parseSharpFootballPicks(html: string): SharpPick[] {
+  const picks: SharpPick[] = [];
+
+  // Full pattern: "Top Draft Pick Prediction: Name, Pos, College"
+  const fullPattern = /id="no(\d+)"[^>]*>[\s\S]*?(?:Top Draft Pick Prediction|Pick Prediction|Predicted Pick):\s*([^,<]+),\s*([^,<]+),\s*([^<\n]+)/gi;
   let m: RegExpExecArray | null;
-  while ((m = predPattern.exec(html)) !== null) {
+  while ((m = fullPattern.exec(html)) !== null) {
+    const pickNumber = parseInt(m[1], 10);
+    const playerName = m[2].trim().replace(/&amp;/g, "&").replace(/&#039;/g, "'");
+    const position = m[3].trim() || null;
+    const college = m[4].trim().replace(/<[^>]+>/g, "").trim() || null;
+    if (pickNumber >= 1 && pickNumber <= 300 && playerName.length > 2) {
+      picks.push({ pickNumber, playerName, position, college });
+    }
+  }
+
+  if (picks.length > 0) return picks;
+
+  // Fallback: name only (no pos/college)
+  const namePattern = /id="no(\d+)"[^>]*>[\s\S]*?(?:Top Draft Pick Prediction|Pick Prediction|Predicted Pick):\s*([^,<]+)/gi;
+  while ((m = namePattern.exec(html)) !== null) {
     const pickNumber = parseInt(m[1], 10);
     const playerName = m[2].trim().replace(/&amp;/g, "&").replace(/&#039;/g, "'");
     if (pickNumber >= 1 && pickNumber <= 300 && playerName.length > 2) {
-      picks.push({ pickNumber, playerName });
-    }
-  }
-
-  if (picks.length > 0) return picks;
-
-  // Fallback: h3 id="noN" with "N. Team, Prediction: Player, Pos, College"
-  const h3Pattern = /id="no(\d+)"[^>]*>(\d+)\.\s[^,]+,\s+(?:Top Draft Pick Prediction|Pick|Selection):\s*([^,<]+)/gi;
-  while ((m = h3Pattern.exec(html)) !== null) {
-    const pickNumber = parseInt(m[1], 10);
-    const playerName = m[3].trim();
-    if (pickNumber >= 1 && pickNumber <= 300 && playerName.length > 2) {
-      picks.push({ pickNumber, playerName });
-    }
-  }
-
-  if (picks.length > 0) return picks;
-
-  // Broader fallback: any h3 with "noN" id and player name
-  const broadPattern = /<h3[^>]+id="no(\d+)"[^>]*>([^<]*)<\/h3>/gi;
-  while ((m = broadPattern.exec(html)) !== null) {
-    const pickNumber = parseInt(m[1], 10);
-    const text = m[2];
-    // Try to find player name after last ": " or ". "
-    const colonIdx = text.lastIndexOf(":");
-    if (colonIdx > -1) {
-      const after = text.slice(colonIdx + 1).trim();
-      const commaIdx = after.indexOf(",");
-      const playerName = commaIdx > -1 ? after.slice(0, commaIdx).trim() : after;
-      if (pickNumber >= 1 && pickNumber <= 300 && playerName.length > 2) {
-        picks.push({ pickNumber, playerName });
-      }
+      picks.push({ pickNumber, playerName, position: null, college: null });
     }
   }
 
@@ -64,7 +54,8 @@ async function runSharpScraper(
 
   const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
   if (existing) {
-    return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
+    const pickCount = await storage.getMockDraftPickCount(existing.id);
+    return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
   }
 
   const html = await fetchHtml(url);
@@ -80,11 +71,11 @@ async function runSharpScraper(
   });
 
   const dbPicks: Array<{ mockDraftId: number; playerId: number; pickNumber: number }> = [];
-  for (const { pickNumber, playerName } of picks) {
-    const matched = matchPlayer(playerName, players);
-    if (matched) {
-      dbPicks.push({ mockDraftId: mockDraft.id, playerId: matched.id, pickNumber });
-    }
+  let currentPlayers = players;
+  for (const { pickNumber, playerName, position, college } of picks) {
+    const { player, players: updated } = await ensurePlayer(playerName, currentPlayers, position, college);
+    currentPlayers = updated;
+    dbPicks.push({ mockDraftId: mockDraft.id, playerId: player.id, pickNumber });
   }
 
   if (dbPicks.length > 0) {
