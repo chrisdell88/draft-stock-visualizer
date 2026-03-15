@@ -77,6 +77,75 @@ export async function registerRoutes(
     }
   });
 
+  // ─── Draft Board Matrix ─────────────────────────────────────────────────
+  app.get("/api/matrix", async (req, res) => {
+    try {
+      const data = await storage.getMatrixData();
+
+      // Generate short column header name per draft
+      const SOURCE_SHORT: Record<string, string> = {
+        gtm_consensus: "GTM",
+        mddb_consensus: "MDDB",
+        tankathon: "Tank",
+        walterfootball_walt: "Walt",
+        walterfootball_charlie: "Charlie",
+        nfl_jeremiah: "DJ",
+        espn_kiper: "Kiper",
+        espn_miller: "Miller",
+        pff_sikkema: "PFF",
+        sharp_donahue: "Donahue",
+        underdog_norris: "Norris",
+        underdog_winks: "Winks",
+        sharp_mccrystal: "McCrystal",
+        etr_daigle: "ETR",
+        ita_amico: "ITA",
+      };
+
+      // Name-based fallback aliases for rows with null sourceKey
+      const NAME_SHORT: [RegExp, string][] = [
+        [/jeremiah/i, "DJ"],
+        [/grinding|EDP/i, "GTM"],
+        [/charlie.campbell/i, "Charlie"],
+        [/walterfootball.*charlie/i, "Charlie"],
+        [/walterfootball/i, "Walt"],
+        [/tankathon/i, "Tank"],
+        [/mddb|mock.draft.database/i, "MDDB"],
+        [/kiper/i, "Kiper"],
+        [/mcshay/i, "McShay"],
+        [/zierlein/i, "Zierlein"],
+        [/brooks/i, "Brooks"],
+        [/sikkema|pff/i, "PFF"],
+        [/brugler/i, "Brugler"],
+        [/donahue/i, "Donahue"],
+        [/silva/i, "Silva"],
+        [/daigle/i, "Daigle"],
+        [/norris/i, "Norris"],
+        [/winks/i, "Winks"],
+        [/amico|ITA/i, "ITA"],
+      ];
+
+      const enrichedDrafts = data.drafts.map(d => {
+        const key = d.sourceKey ?? "";
+        let base: string | undefined = SOURCE_SHORT[key];
+        if (!base) {
+          for (const [re, abbr] of NAME_SHORT) {
+            if (re.test(d.sourceName)) { base = abbr; break; }
+          }
+        }
+        if (!base) base = d.sourceName.split(/[\s(—]/)[0].slice(0, 8);
+        const dateMatch = d.sourceName.match(/(\d+\/\d+)(?:\/\d+)?/);
+        if (dateMatch) base += ` ${dateMatch[1]}`;
+        const vMatch = d.sourceName.match(/v(\d+\.?\d*)/i);
+        if (vMatch && !dateMatch) base += ` v${vMatch[1]}`;
+        return { ...d, shortName: base };
+      });
+
+      res.json({ ...data, drafts: enrichedDrafts });
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // ─── Scrape Status ──────────────────────────────────────────────────────
   app.get("/api/scrape/status", async (req, res) => {
     try {

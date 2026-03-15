@@ -1,136 +1,403 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { Link } from "wouter";
 import Layout from "@/components/Layout";
-import { useMockDrafts, useScrapeMockDraft } from "@/hooks/use-mock-drafts";
+import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Database, Link as LinkIcon, Loader2, Plus, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Loader2, TrendingUp, TrendingDown, Minus, ExternalLink,
+  ArrowUpDown, BarChart3, Eye, EyeOff, RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+type PlayerRow = {
+  id: number;
+  name: string;
+  position: string | null;
+  college: string | null;
+  currentAdp: number | null;
+  adpChange: number | null;
+  trend: string | null;
+};
+
+type DraftCol = {
+  id: number;
+  sourceName: string;
+  shortName: string;
+  sourceKey: string | null;
+  url: string | null;
+  publishedAt: string | null;
+};
+
+type MatrixData = {
+  players: PlayerRow[];
+  drafts: DraftCol[];
+  picks: Record<number, Record<number, number>>;
+};
+
+// ─── Cell Color: pick number → color class ────────────────────────────────────
+function pickColor(pick: number | undefined): string {
+  if (pick === undefined) return "";
+  if (pick <= 5)  return "bg-emerald-500/20 text-emerald-300 font-bold";
+  if (pick <= 10) return "bg-green-500/15 text-green-400";
+  if (pick <= 15) return "bg-lime-500/10 text-lime-400";
+  if (pick <= 20) return "bg-yellow-500/10 text-yellow-400";
+  if (pick <= 25) return "bg-orange-500/10 text-orange-400";
+  return "bg-red-500/10 text-red-400";
+}
+
+function pickBorderColor(pick: number | undefined): string {
+  if (pick === undefined) return "border-white/4";
+  if (pick <= 5)  return "border-emerald-500/30";
+  if (pick <= 10) return "border-green-500/20";
+  if (pick <= 15) return "border-lime-500/15";
+  if (pick <= 20) return "border-yellow-500/15";
+  if (pick <= 25) return "border-orange-500/15";
+  return "border-red-500/15";
+}
+
+// ─── Trend Indicator ─────────────────────────────────────────────────────────
+function TrendChip({ change }: { change: number | null }) {
+  if (change === null) return null;
+  const abs = Math.abs(change);
+  if (abs < 0.2) return <span className="text-muted-foreground font-mono text-[10px]">—</span>;
+  if (change > 0) {
+    return (
+      <span className="flex items-center gap-0.5 text-stock-up font-mono text-[10px] font-bold">
+        <TrendingUp className="w-2.5 h-2.5" />+{abs.toFixed(1)}
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-0.5 text-stock-down font-mono text-[10px] font-bold">
+      <TrendingDown className="w-2.5 h-2.5" />-{abs.toFixed(1)}
+    </span>
+  );
+}
+
+// ─── Short date from full source name ────────────────────────────────────────
+function draftDate(draft: DraftCol): string {
+  if (!draft.publishedAt) return "";
+  return format(new Date(draft.publishedAt), "M/d");
+}
+
+// ─── Color legend ────────────────────────────────────────────────────────────
+const LEGEND = [
+  { label: "Top 5", color: "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300" },
+  { label: "6–10", color: "bg-green-500/15 border border-green-500/20 text-green-400" },
+  { label: "11–15", color: "bg-lime-500/10 border border-lime-500/15 text-lime-400" },
+  { label: "16–20", color: "bg-yellow-500/10 border border-yellow-500/15 text-yellow-400" },
+  { label: "21–25", color: "bg-orange-500/10 border border-orange-500/15 text-orange-400" },
+  { label: "26–32", color: "bg-red-500/10 border border-red-500/15 text-red-400" },
+  { label: "No pick", color: "bg-card border border-white/5 text-muted-foreground" },
+];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function MockDrafts() {
-  const { data: drafts, isLoading } = useMockDrafts();
-  const scrapeMutation = useScrapeMockDraft();
-  
-  const [url, setUrl] = useState("");
-  const [sourceName, setSourceName] = useState("");
+  const { data, isLoading, refetch, isFetching } = useQuery<MatrixData>({
+    queryKey: ["/api/matrix"],
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url || !sourceName) return;
-    scrapeMutation.mutate({ url, sourceName }, {
-      onSuccess: () => {
-        setUrl("");
-        setSourceName("");
+  const [sortBy, setSortBy] = useState<"adp" | "name" | "pos">("adp");
+  const [sortDesc, setSortDesc] = useState(false);
+  const [filterPos, setFilterPos] = useState<string>("all");
+  const [showLegend, setShowLegend] = useState(true);
+
+  const positions = useMemo(() => {
+    const set = new Set(data?.players.map(p => p.position).filter(Boolean) as string[]);
+    return ["all", ...Array.from(set).sort()];
+  }, [data?.players]);
+
+  const sortedPlayers = useMemo(() => {
+    if (!data?.players) return [];
+    let list = [...data.players];
+    if (filterPos !== "all") list = list.filter(p => p.position === filterPos);
+    list.sort((a, b) => {
+      if (sortBy === "adp") {
+        const av = a.currentAdp ?? 99;
+        const bv = b.currentAdp ?? 99;
+        return sortDesc ? bv - av : av - bv;
       }
+      if (sortBy === "name") {
+        return sortDesc ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name);
+      }
+      if (sortBy === "pos") {
+        const ap = a.position ?? ""; const bp = b.position ?? "";
+        return sortDesc ? bp.localeCompare(ap) : ap.localeCompare(bp);
+      }
+      return 0;
     });
+    return list;
+  }, [data?.players, sortBy, sortDesc, filterPos]);
+
+  // Sort drafts: most recent first
+  const sortedDrafts = useMemo(() => {
+    if (!data?.drafts) return [];
+    return [...data.drafts].sort((a, b) => {
+      return new Date(b.publishedAt ?? 0).getTime() - new Date(a.publishedAt ?? 0).getTime();
+    });
+  }, [data?.drafts]);
+
+  const toggleSort = (key: typeof sortBy) => {
+    if (sortBy === key) setSortDesc(d => !d);
+    else { setSortBy(key); setSortDesc(false); }
   };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="h-[60vh] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  const picks = data?.picks ?? {};
+  const totalMocks = sortedDrafts.length;
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Data Pipeline</h1>
-          <p className="text-muted-foreground">Ingest new mock drafts to update prospect market values.</p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-white tracking-tight">
+              Draft Board <span className="text-primary">Matrix</span>
+            </h1>
+            <p className="text-muted-foreground text-sm mt-1 font-mono">
+              {sortedPlayers.length} prospects · {totalMocks} mock drafts · color-coded pick slots
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Position filter */}
+            <div className="flex gap-1 flex-wrap">
+              {positions.map(pos => (
+                <button
+                  key={pos}
+                  onClick={() => setFilterPos(pos)}
+                  data-testid={`filter-pos-${pos}`}
+                  className={cn(
+                    "px-2 py-1 rounded-lg text-xs font-mono font-semibold transition-all border",
+                    filterPos === pos
+                      ? "bg-primary text-black border-primary"
+                      : "bg-white/5 text-muted-foreground border-white/5 hover:border-white/20 hover:text-white"
+                  )}
+                >
+                  {pos.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowLegend(v => !v)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors border border-white/10 rounded-lg px-2 py-1"
+            >
+              {showLegend ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+              Legend
+            </button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-white/10 hover:border-primary hover:text-primary gap-1 text-xs"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              <RefreshCw className={cn("w-3 h-3", isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
-          <div className="lg:col-span-1">
-            <div className="glass-card rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="bg-primary/20 p-2 rounded-lg text-primary">
-                  <Database className="w-5 h-5" />
-                </div>
-                <h2 className="text-xl font-display font-semibold text-white">New Source</h2>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/80">Source Name</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="e.g. ESPN, PFF, The Athletic"
-                    value={sourceName}
-                    onChange={(e) => setSourceName(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-white/80">URL</label>
-                  <input 
-                    type="url" 
-                    required
-                    placeholder="https://..."
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                  />
-                </div>
-
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex gap-3 text-sm text-primary/90">
-                  <AlertCircle className="w-5 h-5 shrink-0" />
-                  <p>Submitting will simulate scraping the URL, processing the draft order, and updating player ADPs automatically.</p>
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={scrapeMutation.isPending || !url || !sourceName}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg shadow-primary/20 hover:shadow-primary/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {scrapeMutation.isPending ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
-                  ) : (
-                    <><Plus className="w-5 h-5" /> Ingest Data</>
-                  )}
-                </button>
-              </form>
-            </div>
+        {/* Legend */}
+        {showLegend && (
+          <div className="flex items-center gap-2 flex-wrap text-xs">
+            <span className="text-muted-foreground font-mono">Pick slot:</span>
+            {LEGEND.map(({ label, color }) => (
+              <span key={label} className={cn("px-2 py-0.5 rounded text-[10px] font-mono font-semibold", color)}>
+                {label}
+              </span>
+            ))}
           </div>
+        )}
 
-          {/* History Section */}
-          <div className="lg:col-span-2">
-            <div className="glass-card rounded-2xl p-6 h-full">
-              <h2 className="text-xl font-display font-semibold text-white mb-6">Ingestion History</h2>
-              
-              {isLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : drafts && drafts.length > 0 ? (
-                <div className="space-y-3">
-                  {drafts.map((draft, i) => (
-                    <motion.div 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      key={draft.id} 
-                      className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
+        {/* Matrix Table */}
+        <div className="overflow-x-auto rounded-xl border border-white/5 bg-black/40">
+          <table className="text-xs border-collapse" style={{ minWidth: `${Math.max(900, 280 + sortedDrafts.length * 68)}px` }}>
+            {/* Column headers */}
+            <thead>
+              <tr className="bg-black/60 border-b border-white/10">
+                {/* Sticky player column header */}
+                <th
+                  className="sticky left-0 z-20 bg-black/90 border-r border-white/10 p-0"
+                  style={{ minWidth: 200 }}
+                >
+                  <button
+                    className="w-full flex items-center gap-1 px-3 py-3 text-left text-muted-foreground uppercase tracking-widest font-mono hover:text-white transition-colors"
+                    onClick={() => toggleSort("name")}
+                  >
+                    <ArrowUpDown className="w-2.5 h-2.5 shrink-0" />
+                    Prospect
+                  </button>
+                </th>
+
+                {/* ADP + trend */}
+                <th className="bg-black/60 border-r border-white/10 px-3 py-3 text-center whitespace-nowrap" style={{ minWidth: 72 }}>
+                  <button
+                    className="flex flex-col items-center gap-0.5 text-muted-foreground uppercase tracking-widest font-mono hover:text-white transition-colors w-full"
+                    onClick={() => toggleSort("adp")}
+                  >
+                    <BarChart3 className="w-3 h-3" />
+                    <span>ADP</span>
+                  </button>
+                </th>
+
+                {/* One column per mock draft */}
+                {sortedDrafts.map(draft => (
+                  <th
+                    key={draft.id}
+                    className="border-r border-white/5 px-2 py-2 text-center"
+                    style={{ minWidth: 60, maxWidth: 80 }}
+                    title={draft.sourceName}
+                  >
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-mono font-bold text-white text-[11px] leading-tight">{draft.shortName}</span>
+                      {draft.publishedAt && (
+                        <span className="text-muted-foreground text-[9px] font-mono">{draftDate(draft)}</span>
+                      )}
+                      {draft.url && (
+                        <a href={draft.url} target="_blank" rel="noreferrer" className="text-primary/50 hover:text-primary transition-colors">
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      )}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+
+            {/* Rows */}
+            <tbody>
+              {sortedPlayers.map((player, rowIdx) => {
+                const playerPicks = picks[player.id] ?? {};
+                const pickValues = sortedDrafts.map(d => playerPicks[d.id]);
+                const hasPicks = pickValues.some(v => v !== undefined);
+
+                return (
+                  <tr
+                    key={player.id}
+                    className={cn(
+                      "border-b border-white/4 transition-colors group",
+                      rowIdx % 2 === 0 ? "bg-white/[0.01]" : "bg-transparent",
+                      "hover:bg-primary/5"
+                    )}
+                    data-testid={`matrix-row-${player.id}`}
+                  >
+                    {/* Sticky player name cell */}
+                    <td
+                      className="sticky left-0 z-10 border-r border-white/10 px-3 py-2 bg-[hsl(var(--card)/0.95)] group-hover:bg-primary/10 transition-colors"
+                      style={{ minWidth: 200 }}
                     >
-                      <div>
-                        <h3 className="font-semibold text-white">{draft.sourceName}</h3>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 font-mono">
-                          {draft.publishedAt && format(new Date(draft.publishedAt), "MMM dd, yyyy HH:mm")}
-                        </p>
+                      <Link href={`/players/${player.id}`}>
+                        <div className="flex items-center gap-2 cursor-pointer">
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold font-mono shrink-0",
+                              (player.currentAdp ?? 99) <= 5 ? "bg-emerald-500/20 text-emerald-300"
+                              : (player.currentAdp ?? 99) <= 10 ? "bg-green-500/15 text-green-400"
+                              : (player.currentAdp ?? 99) <= 15 ? "bg-lime-500/10 text-lime-400"
+                              : (player.currentAdp ?? 99) <= 20 ? "bg-yellow-500/10 text-yellow-400"
+                              : "bg-orange-500/10 text-orange-400"
+                            )}
+                          >
+                            {Math.round(player.currentAdp ?? 99)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-white text-[12px] leading-tight truncate group-hover:text-primary transition-colors">
+                              {player.name}
+                            </p>
+                            <p className="text-muted-foreground text-[10px] font-mono truncate">
+                              {player.position} · {player.college}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    </td>
+
+                    {/* ADP cell */}
+                    <td className="border-r border-white/10 px-2 py-2 text-center align-middle" style={{ minWidth: 72 }}>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className={cn(
+                          "font-mono font-bold text-sm leading-tight",
+                          (player.trend === "up") ? "text-stock-up"
+                          : (player.trend === "down") ? "text-stock-down"
+                          : "text-white"
+                        )}>
+                          {player.currentAdp != null ? `#${player.currentAdp.toFixed(1)}` : "—"}
+                        </span>
+                        <TrendChip change={player.adpChange} />
                       </div>
-                      <a 
-                        href={draft.url || '#'} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="p-2 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
-                        title="View Source"
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                      </a>
-                    </motion.div>
-                  ))}
+                    </td>
+
+                    {/* Pick cells per draft */}
+                    {sortedDrafts.map(draft => {
+                      const pick = playerPicks[draft.id];
+                      return (
+                        <td
+                          key={draft.id}
+                          className={cn(
+                            "border-r border-white/4 px-2 py-2 text-center align-middle transition-colors",
+                            pick !== undefined
+                              ? cn(pickColor(pick), "border", pickBorderColor(pick))
+                              : "text-muted-foreground/30"
+                          )}
+                          style={{ minWidth: 60 }}
+                          data-testid={`matrix-cell-${player.id}-${draft.id}`}
+                        >
+                          <span className="font-mono font-semibold text-[11px]">
+                            {pick !== undefined ? `#${pick}` : "—"}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mock Draft List (compact) */}
+        <div>
+          <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-mono mb-3">
+            Sources ({sortedDrafts.length} mock drafts)
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {sortedDrafts.map(draft => (
+              <div
+                key={draft.id}
+                className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-card/40 border border-white/5 hover:border-white/10 transition-colors"
+                data-testid={`draft-item-${draft.id}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-mono font-bold text-primary text-xs w-16 shrink-0">{draft.shortName}</span>
+                  <span className="text-white text-xs truncate">{draft.sourceName}</span>
                 </div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground border border-dashed border-white/10 rounded-xl">
-                  <Database className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                  <p>No mock drafts ingested yet.</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  {draft.publishedAt && (
+                    <span className="text-muted-foreground text-[10px] font-mono">
+                      {format(new Date(draft.publishedAt), "M/d/yy")}
+                    </span>
+                  )}
+                  {draft.url && (
+                    <a href={draft.url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -172,6 +172,28 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(scrapeJobs).orderBy(asc(scrapeJobs.sourceKey));
   }
 
+  async getMatrixData(): Promise<{
+    players: (Player & { currentAdp?: number; trend?: string; adpChange?: number })[];
+    drafts: (typeof mockDrafts.$inferSelect)[];
+    analysts: (typeof analysts.$inferSelect)[];
+    picks: Record<number, Record<number, number>>; // picks[playerId][draftId] = pickNumber
+  }> {
+    const [allPlayers, allDrafts, allAnalysts, allPicks] = await Promise.all([
+      this.getPlayers(),
+      db.select().from(mockDrafts).orderBy(desc(mockDrafts.publishedAt)),
+      db.select().from(analysts).orderBy(desc(analysts.accuracyWeight)),
+      db.select().from(mockDraftPicks),
+    ]);
+
+    const picksMatrix: Record<number, Record<number, number>> = {};
+    for (const pick of allPicks) {
+      if (!picksMatrix[pick.playerId]) picksMatrix[pick.playerId] = {};
+      picksMatrix[pick.playerId][pick.mockDraftId] = pick.pickNumber;
+    }
+
+    return { players: allPlayers, drafts: allDrafts, analysts: allAnalysts, picks: picksMatrix };
+  }
+
   async upsertScrapeJob(job: Partial<InsertScrapeJob> & { sourceKey: string }): Promise<ScrapeJob> {
     const existing = await db.select().from(scrapeJobs).where(eq(scrapeJobs.sourceKey, job.sourceKey)).limit(1);
     if (existing.length > 0) {
