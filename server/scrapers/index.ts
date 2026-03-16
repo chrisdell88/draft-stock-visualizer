@@ -95,6 +95,11 @@ import { scrapeMddbConsensus, scrapeMddbBigBoard, scrapeMcShay, scrapeFreedman }
 import { scrapeMcCrystal, scrapeDonahue } from "./sharp";
 import { scrapeZierlein, scrapeBrooks, scrapeDavis, scrapeJeremiahBigBoard } from "./nflcom";
 import { scrapeMockDraftNfl } from "./mockdraftnfl";
+import {
+  scrapeDraftTek, scrapePfnBigBoard, scrapeNflDraftBuzz,
+  scrapeDraftNetwork, scrapeDraftWire, scrapeWalterBigBoard,
+  scrapeNfldraftRankings, scrapeSportingNewsBigBoard,
+} from "./bigboards";
 
 export const SCRAPERS: ScraperModule[] = [
   { sourceKey: "walterfootball_walt",    displayName: "WalterFootball (Walt)",             run: scrapeWalterfootballWalt },
