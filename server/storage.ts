@@ -47,6 +47,9 @@ export interface IStorage {
     signal: "bullish" | "bearish" | "neutral"; oddsMarkets: string[];
   }>>;
   getRecentActivity(limit?: number): Promise<MockDraft[]>;
+
+  synthesizeAdpFromPicks(): Promise<{ playersUpdated: number; totalPlayers: number }>;
+  clearPlaceholderOdds(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -372,11 +375,11 @@ export class DatabaseStorage implements IStorage {
     const allPlayers = await this.getPlayers();
     const allOdds = await db.select().from(odds).orderBy(desc(odds.date));
 
-    // latest odds per player per market type
-    const playerMarket = new Map<string, string>(); // "playerId_market" → odds string
+    const playerMarkets = new Map<number, Map<string, string>>();
     for (const o of allOdds) {
-      const key = `${o.playerId}_${o.marketType}`;
-      if (!playerMarket.has(key)) playerMarket.set(key, o.odds);
+      if (!playerMarkets.has(o.playerId)) playerMarkets.set(o.playerId, new Map());
+      const pm = playerMarkets.get(o.playerId)!;
+      if (!pm.has(o.marketType)) pm.set(o.marketType, o.odds);
     }
 
     const amToProb = (s: string): number => {
@@ -384,6 +387,8 @@ export class DatabaseStorage implements IStorage {
       if (isNaN(n)) return 0;
       return n < 0 ? -n / (-n + 100) : 100 / (n + 100);
     };
+
+    const BUCKET_MARKETS = ["first_overall","top_3_pick","top_5_pick","top_10_pick","first_round"];
 
     const results: Array<{
       playerId: number; playerName: string; position: string | null;
@@ -394,25 +399,47 @@ export class DatabaseStorage implements IStorage {
     for (const player of allPlayers) {
       if (!player.currentAdp) continue;
       const pid = player.id;
-      const markets = ["first_overall","top_3_pick","top_5_pick","top_10_pick","first_round"];
-      const hasAny = markets.some(m => playerMarket.has(`${pid}_${m}`));
-      if (!hasAny) continue;
+      const pm = playerMarkets.get(pid);
+      if (!pm || pm.size === 0) continue;
 
-      // Hierarchical probability — each lower market inherits from higher
-      const p1   = amToProb(playerMarket.get(`${pid}_first_overall`) ?? "+100000");
-      const p3   = Math.max(p1, amToProb(playerMarket.get(`${pid}_top_3_pick`)   ?? "+100000"));
-      const p5   = Math.max(p3, amToProb(playerMarket.get(`${pid}_top_5_pick`)   ?? "+100000"));
-      const p10  = Math.max(p5, amToProb(playerMarket.get(`${pid}_top_10_pick`)  ?? "+100000"));
-      const p1st = Math.max(p10, amToProb(playerMarket.get(`${pid}_first_round`) ?? "+100000"));
+      const activeMarkets = [...pm.keys()];
+      const hasBuckets = BUCKET_MARKETS.some(m => pm.has(m));
 
-      // Weighted expected pick: probability mass across bands
-      const impliedPick =
-        p1 * 1 +
-        (p3  - p1)  * 2.5 +
-        (p5  - p3)  * 4   +
-        (p10 - p5)  * 8   +
-        (p1st - p10) * 18 +
-        (1 - p1st)  * 35;
+      let impliedPick: number;
+
+      if (hasBuckets) {
+        const p1   = amToProb(pm.get("first_overall") ?? "+100000");
+        const p3   = Math.max(p1, amToProb(pm.get("top_3_pick")   ?? "+100000"));
+        const p5   = Math.max(p3, amToProb(pm.get("top_5_pick")   ?? "+100000"));
+        const p10  = Math.max(p5, amToProb(pm.get("top_10_pick")  ?? "+100000"));
+        const p1st = Math.max(p10, amToProb(pm.get("first_round") ?? "+100000"));
+
+        impliedPick =
+          p1 * 1 +
+          (p3  - p1)  * 2.5 +
+          (p5  - p3)  * 4   +
+          (p10 - p5)  * 8   +
+          (p1st - p10) * 18 +
+          (1 - p1st)  * 35;
+      } else {
+        const probs: Array<{ pick: number; prob: number }> = [];
+        for (const [mkt, oddsStr] of pm.entries()) {
+          const pickMatch = mkt.match(/pick_?(\d+)$/);
+          if (pickMatch) {
+            probs.push({ pick: parseInt(pickMatch[1]), prob: amToProb(oddsStr) });
+          }
+        }
+        if (probs.length > 0) {
+          let totalProb = 0, weightedSum = 0;
+          for (const { pick, prob } of probs) {
+            weightedSum += pick * prob;
+            totalProb += prob;
+          }
+          impliedPick = totalProb > 0 ? weightedSum / totalProb : 32;
+        } else {
+          continue;
+        }
+      }
 
       const discrepancy = Math.round((player.currentAdp - impliedPick) * 10) / 10;
       const signal: "bullish" | "bearish" | "neutral" =
@@ -425,7 +452,7 @@ export class DatabaseStorage implements IStorage {
         impliedPick: Math.round(impliedPick * 10) / 10,
         discrepancy,
         signal,
-        oddsMarkets: markets.filter(m => playerMarket.has(`${pid}_${m}`)),
+        oddsMarkets: activeMarkets,
       });
     }
 
@@ -448,6 +475,85 @@ export class DatabaseStorage implements IStorage {
       const [created] = await db.insert(scrapeJobs).values({ ...job, lastRunAt: job.lastRunAt ?? new Date() } as any).returning();
       return created;
     }
+  }
+
+  async synthesizeAdpFromPicks(): Promise<{ playersUpdated: number; totalPlayers: number }> {
+    const allPlayers = await db.select().from(players);
+    const allPicks = await db.select().from(mockDraftPicks);
+    const allDrafts = await db.select().from(mockDrafts);
+    const allAnalysts = await db.select().from(analysts);
+
+    const analystMap = new Map(allAnalysts.map(a => [a.id, a]));
+    const draftMap = new Map(allDrafts.map(d => [d.id, d]));
+
+    const picksByPlayer = new Map<number, Array<{ pickNumber: number; weight: number }>>();
+    for (const pick of allPicks) {
+      if (!picksByPlayer.has(pick.playerId)) picksByPlayer.set(pick.playerId, []);
+      const draft = draftMap.get(pick.mockDraftId);
+      let weight = 1.0;
+      if (draft?.analystId) {
+        const analyst = analystMap.get(draft.analystId);
+        if (analyst?.accuracyWeight) weight = Number(analyst.accuracyWeight);
+      }
+      picksByPlayer.get(pick.playerId)!.push({ pickNumber: pick.pickNumber, weight });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().slice(0, 10);
+
+    let updated = 0;
+    for (const player of allPlayers) {
+      const picks = picksByPlayer.get(player.id);
+      if (!picks || picks.length === 0) continue;
+
+      let totalWeight = 0;
+      let weightedSum = 0;
+      for (const p of picks) {
+        weightedSum += p.pickNumber * p.weight;
+        totalWeight += p.weight;
+      }
+      const consensusAdp = totalWeight > 0 ? weightedSum / totalWeight : 0;
+      if (consensusAdp <= 0) continue;
+
+      const adpStr = (Math.round(consensusAdp * 10) / 10).toFixed(1);
+
+      const existingHistory = await db.select().from(adpHistory)
+        .where(eq(adpHistory.playerId, player.id))
+        .orderBy(desc(adpHistory.date));
+
+      const hasToday = existingHistory.some(h => {
+        if (!h.date) return false;
+        return h.date.toISOString().slice(0, 10) === todayStr;
+      });
+
+      if (hasToday) {
+        await db.update(adpHistory)
+          .set({ adpValue: adpStr } as any)
+          .where(and(
+            eq(adpHistory.playerId, player.id),
+            gte(adpHistory.date, new Date(todayStr + "T00:00:00.000Z")),
+            lte(adpHistory.date, new Date(todayStr + "T23:59:59.999Z"))
+          ));
+      } else {
+        await db.insert(adpHistory).values({
+          playerId: player.id,
+          adpValue: adpStr,
+          date: today,
+        } as any);
+      }
+      updated++;
+    }
+
+    console.log(`[ADP SYNTHESIS] Updated consensus ADP for ${updated}/${allPlayers.length} players.`);
+    return { playersUpdated: updated, totalPlayers: allPlayers.length };
+  }
+
+  async clearPlaceholderOdds(): Promise<number> {
+    const cutoff = new Date("2026-03-16T00:00:00.000Z");
+    const result = await db.delete(odds).where(lte(odds.date, cutoff)).returning();
+    console.log(`[ODDS CLEANUP] Removed ${result.length} placeholder odds rows (pre-${cutoff.toISOString().slice(0, 10)}).`);
+    return result.length;
   }
 }
 

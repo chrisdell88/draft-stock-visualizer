@@ -183,9 +183,41 @@ export async function registerRoutes(
   app.post("/api/scrape", async (req, res) => {
     try {
       const results = await runAllScrapers();
-      res.json({ message: "Scrape completed", results });
+      const adpResult = await storage.synthesizeAdpFromPicks();
+      res.json({ message: "Scrape completed", results, adpSynthesis: adpResult });
     } catch (err) {
       res.status(500).json({ message: "Scrape failed", error: String(err) });
+    }
+  });
+
+  // ─── Odds scraper ──────────────────────────────────────────────────────
+  app.post("/api/scrape/odds", async (req, res) => {
+    try {
+      const { scrapeOdds } = await import("./scrapers/odds");
+      const result = await scrapeOdds();
+      res.json({ message: "Odds scrape completed", ...result });
+    } catch (err) {
+      res.status(500).json({ message: "Odds scrape failed", error: String(err) });
+    }
+  });
+
+  // ─── Consensus ADP synthesis ──────────────────────────────────────────
+  app.post("/api/synthesize-adp", async (req, res) => {
+    try {
+      const result = await storage.synthesizeAdpFromPicks();
+      res.json({ message: "ADP synthesis completed", ...result });
+    } catch (err) {
+      res.status(500).json({ message: "ADP synthesis failed", error: String(err) });
+    }
+  });
+
+  // ─── Clear placeholder odds ───────────────────────────────────────────
+  app.post("/api/scrape/clear-placeholder-odds", async (req, res) => {
+    try {
+      const removed = await storage.clearPlaceholderOdds();
+      res.json({ message: `Removed ${removed} placeholder odds rows` });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to clear placeholder odds", error: String(err) });
     }
   });
 
@@ -280,11 +312,31 @@ export async function registerRoutes(
   ensureSourceKeysFix().catch(console.error);
   ensureExtraAnalysts().catch(console.error);
 
+  setTimeout(async () => {
+    try {
+      const result = await storage.synthesizeAdpFromPicks();
+      console.log(`[STARTUP] ADP synthesis: ${result.playersUpdated}/${result.totalPlayers} players updated`);
+    } catch (err) {
+      console.warn("[STARTUP] ADP synthesis failed:", err);
+    }
+  }, 10000);
+
   // ─── Daily cron: scrape all sources at 6:00 AM ET ──────────────────────
   cron.schedule("0 11 * * *", async () => {
     console.log("[CRON] Running daily scrape at 6am ET...");
     const results = await runAllScrapers();
     console.log("[CRON] Done:", results.map(r => `${r.sourceKey}=${r.picksFound} picks`).join(", "));
+
+    console.log("[CRON] Synthesizing consensus ADP...");
+    await storage.synthesizeAdpFromPicks();
+
+    console.log("[CRON] Fetching sportsbook odds...");
+    try {
+      const { scrapeOdds } = await import("./scrapers/odds");
+      await scrapeOdds();
+    } catch (err) {
+      console.warn("[CRON] Odds scrape failed:", err);
+    }
   }, { timezone: "America/New_York" });
 
   return httpServer;
