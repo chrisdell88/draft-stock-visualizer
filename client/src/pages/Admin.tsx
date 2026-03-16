@@ -458,6 +458,9 @@ function AddAnalystForm() {
             {createMutation.isPending ? "Adding..." : "Add Analyst"}
           </Button>
         </form>
+        <p className="text-zinc-600 text-xs mt-2">
+          Scraping requires a registered scraper module matching the source key.
+        </p>
       </CardContent>
     </Card>
   );

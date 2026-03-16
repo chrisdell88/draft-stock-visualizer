@@ -11,7 +11,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
-  const ADMIN_PASSWORD = process.env.SESSION_SECRET;
+  const ADMIN_PASSWORD = process.env.SESSION_SECRET; // SESSION_SECRET doubles as admin password
   if (!ADMIN_PASSWORD) {
     console.warn("[ADMIN] WARNING: SESSION_SECRET not set — admin login is disabled");
   }
