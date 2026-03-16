@@ -33,14 +33,16 @@ function parseNflmdbPicks(html: string): Array<{ pickNumber: number; playerName:
     if (end > start) {
       try {
         const arr = JSON.parse(decoded.slice(start, end));
-        const picks = arr
-          .filter((s: any) => s.pick && s.player?.name)
-          .map((s: any) => ({
+        interface NflmdbEntry { pick?: number; player?: { name?: string; position?: string } }
+        interface ParsedPick { pickNumber: number; playerName: string; position: string }
+        const picks: ParsedPick[] = (arr as NflmdbEntry[])
+          .filter((s) => s.pick && s.player?.name)
+          .map((s) => ({
             pickNumber: Number(s.pick),
-            playerName: String(s.player.name),
-            position: s.player.position ?? "",
+            playerName: String(s.player!.name),
+            position: s.player!.position ?? "",
           }))
-          .filter((p: any) => p.pickNumber >= 1 && p.pickNumber <= 300);
+          .filter((p) => p.pickNumber >= 1 && p.pickNumber <= 300);
         if (picks.length > 0) return picks;
       } catch { /* fall through */ }
     }
@@ -87,8 +89,9 @@ export function makeNflmdbScraper(config: {
   boardType?: "mock" | "bigboard";
   shortName?: string;
 }) {
-  return async function scrapeNflmdb(players: Player[]): Promise<ScraperResult> {
+  return async function scrapeNflmdb(players: Player[], urlOverride?: string): Promise<ScraperResult> {
     const { sourceKey, displayName, url, boardType = "mock" } = config;
+    const scrapeUrl = urlOverride || url;
     const today = new Date().toISOString().slice(0, 10);
 
     const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
@@ -96,7 +99,7 @@ export function makeNflmdbScraper(config: {
       return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
     }
 
-    const html = await fetchHtml(url);
+    const html = await fetchHtml(scrapeUrl);
     const picks = parseNflmdbPicks(html);
 
     const analyst = await storage.getAnalystBySourceKey(sourceKey);
@@ -104,7 +107,7 @@ export function makeNflmdbScraper(config: {
       sourceName: `${displayName} — ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}`,
       sourceKey,
       analystId: analyst?.id,
-      url,
+      url: scrapeUrl,
       boardType,
     });
 

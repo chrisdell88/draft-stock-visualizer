@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
@@ -16,7 +16,7 @@ export async function registerRoutes(
     console.warn("[ADMIN] WARNING: SESSION_SECRET not set — admin login is disabled");
   }
 
-  const requireAdmin = (req: any, res: any, next: any) => {
+  const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
     if (!req.session?.isAdmin) {
       return res.status(401).json({ message: "Admin access required" });
     }
@@ -29,7 +29,7 @@ export async function registerRoutes(
     }
     const { password } = req.body;
     if (password === ADMIN_PASSWORD) {
-      (req as any).session.isAdmin = true;
+      req.session.isAdmin = true;
       res.json({ ok: true });
     } else {
       res.status(401).json({ message: "Invalid password" });
@@ -37,11 +37,11 @@ export async function registerRoutes(
   });
 
   app.get("/api/admin/check", (req, res) => {
-    res.json({ isAdmin: !!(req as any).session?.isAdmin });
+    res.json({ isAdmin: !!req.session?.isAdmin });
   });
 
   app.post("/api/admin/logout", (req, res) => {
-    (req as any).session.isAdmin = false;
+    req.session.isAdmin = false;
     res.json({ ok: true });
   });
 
@@ -427,7 +427,7 @@ export async function registerRoutes(
 
   app.get("/api/admin/scrape-logs", requireAdmin, async (_req, res) => {
     try {
-      const runs = await storage.getScrapeRunHistory(100);
+      const runs = await storage.getScrapeRunHistory(50);
       res.json(runs);
     } catch (err) {
       res.status(500).json({ message: "Failed to load scrape logs", error: String(err) });

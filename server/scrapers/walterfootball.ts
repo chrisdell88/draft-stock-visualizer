@@ -126,32 +126,34 @@ async function runWalterfootball(
   return { sourceKey, picksFound: dbPicks.length, newMockCreated: true, mockDraftId: mockDraft.id };
 }
 
-export async function scrapeWalterfootballWalt(players: Player[]): Promise<ScraperResult> {
+export async function scrapeWalterfootballWalt(players: Player[], urlOverride?: string): Promise<ScraperResult> {
+  const defaultUrls = [
+    "https://walterfootball.com/draft2026.php",
+    "https://walterfootball.com/draft2026_1.php",
+    "https://walterfootball.com/draft2026_2.php",
+    "https://walterfootball.com/draft2026_3.php",
+  ];
   return runWalterfootball(
     "walterfootball_walt",
     "WalterFootball (Walt)",
     "walterfootball_walt",
-    [
-      "https://walterfootball.com/draft2026.php",
-      "https://walterfootball.com/draft2026_1.php",
-      "https://walterfootball.com/draft2026_2.php",
-      "https://walterfootball.com/draft2026_3.php",
-    ],
+    urlOverride ? [urlOverride] : defaultUrls,
     players
   );
 }
 
-export async function scrapeWalterfootballCharlie(players: Player[]): Promise<ScraperResult> {
+export async function scrapeWalterfootballCharlie(players: Player[], urlOverride?: string): Promise<ScraperResult> {
+  const defaultUrls = [
+    "https://walterfootball.com/draft2026charlie.php",
+    "https://walterfootball.com/draft2026charlie_1.php",
+    "https://walterfootball.com/draft2026charlie_2.php",
+    "https://walterfootball.com/draft2026charlie_3.php",
+  ];
   return runWalterfootball(
     "walterfootball_charlie",
     "WalterFootball (Charlie Campbell)",
     "walterfootball_charlie",
-    [
-      "https://walterfootball.com/draft2026charlie.php",
-      "https://walterfootball.com/draft2026charlie_1.php",
-      "https://walterfootball.com/draft2026charlie_2.php",
-      "https://walterfootball.com/draft2026charlie_3.php",
-    ],
+    urlOverride ? [urlOverride] : defaultUrls,
     players
   );
 }

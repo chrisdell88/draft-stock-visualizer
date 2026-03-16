@@ -59,7 +59,7 @@ function parseMockDraftNfl(html: string): MDNPick[] {
   return picks;
 }
 
-export async function scrapeMockDraftNfl(players: Player[]): Promise<ScraperResult> {
+export async function scrapeMockDraftNfl(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   const sourceKey = "mockdraftnfl";
   const today = new Date().toISOString().slice(0, 10);
 
@@ -72,7 +72,9 @@ export async function scrapeMockDraftNfl(players: Player[]): Promise<ScraperResu
     // Existing mock has 0 picks — delete and re-create
   }
 
-  const html = await fetchHtml("https://www.mockdraftnfl.com/2026/mock/");
+  const defaultUrl = "https://www.mockdraftnfl.com/2026/mock/";
+  const scrapeUrl = urlOverride || defaultUrl;
+  const html = await fetchHtml(scrapeUrl);
   const picks = parseMockDraftNfl(html);
 
   const analyst = await storage.getAnalystBySourceKey(sourceKey);
@@ -80,7 +82,7 @@ export async function scrapeMockDraftNfl(players: Player[]): Promise<ScraperResu
     sourceName: `MockDraftNFL — ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}`,
     sourceKey,
     analystId: analyst?.id,
-    url: "https://www.mockdraftnfl.com/2026/mock/",
+    url: scrapeUrl,
     boardType: "mock",
   });
 

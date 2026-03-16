@@ -86,7 +86,7 @@ export interface ScraperResult {
 export interface ScraperModule {
   sourceKey: string;
   displayName: string;
-  run(players: Player[]): Promise<ScraperResult>;
+  run(players: Player[], urlOverride?: string): Promise<ScraperResult>;
 }
 
 import { scrapeWalterfootballWalt, scrapeWalterfootballCharlie } from "./walterfootball";
@@ -123,22 +123,27 @@ export async function runScraper(sourceKey: string): Promise<ScraperResult> {
   
   await storage.upsertScrapeJob({ sourceKey, status: "running" });
   
+  const analysts = await storage.getAnalysts();
+  const analyst = analysts.find(a => a.sourceKey === sourceKey)
+    || analysts.find(a => a.sourceKey && sourceKey.startsWith(a.sourceKey));
+  const urlOverride = analyst?.scrapeUrl ?? undefined;
+  
   try {
     const allPlayers = await storage.getPlayers();
-    const result = await scraper.run(allPlayers);
+    const result = await scraper.run(allPlayers, urlOverride);
     
     await storage.upsertScrapeJob({
       sourceKey,
       status: "success",
       picksFound: result.picksFound,
-      errorMessage: undefined as any,
+      errorMessage: null,
       lastRunAt: new Date(),
     });
     await storage.logScrapeRun(sourceKey, "success", result.picksFound);
     
     return result;
-  } catch (err: any) {
-    const errorMessage = err?.message ?? String(err);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     await storage.upsertScrapeJob({
       sourceKey,
       status: "error",

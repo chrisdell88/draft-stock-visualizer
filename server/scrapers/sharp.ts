@@ -85,20 +85,20 @@ async function runSharpScraper(
   return { sourceKey, picksFound: dbPicks.length, newMockCreated: true, mockDraftId: mockDraft.id };
 }
 
-export async function scrapeMcCrystal(players: Player[]): Promise<ScraperResult> {
+export async function scrapeMcCrystal(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   return runSharpScraper(
     "sharp_mccrystal",
     "Ryan McCrystal (Sharp Football)",
-    "https://www.sharpfootballanalysis.com/analysis/2026-nfl-mock-draft-first-round-all-32-teams-ryan-mccrystal/",
+    urlOverride || "https://www.sharpfootballanalysis.com/analysis/2026-nfl-mock-draft-first-round-all-32-teams-ryan-mccrystal/",
     players
   );
 }
 
-export async function scrapeDonahue(players: Player[]): Promise<ScraperResult> {
+export async function scrapeDonahue(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   return runSharpScraper(
     "sharp_donahue",
     "Brendan Donahue (Sharp Football)",
-    "https://www.sharpfootballanalysis.com/analysis/2026-nfl-mock-draft-first-round-all-32-teams-brendan-donahue/",
+    urlOverride || "https://www.sharpfootballanalysis.com/analysis/2026-nfl-mock-draft-first-round-all-32-teams-brendan-donahue/",
     players
   );
 }

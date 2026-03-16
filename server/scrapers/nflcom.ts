@@ -146,7 +146,7 @@ function parseJeremiahBigBoard(html: string): Array<{ playerName: string; headsh
   return results;
 }
 
-export async function scrapeJeremiahBigBoard(players: Player[]): Promise<ScraperResult> {
+export async function scrapeJeremiahBigBoard(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   const sourceKey = "nfl_jeremiah_bigboard";
   const today = new Date().toISOString().slice(0, 10);
 
@@ -156,7 +156,8 @@ export async function scrapeJeremiahBigBoard(players: Player[]): Promise<Scraper
     return { sourceKey, picksFound: pickCount, newMockCreated: false, mockDraftId: existing.id };
   }
 
-  const html = await fetchHtml(JEREMIAH_TOP50_URL);
+  const scrapeUrl = urlOverride || JEREMIAH_TOP50_URL;
+  const html = await fetchHtml(scrapeUrl);
   const entries = parseJeremiahBigBoard(html);
 
   // Look up analyst by base key "nfl_jeremiah"
@@ -165,7 +166,7 @@ export async function scrapeJeremiahBigBoard(players: Player[]): Promise<Scraper
     sourceName: `Daniel Jeremiah Top-50 — ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}`,
     sourceKey,
     analystId: analyst?.id,
-    url: JEREMIAH_TOP50_URL,
+    url: scrapeUrl,
     boardType: "bigboard",
   });
 
@@ -195,29 +196,29 @@ export async function scrapeJeremiahBigBoard(players: Player[]): Promise<Scraper
   return { sourceKey, picksFound: dbPicks.length, newMockCreated: true, mockDraftId: mockDraft.id };
 }
 
-export async function scrapeZierlein(players: Player[]): Promise<ScraperResult> {
+export async function scrapeZierlein(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   return runNflcomScraper(
     "nfl_zierlein",
     "Lance Zierlein (NFL.com)",
-    "https://www.nfl.com/news/lance-zierlein-2026-nfl-mock-draft-2-0-two-cbs-in-top-five-combine-star-sonny-styles-cracks-top-10",
+    urlOverride || "https://www.nfl.com/news/lance-zierlein-2026-nfl-mock-draft-2-0-two-cbs-in-top-five-combine-star-sonny-styles-cracks-top-10",
     players
   );
 }
 
-export async function scrapeBrooks(players: Player[]): Promise<ScraperResult> {
+export async function scrapeBrooks(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   return runNflcomScraper(
     "nfl_brooks",
     "Bucky Brooks (NFL.com)",
-    "https://www.nfl.com/news/bucky-brooks-2026-nfl-mock-draft-2-0-jets-grab-edge-rusher-receiver-rams-double-dip-on-dbs",
+    urlOverride || "https://www.nfl.com/news/bucky-brooks-2026-nfl-mock-draft-2-0-jets-grab-edge-rusher-receiver-rams-double-dip-on-dbs",
     players
   );
 }
 
-export async function scrapeDavis(players: Player[]): Promise<ScraperResult> {
+export async function scrapeDavis(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   return runNflcomScraper(
     "nfl_davis",
     "Charles Davis (NFL.com)",
-    "https://www.nfl.com/news/charles-davis-2026-nfl-mock-draft-2-0-cardinals-seahawks-select-notre-dame-rbs-in-round-1",
+    urlOverride || "https://www.nfl.com/news/charles-davis-2026-nfl-mock-draft-2-0-cardinals-seahawks-select-notre-dame-rbs-in-round-1",
     players
   );
 }

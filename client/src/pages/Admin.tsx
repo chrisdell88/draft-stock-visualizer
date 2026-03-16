@@ -11,6 +11,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, LogOut, Play, RefreshCw, Plus, Search, Save, Users, FileText, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Analyst, Player, ScrapeJob, ScrapeRun } from "@shared/schema";
+
+interface AnalystWithJob extends Analyst {
+  scrapeJob: ScrapeJob | null;
+  totalPicks: number;
+}
+
+interface AnalystUpdateData {
+  scrapeUrl?: string;
+  accuracyWeight?: number;
+  enabled?: number;
+}
+
+interface PlayerUpdateData {
+  position?: string;
+  college?: string;
+  imageUrl?: string;
+}
 
 function LoginGate({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState("");
@@ -93,12 +111,12 @@ function SourcesTab() {
   const [editWeight, setEditWeight] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: analysts, isLoading } = useQuery<any[]>({
+  const { data: analysts, isLoading } = useQuery<AnalystWithJob[]>({
     queryKey: ["/api/admin/analysts"],
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: number; data: AnalystUpdateData }) => {
       await apiRequest("PATCH", `/api/admin/analysts/${id}`, data);
     },
     onSuccess: () => {
@@ -106,7 +124,7 @@ function SourcesTab() {
       setEditingId(null);
       toast({ title: "Analyst updated" });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Update failed", description: err.message, variant: "destructive" });
     },
   });
@@ -119,7 +137,7 @@ function SourcesTab() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/analysts"] });
       toast({ title: "Analyst toggled" });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Toggle failed", description: err.message, variant: "destructive" });
     },
   });
@@ -129,12 +147,12 @@ function SourcesTab() {
       const res = await apiRequest("POST", `/api/admin/scrape/${sourceKey}`);
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: { result?: { picksFound?: number } }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/analysts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/scrape-logs"] });
       toast({ title: "Scrape completed", description: `${data?.result?.picksFound ?? 0} picks found` });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Scrape failed", description: err.message, variant: "destructive" });
     },
   });
@@ -149,12 +167,12 @@ function SourcesTab() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/scrape-logs"] });
       toast({ title: "All scrapers completed" });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Scrape all failed", description: err.message, variant: "destructive" });
     },
   });
 
-  const filtered = (analysts ?? []).filter((a: any) =>
+  const filtered = (analysts ?? []).filter((a: AnalystWithJob) =>
     !searchQuery || a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (a.sourceKey ?? "").toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -203,7 +221,7 @@ function SourcesTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((a: any) => (
+              {filtered.map((a: AnalystWithJob) => (
                 <TableRow
                   key={a.id}
                   className={`border-zinc-800 hover:bg-zinc-900/50 ${a.enabled === 0 ? "opacity-50" : ""}`}
@@ -269,7 +287,7 @@ function SourcesTab() {
                           variant="ghost"
                           className="h-7 text-emerald-400 hover:text-emerald-300"
                           onClick={() => {
-                            const data: any = {};
+                            const data: AnalystUpdateData = {};
                             if (editUrl !== (a.scrapeUrl ?? "")) data.scrapeUrl = editUrl;
                             if (editWeight !== String(a.accuracyWeight ?? "")) data.accuracyWeight = parseFloat(editWeight) || undefined;
                             updateMutation.mutate({ id: a.id, data });
@@ -345,7 +363,7 @@ function AddAnalystForm() {
       toast({ title: "Analyst added" });
       setName(""); setOutlet(""); setSourceKey(""); setScrapeUrl(""); setWeight("0.70"); setBoardType("mock"); setScraperType("custom");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Failed to create analyst", description: err.message, variant: "destructive" });
     },
   });
@@ -444,7 +462,7 @@ const LOGS_PER_PAGE = 15;
 function LogsTab() {
   const [page, setPage] = useState(0);
 
-  const { data: logs, isLoading } = useQuery<any[]>({
+  const { data: logs, isLoading } = useQuery<ScrapeRun[]>({
     queryKey: ["/api/admin/scrape-logs"],
   });
 
@@ -468,13 +486,13 @@ function LogsTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedLogs.map((log: any) => (
+              {paginatedLogs.map((log: ScrapeRun) => (
                 <TableRow key={log.id} className="border-zinc-800 hover:bg-zinc-900/50" data-testid={`row-log-${log.id}`}>
                   <TableCell className="text-white font-mono text-xs">{log.sourceKey}</TableCell>
                   <TableCell><StatusBadge status={log.status} /></TableCell>
                   <TableCell className="text-zinc-300">{log.picksFound ?? "—"}</TableCell>
                   <TableCell className="text-zinc-500 text-xs">
-                    {(log.runAt || log.lastRunAt) ? new Date(log.runAt || log.lastRunAt).toLocaleString() : "—"}
+                    {log.runAt ? new Date(log.runAt).toLocaleString() : "—"}
                   </TableCell>
                   <TableCell className="text-red-400 text-xs max-w-[300px] truncate">
                     {log.errorMessage ?? "—"}
@@ -529,12 +547,12 @@ function PlayersTab() {
     position: "", college: "", imageUrl: "",
   });
 
-  const { data: playerList, isLoading } = useQuery<any[]>({
+  const { data: playerList, isLoading } = useQuery<Player[]>({
     queryKey: ["/api/admin/players"],
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+    mutationFn: async ({ id, data }: { id: number; data: PlayerUpdateData }) => {
       await apiRequest("PATCH", `/api/admin/players/${id}`, data);
     },
     onSuccess: () => {
@@ -542,12 +560,12 @@ function PlayersTab() {
       setEditingId(null);
       toast({ title: "Player updated" });
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast({ title: "Update failed", description: err.message, variant: "destructive" });
     },
   });
 
-  const filtered = (playerList ?? []).filter((p: any) =>
+  const filtered = (playerList ?? []).filter((p: Player) =>
     !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.position ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.college ?? "").toLowerCase().includes(searchQuery.toLowerCase())
@@ -582,7 +600,7 @@ function PlayersTab() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((p: any) => (
+              {filtered.map((p: Player) => (
                 <TableRow key={p.id} className="border-zinc-800 hover:bg-zinc-900/50" data-testid={`row-player-${p.id}`}>
                   <TableCell className="text-white font-medium">{p.name}</TableCell>
                   <TableCell>

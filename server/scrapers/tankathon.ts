@@ -5,8 +5,9 @@ import { type Player } from "@shared/schema";
 
 // Tankathon's NFL Big Board ranks players by overall grade.
 // Each player has a rank and a link like /nfl/players/arvell-reese
-export async function scrapeTankathon(players: Player[]): Promise<ScraperResult> {
+export async function scrapeTankathon(players: Player[], urlOverride?: string): Promise<ScraperResult> {
   const sourceKey = "tankathon";
+  const defaultUrl = "https://tankathon.com/nfl/big_board";
   const today = new Date().toISOString().slice(0, 10);
 
   const existing = await storage.getMockDraftBySourceKeyAndDate(sourceKey, today);
@@ -14,7 +15,7 @@ export async function scrapeTankathon(players: Player[]): Promise<ScraperResult>
     return { sourceKey, picksFound: 0, newMockCreated: false, mockDraftId: existing.id };
   }
 
-  const html = await fetchHtml("https://tankathon.com/nfl/big_board");
+  const html = await fetchHtml(urlOverride || defaultUrl);
   const $ = cheerio.load(html);
 
   const picks: Array<{ rank: number; playerName: string }> = [];
@@ -53,7 +54,7 @@ export async function scrapeTankathon(players: Player[]): Promise<ScraperResult>
     sourceName: `Tankathon Big Board — ${new Date().toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "numeric" })}`,
     sourceKey,
     analystId: analyst?.id,
-    url: "https://tankathon.com/nfl/big_board",
+    url: urlOverride || defaultUrl,
   });
 
   const dbPicks: Array<{ mockDraftId: number; playerId: number; pickNumber: number }> = [];
