@@ -11,6 +11,7 @@ import PlayerDetail from "./pages/PlayerDetail";
 import MockDrafts from "./pages/MockDrafts";
 import BigBoards from "./pages/BigBoards";
 import Sources from "./pages/Sources";
+import Accuracy from "./pages/Accuracy";
 import Admin from "./pages/Admin";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout";
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/players/:id" component={PlayerDetail} />
       <Route path="/big-boards" component={BigBoards} />
       <Route path="/mock-drafts" component={MockDrafts} />
+      <Route path="/accuracy" component={Accuracy} />
       <Route path="/sources">
         {() => <Layout><Sources /></Layout>}
       </Route>

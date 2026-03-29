@@ -45,6 +45,41 @@ export async function registerRoutes(
     res.json({ ok: true });
   });
 
+  // ── Accuracy Leaderboard ──────────────────────────────────────────────────
+  app.get("/api/accuracy/leaderboard", async (req, res) => {
+    try {
+      const minYears = parseInt(req.query.minYears as string) || 2;
+      const data = await storage.getAccuracyLeaderboard(minYears);
+      res.json(data);
+    } catch (err) {
+      console.error("[accuracy/leaderboard]", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/accuracy/leaderboard/xb", async (req, res) => {
+    // Version B: THR weighted 1.5x — computed on the fly for comparison
+    try {
+      const { pool } = await import("./db");
+      const result = await (pool as any).query(`
+        WITH scores AS (
+          SELECT a.id, a.name, a.outlet,
+            COUNT(DISTINCT s.site || s.year::text)::int as n,
+            ROUND(AVG(CASE WHEN s.site='thr' THEN s.z_score*1.5 ELSE s.z_score END)::numeric, 4)::float as x_thr15
+          FROM analysts a
+          JOIN analyst_accuracy_scores s ON s.analyst_id = a.id
+          WHERE s.z_score IS NOT NULL
+          GROUP BY a.id, a.name, a.outlet
+          HAVING COUNT(DISTINCT s.site || s.year::text) >= 2
+        )
+        SELECT *, RANK() OVER (ORDER BY x_thr15 DESC) as rank_b FROM scores ORDER BY x_thr15 DESC LIMIT 50
+      `);
+      res.json(result.rows);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get(api.players.list.path, async (req, res) => {
     try {
       const players = await storage.getPlayers();

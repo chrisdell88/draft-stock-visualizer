@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Activity, Users, LayoutDashboard, TrendingUp, Radio, Award } from "lucide-react";
+import { Activity, Users, LayoutDashboard, TrendingUp, Radio, Award, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { href: "/players", label: "Prospects", icon: Users },
     { href: "/big-boards", label: "Big Boards", icon: Award },
     { href: "/mock-drafts", label: "Mock Drafts", icon: Activity },
+    { href: "/accuracy", label: "Analyst X Score", icon: BarChart2 },
     { href: "/sources", label: "Sources & Scrapers", icon: Radio },
   ];
 

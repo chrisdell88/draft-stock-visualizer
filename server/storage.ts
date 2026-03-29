@@ -1,6 +1,7 @@
 import { db } from "./db";
-import { 
+import {
   players, analysts, mockDrafts, mockDraftPicks, adpHistory, odds, scrapeJobs, scrapeRuns,
+  analystAccuracyScores,
   type Player, type InsertPlayer,
   type Analyst, type InsertAnalyst,
   type MockDraft, type InsertMockDraft,
@@ -57,7 +58,16 @@ export interface IStorage {
   getScrapeLogs(limit?: number): Promise<ScrapeJob[]>;
   logScrapeRun(sourceKey: string, status: string, picksFound?: number, errorMessage?: string): Promise<ScrapeRun>;
   getScrapeRunHistory(limit?: number): Promise<ScrapeRun[]>;
+
+  getAccuracyLeaderboard(minSiteYears?: number): Promise<AccuracyRow[]>;
 }
+
+export type AccuracyRow = {
+  id: number; name: string; outlet: string;
+  xScore: number | null; xScoreRank: number | null; xScoreSitesCount: number | null;
+  huddleScore5Year: string | null;
+  scores: Array<{ site: string; year: number; rawScore: number | null; siteRank: number | null; zScore: number | null }>;
+};
 
 export class DatabaseStorage implements IStorage {
   async getPlayers(): Promise<(Player & { currentAdp?: number, trend?: 'up' | 'down' | 'flat', adpChange?: number })[]> {
@@ -623,6 +633,38 @@ export class DatabaseStorage implements IStorage {
       console.log(`[ODDS CLEANUP] Removed ${totalRemoved} placeholder odds rows from seeded dates.`);
     }
     return totalRemoved;
+  }
+
+  async getAccuracyLeaderboard(minSiteYears = 2): Promise<AccuracyRow[]> {
+    // Get analysts with enough data, ordered by X Score
+    const rows = await db.execute(sql`
+      SELECT
+        a.id, a.name, a.outlet,
+        a.x_score::float as "xScore",
+        a.x_score_rank as "xScoreRank",
+        a.x_score_sites_count as "xScoreSitesCount",
+        a.huddle_score_5_year as "huddleScore5Year",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'site', s.site,
+              'year', s.year,
+              'rawScore', s.raw_score::float,
+              'siteRank', s.site_rank,
+              'zScore', s.z_score::float
+            ) ORDER BY s.site, s.year
+          ) FILTER (WHERE s.id IS NOT NULL),
+          '[]'
+        ) as scores
+      FROM analysts a
+      LEFT JOIN analyst_accuracy_scores s ON s.analyst_id = a.id
+      WHERE a.x_score IS NOT NULL
+        AND a.x_score_sites_count >= ${minSiteYears}
+      GROUP BY a.id, a.name, a.outlet, a.x_score, a.x_score_rank, a.x_score_sites_count, a.huddle_score_5_year
+      ORDER BY a.x_score DESC NULLS LAST
+      LIMIT 100
+    `);
+    return rows.rows as AccuracyRow[];
   }
 }
 
