@@ -9,7 +9,7 @@ import {
   Activity, Loader2, TrendingUp, TrendingDown, ArrowRight,
   Users, Wifi, BarChart3, Zap, Clock, DollarSign,
   Bell, X, ExternalLink, AlertTriangle, CheckCircle2,
-  Minus, ChevronRight, Gauge,
+  Minus, ChevronRight, Gauge, Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
@@ -52,6 +52,11 @@ const WINDOW_LABELS: Record<Window, string> = { "3d": "3 Days", "7d": "7 Days", 
 const MARKET_LABEL: Record<string, string> = {
   first_overall: "#1 Overall", top_3_pick: "Top 3", top_5_pick: "Top 5",
   top_10_pick: "Top 10", first_round: "1st Rd",
+};
+
+type XLeader = {
+  id: number; name: string; outlet: string;
+  xScore: number; xScoreRank: number; xScoreSitesCount: number;
 };
 
 // ─── Scrolling Market Ticker ──────────────────────────────────────────────────
@@ -389,10 +394,66 @@ function SourceCoverage({ analysts }: { analysts: Analyst[] }) {
   );
 }
 
+// ─── X Score Leaders ──────────────────────────────────────────────────────────
+function XScoreLeaders({ leaders }: { leaders: XLeader[] }) {
+  const medals = ["text-amber-400", "text-slate-300", "text-orange-400"];
+  return (
+    <div className="bg-card/50 border border-white/5 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-amber-400" />
+          Analyst X Score Leaders
+        </h3>
+        <Link href="/accuracy">
+          <span className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1 font-mono">
+            Full Leaderboard <ArrowRight className="w-3 h-3" />
+          </span>
+        </Link>
+      </div>
+      <div className="space-y-2">
+        {leaders.map((a, i) => {
+          const color = i < 3
+            ? (i === 0 ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+              : i === 1 ? "bg-white/10 text-white/70 border-white/20"
+              : "bg-orange-500/15 text-orange-400 border-orange-500/25")
+            : "bg-white/5 text-white/50 border-white/10";
+          return (
+            <div key={a.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className={cn("text-[10px] font-bold font-mono w-5 text-center shrink-0", medals[i] ?? "text-white/30")}>
+                  #{a.xScoreRank}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white truncate leading-tight">{a.name}</p>
+                  <p className="text-[10px] text-white/40 font-mono truncate">{a.outlet}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-3">
+                <span className="text-[10px] text-white/30 font-mono">{a.xScoreSitesCount} yrs</span>
+                <span className={cn("inline-flex items-center px-2 py-0.5 rounded border text-xs font-mono font-bold", color)}>
+                  {a.xScore.toFixed(3)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-[10px] text-white/25 font-mono">
+        Z-score composite · THR + FantasyPros + WalterFootball · 2021–2025
+      </p>
+    </div>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { data: players, isLoading } = usePlayers();
   const { data: analysts = [] } = useQuery<Analyst[]>({ queryKey: ["/api/analysts"] });
+  const { data: xLeaders = [] } = useQuery<XLeader[]>({
+    queryKey: ["/api/accuracy/leaderboard"],
+    queryFn: () => fetch("/api/accuracy/leaderboard?minYears=2").then(r => r.json()),
+    select: (d: any[]) => d.slice(0, 5),
+  });
   const { data: windowData = [], isLoading: windowLoading } = useQuery<AdpWindowPlayer[]>({ queryKey: ["/api/adp-windows"] });
   const { data: oddsMovers = [], isLoading: oddsLoading } = useQuery<OddsMover[]>({ queryKey: ["/api/odds/movers"] });
   const { data: discrepancy = [], isLoading: discrepancyLoading } = useQuery<DiscrepancyRow[]>({ queryKey: ["/api/discrepancy"] });
@@ -653,7 +714,7 @@ export default function Dashboard() {
           ) : null}
         </div>
 
-        {/* ── Position Breakdown + Source Coverage ───────────────────────── */}
+        {/* ── Position Breakdown + Source Coverage + X Score ─────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-3">
             <h2 className="text-sm uppercase tracking-widest text-muted-foreground font-mono flex items-center gap-2">
@@ -668,6 +729,29 @@ export default function Dashboard() {
             <SourceCoverage analysts={analysts} />
           </div>
         </div>
+
+        {/* ── Analyst X Score Leaders ─────────────────────────────────────── */}
+        {xLeaders.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <XScoreLeaders leaders={xLeaders} />
+            <div className="bg-card/30 border border-white/5 rounded-2xl p-5 flex flex-col justify-center">
+              <p className="text-[11px] uppercase tracking-widest text-white/30 font-mono mb-3">About X Score</p>
+              <p className="text-sm text-white/60 leading-relaxed mb-4">
+                X Score is a Z-score normalized composite accuracy ranking across three independent tracking sites — The Huddle Report, FantasyPros, and WalterFootball — spanning 2021–2025. Higher is better. Minimum 2 site-years required to qualify.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {["The Huddle Report", "FantasyPros", "WalterFootball"].map(s => (
+                  <span key={s} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/8 rounded text-white/40">{s}</span>
+                ))}
+              </div>
+              <Link href="/accuracy">
+                <div className="mt-4 inline-flex items-center gap-2 text-xs text-primary font-mono hover:underline cursor-pointer">
+                  <Trophy className="w-3 h-3" />View Full Leaderboard →
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* ── Top Prospects Grid ─────────────────────────────────────────── */}
         <div>
