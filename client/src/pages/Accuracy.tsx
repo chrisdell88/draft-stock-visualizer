@@ -22,7 +22,6 @@ const SITE_META: Record<string, { label: string; color: string; max: number; not
   thr:    { label: "THR",   color: "text-amber-400",  max: 96,  note: "0–96 pts (1pt=player, 2pt=player+team)" },
   fp:     { label: "FP",    color: "text-blue-400",   max: 320, note: "0–320 pts (4 categories × 32 picks)" },
   wf:     { label: "WF",    color: "text-emerald-400", max: 32, note: "0–32 correct player+team matches" },
-  nflmdd: { label: "MFDB",  color: "text-purple-400", max: 100, note: "0–100% accuracy score" },
 };
 
 const YEARS = [2021, 2022, 2023, 2024, 2025];
