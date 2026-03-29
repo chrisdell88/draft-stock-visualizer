@@ -1,0 +1,126 @@
+# NFLMDD 2025 Final Accuracy Scores
+# Source: nflmockdraftdatabase.com/mock-drafts/2025/final-scores
+# IMPORTANT: NFLMDD scores individual mock draft SUBMISSIONS, not analysts.
+# The same analyst can appear multiple times (different mock drafts submitted).
+# Total: 1530 mock drafts scored. Paginated 27/page.
+# For X Score: group by analyst, take best score.
+# Scoring: team=10pts, position=10pts, player=10pts, team+pos+player combo=100pt bonus
+# Scores displayed as % out of 100%.
+
+# TOP 108 ENTRIES (pages 1-4):
+Rank	Analyst	Outlet	Score%
+1	Nick Jacobs	KSHB	38.94%
+2	Freddy Branson	Johns Hopkins News-Letter	36.3%
+3	Matthew Freedman	Fantasy Life	33.89%
+4	Mike Band	NFL.com	33.65%
+5	Andrew Erickson	Fantasy Pros	33.41%
+6	Matthew Jones	Fantasy Pros	33.17%
+7	Nick Brinkerhoff	USA Today	33.17%
+8	Dan Hope	Eleven Warriors	32.69%
+9	Jacob Camenker	USA Today	31.01%
+10	Anthony Amico	In The Aggregate	30.77%
+11	Seth Quinn	Newsweek	30.77%
+12	Matt Brandon	SI	30.77%
+13	Brad Biggs	Chicago Tribune	30.29%
+14	Jared Smola	Draft Sharks	30.29%
+15	Ryan Wilson	CBS	30.05%
+16	Ryan Wilson	CBS	30.05%
+17	Scotty Payne	Mile High Report	30.05%
+18	Trevor Sikkema	Pro Football Focus	30.05%
+19	Anthony Rizzuti	Panthers Wire	29.81%
+20	John Kosko	Pro Football Focus	29.57%
+21	Michael Fabiano	SI	29.57%
+22	Phil Perry	NBC Sports Boston	29.33%
+23	Scott Smith	RotoViz	29.33%
+24	Josh Edwards	CBS	29.09%
+25	Ryan Wilson	CBS	29.09%
+26	Dan Parr	NFL.com	28.85%
+27	Jordan Reid	ESPN	28.61%
+28	Pete Prisco	CBS	28.13%
+29	Matthew Freedman	Fantasy Life	28.13%
+30	Pat Fitzmaurice	Fantasy Pros	28.13%
+31	Nate Bouda	NFL Trade Rumors	28.13%
+32	Ryan Novozinsky	NJ.com	28.13%
+33	Aaron Jurkowitz	Outer Banks Voice	28.13%
+34	Matt Brandon	SI	28.13%
+35	Michael Fabiano	SI	28.13%
+36	HC Green	The Huddle	28.13%
+37	Nick Guarisco	Fantasy Law Guy	27.88%
+38	Kent Weyrauch	Fantasy Pros	27.88%
+39	Michelle R. Martinelli	For The Win	27.88%
+40	Dan Parr	NFL.com	27.88%
+41	Gordon McGuinness	Pro Football Focus	27.88%
+42	Jacob Infante	Pro Football Network	27.88%
+43	Sam Teets	Sports Talk	27.88%
+44	Ayrton Ostly	USA Today	27.88%
+45	Joe Rivera	USA Today	27.88%
+46	Josh Edwards	CBS	27.64%
+47	John Daigle	Establish The Run	27.64%
+48	Matthew Freedman	Fantasy Life	27.64%
+49	Alfredo Brown	Football Guys	27.64%
+50	Nick Wright	Fox Sports	27.64%
+51	Jeff Ratcliffe	FTN Fantasy	27.64%
+52	Matt Brandon	SI	27.64%
+53	Ryan Noonan	4 For 4	27.4%
+54	Jonathan Cook	The Huddle Report	27.4%
+55	Owain Jones	College Football Network	27.4%
+56	Matt Donnelly	Rotoballer	27.4%
+57	Andrew Harbaugh	Vikings Wire	27.4%
+58	Walter Cherepinsky	Walter Football	27.4%
+59	Sean Balzer	NFL Draft Lounge	27.16%
+60	Rob Staton	Seahawks Draft Blog	27.16%
+61	Scott Smith	4 For 4	26.92%
+62	Ryan Wilson	CBS	26.92%
+63	Ryan Wilson	CBS	26.92%
+64	Eric Froton	NBC Sports	26.92%
+65	Cody Carpentier	Player Profiler	26.92%
+66	Staff	Takeaways	26.92%
+67	Jacob Camenker	USA Today	26.92%
+68	Cameron Sheath	Pro Football Network	26.68%
+69	Kyle Stackpole	CBS	26.2%
+70	Michael Renner	CBS	26.2%
+71	Mason Cameron	Pro Football Focus	26.2%
+72	Bryan DeArdo	CBS	25.96%
+73	John Kosko	Pro Football Focus	25.96%
+74	Michael Renner	CBS	25.72%
+75	Matt Youmans	VSIN	25.72%
+76	Connor Rogers	NBC Sports	25.48%
+77	Sean Newcomb	The Daily Targum	25.48%
+78	David Dorey	The Huddle	25.48%
+79	Michael Middlehurst-Schwartz	USA Today	25.48%
+80	Michaela Althouse	The Collegian	25.24%
+81	Lou Pickney	Mock Draft NFL	25.24%
+82	Brad Biggs	Chicago Tribune	25.24%
+83	John Daigle	Establish The Run	25.24%
+84	Pat Fitzmaurice	Fantasy Pros	25.24%
+85	Kory Woods	M Live	25.24%
+86	Kyle Dvorchak	NBC Sports	25.24%
+87	Sayre Bedinger	NFL Spin Zone	25.24%
+88	Johnny McGonigal	Penn Live	25.24%
+89	Matt Stopsky	Sumer Sports	25.24%
+90	Staff	Takeaways	25.24%
+92	Dan Kadar	Akron Beacon Journal	25.0%
+93	Evan Wanish	Bucs Nation	25.0%
+94	Owain Jones	College Football Network	25.0%
+95	Cory Kinnan	Daft on Draft	25.0%
+96	Ayrton Ostly	Milwaukee Journal Sentinel	25.0%
+97	Cory Bonini	The Huddle	25.0%
+98	Tyler Dragon	USA Today	25.0%
+99	Kyle Crabbs	33rd Team	24.76%
+100	Peter Schrager	ESPN	24.76%
+101	Phil Perry	NBC Sports Boston	24.76%
+102	Nate Bouda	NFL Trade Rumors	24.76%
+103	A.J. Cola	Raiders Wire	24.76%
+104	Eddie Brown	San Diego Union Tribune	24.76%
+105	Richie Bradshaw	SI	24.76%
+106	Cory Bonini	The Huddle	24.76%
+107	Hayden Winks	Underdog	24.76%
+108	(page cut off)
+
+# METHODOLOGY NOTE FOR X SCORE:
+# NFLMDD scores differ significantly from THR/FP because:
+# - Rewards exact team-position-player combos (100pt bonus)
+# - Scores every submission, not just analysts' best/final mock
+# - Unknown analysts can rank highly from a single lucky mock
+# - For X Score: best score per analyst, min 1 submission
+# - Consider lower weight in composite vs THR (which has stricter eligibility)
