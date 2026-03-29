@@ -15,14 +15,12 @@ interface WFPick {
 // WalterFootball Charlie pages use div[id^="mockDraftSlot_"] with <a class="report-link">
 async function parseWalterfootballPage(url: string): Promise<WFPick[]> {
   let html: string;
-  console.log(`[WF] fetching ${url}...`);
   try {
     html = await fetchHtml(url);
   } catch (err) {
-    console.error(`[WF] fetch FAILED for ${url}:`, err instanceof Error ? err.message : String(err));
+    console.warn(`[WF] fetch failed for ${url}:`, err instanceof Error ? err.message : String(err));
     return [];
   }
-  console.log(`[WF] fetched ${url} (${html.length} bytes)`);
   const $ = cheerio.load(html);
   const picks: WFPick[] = [];
 
@@ -134,11 +132,8 @@ async function runWalterfootball(
   // Scrape pages sequentially to avoid rate limiting
   const allPicks: Array<{ pickNumber: number; playerName: string; position?: string | null; college?: string | null }> = [];
   const seenPickNums = new Set<number>();
-  console.log(`[WF] ${sourceKey}: starting loop over ${pageUrls.length} pages`);
   for (const url of pageUrls) {
-    console.log(`[WF] ${sourceKey}: about to parse ${url}`);
     const pagePicks = await parseWalterfootballPage(url);
-    console.log(`[WF] ${sourceKey}: got ${pagePicks.length} picks from ${url}`);
     for (const pick of pagePicks) {
       if (!seenPickNums.has(pick.pickNumber)) {
         seenPickNums.add(pick.pickNumber);
@@ -148,7 +143,6 @@ async function runWalterfootball(
     // Delay between pages to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
-  console.log(`[WF] ${sourceKey}: loop done, ${allPicks.length} total picks`);
 
   const analyst = await storage.getAnalystBySourceKey(analystSourceKey);
   const mockDraft = await storage.createMockDraft({
