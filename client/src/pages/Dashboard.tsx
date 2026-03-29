@@ -463,7 +463,7 @@ export default function Dashboard() {
     enabled: activityOpen,
   });
 
-  const [activeWindow, setActiveWindow] = useState<Window>("7d");
+  const [activeWindow, setActiveWindow] = useState<Window>("30d");
 
   const sorted = [...(players ?? [])].sort((a, b) => (a.currentAdp ?? 99) - (b.currentAdp ?? 99));
   const topProspects = sorted.slice(0, 6);
