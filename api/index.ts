@@ -111,7 +111,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Health check
     if (path === "/health" || path === "/" || path === "") {
-      return res.json({ status: "ok", timestamp: new Date().toISOString() });
+      const dbUrl = process.env.DATABASE_URL || "NOT SET";
+      const masked = dbUrl.substring(0, 30) + "..." + dbUrl.substring(dbUrl.length - 15);
+      return res.json({ status: "ok", timestamp: new Date().toISOString(), db_hint: masked, db_length: dbUrl.length });
     }
 
     return res.status(404).json({ message: "Not found" });
