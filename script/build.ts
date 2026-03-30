@@ -60,22 +60,8 @@ async function buildAll() {
     logLevel: "info",
   });
 
-  // Build Vercel serverless API function — fully self-contained, zero externals
-  console.log("building vercel api function...");
-  await rm("api", { recursive: true, force: true });
-  await esbuild({
-    entryPoints: ["server/vercel.ts"],
-    platform: "node",
-    bundle: true,
-    format: "esm",
-    outfile: "api/index.mjs",
-    banner: { js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
-    minify: true,
-    alias: {
-      "@shared": "./shared",
-    },
-    logLevel: "info",
-  });
+  // NOTE: api/index.mjs is pre-built and committed to git.
+  // Do NOT rebuild or delete it here — Vercel uses it as-is.
 }
 
 buildAll().catch((err) => {
