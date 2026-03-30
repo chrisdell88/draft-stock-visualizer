@@ -68,7 +68,7 @@ async function buildAll() {
     platform: "node",
     bundle: true,
     format: "esm",
-    outfile: "api/index.js",
+    outfile: "api/index.mjs",
     banner: { js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);" },
     minify: true,
     external: externals,
