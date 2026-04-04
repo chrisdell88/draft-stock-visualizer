@@ -12,7 +12,7 @@ import {
   Minus, ChevronRight, Gauge, Trophy, Lock, CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Analyst = {
@@ -24,6 +24,7 @@ type AdpWindowPlayer = {
   id: number; name: string; position: string | null; college: string | null;
   currentAdp: number | null;
   change3d: number | null; change7d: number | null; change30d: number | null;
+  changeAll: number | null;
 };
 
 type OddsMover = {
@@ -44,9 +45,9 @@ type ActivityItem = {
   boardType: string | null; publishedAt: string | null; url: string | null;
 };
 
-type Window = "3d" | "7d" | "30d";
+type Window = "3d" | "7d" | "30d" | "all";
 
-const WINDOW_LABELS: Record<Window, string> = { "3d": "3 Days", "7d": "7 Days", "30d": "30 Days" };
+const WINDOW_LABELS: Record<Window, string> = { "3d": "3 Days", "7d": "7 Days", "30d": "30 Days", "all": "All Time" };
 
 // ─── Market Type labels ───────────────────────────────────────────────────────
 const MARKET_LABEL: Record<string, string> = {
@@ -76,23 +77,90 @@ function getTickerLastName(fullName: string): string {
   return lastName.toUpperCase();
 }
 
+const TICKER_SPEED = 80; // px/sec
+
 function MarketTicker({ players }: { players: ReturnType<typeof usePlayers>["data"] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const posRef = useRef(0);
+  const animRef = useRef(0);
+  const draggingRef = useRef(false);
+  const dragStartRef = useRef({ clientX: 0, posX: 0 });
+  const lastTimeRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+
   if (!players?.length) return null;
-  // Only show ADP 1-32 (first round)
   const sorted = [...players]
     .filter(p => (p.currentAdp ?? 99) <= 32)
     .sort((a, b) => (a.currentAdp ?? 99) - (b.currentAdp ?? 99));
-  // Duplicate for seamless loop
-  const items = [...sorted, ...sorted, ...sorted];
+  // 2 copies for seamless loop: wrap at scrollWidth/2
+  const items = [...sorted, ...sorted];
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    let raf = 0;
+    const animate = (ts: number) => {
+      if (!draggingRef.current) {
+        const elapsed = lastTimeRef.current ? (ts - lastTimeRef.current) / 1000 : 0;
+        lastTimeRef.current = ts;
+        const halfW = track.scrollWidth / 2;
+        if (halfW > 0) {
+          posRef.current -= TICKER_SPEED * elapsed;
+          if (posRef.current <= -halfW) posRef.current += halfW;
+          track.style.transform = `translateX(${posRef.current}px)`;
+        }
+      } else {
+        lastTimeRef.current = ts;
+      }
+      raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, []);  // runs once on mount
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    draggingRef.current = true;
+    dragStartRef.current = { clientX: e.clientX, posX: posRef.current };
+    setIsDragging(true);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current || !trackRef.current) return;
+    const delta = e.clientX - dragStartRef.current.clientX;
+    const halfW = trackRef.current.scrollWidth / 2;
+    let newX = dragStartRef.current.posX + delta;
+    // Keep within one cycle
+    while (newX > 0) newX -= halfW;
+    while (newX < -halfW) newX += halfW;
+    posRef.current = newX;
+    trackRef.current.style.transform = `translateX(${newX}px)`;
+  };
+
+  const onPointerUp = () => {
+    draggingRef.current = false;
+    setIsDragging(false);
+  };
+
   return (
-    <div className="overflow-hidden border-y border-white/20 bg-black/40 py-2.5 relative select-none" data-testid="market-ticker">
+    <div
+      ref={containerRef}
+      className="overflow-hidden border-y border-white/20 bg-black/40 py-2.5 relative"
+      style={{ cursor: isDragging ? 'grabbing' : 'grab', userSelect: 'none' }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
+      data-testid="market-ticker"
+    >
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/80 to-transparent z-10 pointer-events-none" />
-      <div ref={trackRef} className="flex gap-0 whitespace-nowrap" style={{ animation: "ticker-scroll 28s linear infinite" }}>
+      <div ref={trackRef} className="flex gap-0 whitespace-nowrap will-change-transform">
         {items.map((p, idx) => {
           const change = p.adpChange ?? 0;
-          const isUp = change > 0.2; const isDown = change < -0.2;
+          const isUp = change > 0.2;
+          const isDown = change < -0.2;
           const nameDisplay = getTickerLastName(p.name);
           return (
             <span key={idx} className="inline-flex items-center gap-2 px-4 text-xs font-mono border-r border-white/5" data-testid={`ticker-item-${p.id}`}>
@@ -107,7 +175,6 @@ function MarketTicker({ players }: { players: ReturnType<typeof usePlayers>["dat
           );
         })}
       </div>
-      <style>{`@keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }`}</style>
     </div>
   );
 }
@@ -117,12 +184,13 @@ const WINDOW_DISPLAY: Record<Window, { num: string; unit: string }> = {
   "3d":  { num: "3",  unit: "d" },
   "7d":  { num: "7",  unit: "d" },
   "30d": { num: "30", unit: "d" },
+  "all": { num: "ALL", unit: "" },
 };
 
 function WindowSelector({ value, onChange }: { value: Window; onChange: (w: Window) => void }) {
   return (
     <div className="flex items-center gap-1 bg-black/40 rounded-lg p-0.5 border border-white/10">
-      {(["3d", "7d", "30d"] as Window[]).map(w => {
+      {(["3d", "7d", "30d", "all"] as Window[]).map(w => {
         const { num, unit } = WINDOW_DISPLAY[w];
         const isActive = value === w;
         return (
@@ -138,7 +206,7 @@ function WindowSelector({ value, onChange }: { value: Window; onChange: (w: Wind
             )}
           >
             <span className="text-[11px]">{num}</span>
-            <span className={cn("text-[9px] ml-[1px]", isActive ? "text-black/70" : "text-muted-foreground/60")}>{unit}</span>
+            {unit && <span className={cn("text-[9px] ml-[1px]", isActive ? "text-black/70" : "text-muted-foreground/60")}>{unit}</span>}
           </button>
         );
       })}
@@ -223,22 +291,17 @@ function PositionSummary({ players }: { players: NonNullable<ReturnType<typeof u
   const positions = ["QB", "RB", "WR", "TE", "OT", "IOL", "EDGE", "LB", "S", "CB"];
   const posCounts = positions.map(pos => {
     const group = players.filter(p => p.position === pos);
-    const rising = group.filter(p => (p.adpChange ?? 0) > 0.2).length;
-    const falling = group.filter(p => (p.adpChange ?? 0) < -0.2).length;
-    return { pos, count: group.length, rising, falling };
+    return { pos, count: group.length };
   }).filter(p => p.count > 0);
   return (
     <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-      {posCounts.map(({ pos, count, rising, falling }) => (
-        <div key={pos} className="bg-card/40 border border-white/5 rounded-xl p-3 text-center" data-testid={`position-card-${pos}`}>
-          <p className="text-xs font-bold text-primary font-mono">{pos}</p>
-          <p className="text-lg font-bold text-white font-mono">{count}</p>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            {rising > 0 && <span className="text-[10px] text-[#00e676] font-mono">▲{rising}</span>}
-            {falling > 0 && <span className="text-[10px] text-[#ff4444] font-mono">▼{falling}</span>}
-            {rising === 0 && falling === 0 && <span className="text-[10px] text-muted-foreground font-mono">—</span>}
+      {posCounts.map(({ pos, count }) => (
+        <Link key={pos} href={`/players?position=${pos}`}>
+          <div className="bg-card/40 border border-white/5 rounded-xl p-3 text-center cursor-pointer hover:border-primary/30 hover:bg-card/70 transition-all" data-testid={`position-card-${pos}`}>
+            <p className="text-xs font-bold text-primary font-mono">{pos}</p>
+            <p className="text-lg font-bold text-white font-mono">{count}</p>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
@@ -460,7 +523,7 @@ function XScoreLeaders({ leaders }: { leaders: XLeader[] }) {
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-white truncate leading-tight">{a.name}</p>
-                  <p className="text-[10px] text-white/40 font-mono truncate">{a.outlet}</p>
+                  <p className="text-[10px] text-white/50 font-mono truncate">{a.outlet}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-3">
@@ -473,7 +536,7 @@ function XScoreLeaders({ leaders }: { leaders: XLeader[] }) {
           );
         })}
       </div>
-      <p className="mt-3 text-[10px] text-white/25 font-mono">
+      <p className="mt-3 text-[10px] text-white/40 font-mono">
         Z-score composite · THR + FantasyPros + WalterFootball · 2021–2025
       </p>
     </div>
@@ -525,7 +588,7 @@ export default function Dashboard() {
 
   // Window-aware movers from /api/adp-windows
   const getChange = (p: AdpWindowPlayer): number | null => {
-    return activeWindow === "3d" ? p.change3d : activeWindow === "7d" ? p.change7d : p.change30d;
+    return activeWindow === "3d" ? p.change3d : activeWindow === "7d" ? p.change7d : activeWindow === "30d" ? p.change30d : (p.change30d ?? null);
   };
 
   const withChange = windowData.filter(p => getChange(p) !== null && Math.abs(getChange(p)!) > 0.1);
@@ -570,8 +633,7 @@ export default function Dashboard() {
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">2026 NFL Draft</h1>
           <p className="text-muted-foreground max-w-2xl text-sm">
-            ADP based on {analysts.length}+ analyst mock drafts. Updated daily from WalterFootball, Tankathon, MDDB, and 25+ individual sources.
-            {mockDraftCount > 0 && <span className="ml-1 text-white/40 font-mono text-xs">Based on {mockDraftCount} mock drafts.</span>}
+            Consensus ADP based on {mockDraftCount > 0 ? mockDraftCount : analysts.length} mock drafts, accuracy-weighted using The Huddle Report, FantasyPros & WalterFootball.
           </p>
         </header>
 
@@ -832,7 +894,7 @@ export default function Dashboard() {
               </p>
               <div className="flex flex-wrap gap-2">
                 {["The Huddle Report", "FantasyPros", "WalterFootball"].map(s => (
-                  <span key={s} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/8 rounded text-white/40">{s}</span>
+                  <span key={s} className="text-[10px] font-mono px-2 py-1 bg-white/5 border border-white/8 rounded text-white/50">{s}</span>
                 ))}
               </div>
               <Link href="/accuracy">

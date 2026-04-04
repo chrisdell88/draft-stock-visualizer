@@ -126,6 +126,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.json(result.rows);
     }
 
+    if (path.startsWith("/players/") && path.endsWith("/positionrank")) {
+      const id = parseInt(path.split("/")[2]);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid player ID" });
+      const result = await pool.query(`
+        WITH target AS (
+          SELECT p.id, p.position,
+            (SELECT adp_value FROM adp_history WHERE player_id = p.id ORDER BY date DESC LIMIT 1) AS adp
+          FROM players p WHERE p.id = $1
+        ),
+        ranked AS (
+          SELECT p.id, p.position,
+            (SELECT adp_value FROM adp_history WHERE player_id = p.id ORDER BY date DESC LIMIT 1) AS adp
+          FROM players p
+          WHERE p.position = (SELECT position FROM target)
+        ),
+        with_rank AS (
+          SELECT id, position, adp,
+            RANK() OVER (ORDER BY adp ASC NULLS LAST) AS pos_rank,
+            COUNT(*) OVER () AS pos_total
+          FROM ranked
+          WHERE adp IS NOT NULL
+        )
+        SELECT pos_rank AS rank, pos_total AS total, position
+        FROM with_rank WHERE id = $1
+      `, [id]);
+      if (result.rows.length === 0) return res.json({ rank: null, total: null, position: null });
+      const r = result.rows[0];
+      return res.json({ rank: Number(r.rank), total: Number(r.total), position: r.position });
+    }
+
     if (path.startsWith("/players/") && path.endsWith("/rankings")) {
       const id = parseInt(path.split("/")[2]);
       const result = await pool.query(`
@@ -237,7 +267,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             WHEN latest.adp_value IS NOT NULL AND ago30d.adp_value IS NOT NULL
             THEN (ago30d.adp_value::numeric - latest.adp_value::numeric)
             ELSE NULL
-          END as change30d
+          END as change30d,
+          CASE
+            WHEN latest.adp_value IS NOT NULL AND first_snap.adp_value IS NOT NULL
+            THEN (first_snap.adp_value::numeric - latest.adp_value::numeric)
+            ELSE NULL
+          END as change_all
         FROM players p
         LEFT JOIN LATERAL (
           SELECT adp_value FROM adp_history WHERE player_id = p.id ORDER BY date DESC LIMIT 1
@@ -251,6 +286,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         LEFT JOIN LATERAL (
           SELECT adp_value FROM adp_history WHERE player_id = p.id AND date <= NOW() - INTERVAL '30 days' ORDER BY date DESC LIMIT 1
         ) ago30d ON true
+        LEFT JOIN LATERAL (
+          SELECT adp_value FROM adp_history WHERE player_id = p.id ORDER BY date ASC LIMIT 1
+        ) first_snap ON true
         ORDER BY latest.adp_value::numeric ASC NULLS LAST
       `);
       const windowPlayers = result.rows.map((r: any) => ({
@@ -262,6 +300,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         change3d: r.change3d !== null ? Number(r.change3d) : null,
         change7d: r.change7d !== null ? Number(r.change7d) : null,
         change30d: r.change30d !== null ? Number(r.change30d) : null,
+        changeAll: r.change_all !== null ? Number(r.change_all) : null,
       }));
       return res.json(windowPlayers);
     }
