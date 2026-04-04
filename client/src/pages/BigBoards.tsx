@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, TrendingUp, TrendingDown, ExternalLink, Award, BarChart3 } from "lucide-react";
+import { format } from "date-fns";
+import { Loader2, TrendingUp, TrendingDown, ExternalLink, Award, BarChart3, Info, X, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -65,6 +66,14 @@ export default function BigBoards() {
   });
 
   const [posFilter, setPosFilter] = useState<string>("ALL");
+  const [showKey, setShowKey] = useState(false);
+  const [sortCol, setSortCol] = useState<"avg" | "name" | "pos" | "college">("avg");
+  const [sortDesc, setSortDesc] = useState(false);
+
+  const toggleSort = (col: typeof sortCol) => {
+    if (sortCol === col) setSortDesc(d => !d);
+    else { setSortCol(col); setSortDesc(false); }
+  };
 
   const positions = useMemo(() => {
     if (!data?.players) return ["ALL"];
@@ -88,8 +97,16 @@ export default function BigBoards() {
           return vals.length ? Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10 : Infinity;
         })(),
       }));
-    return rows.sort((a, b) => a.avgRank - b.avgRank);
-  }, [data, posFilter]);
+    rows.sort((a, b) => {
+      let cmp = 0;
+      if (sortCol === "avg") cmp = a.avgRank - b.avgRank;
+      else if (sortCol === "name") cmp = a.name.localeCompare(b.name);
+      else if (sortCol === "pos") cmp = (a.position ?? "").localeCompare(b.position ?? "");
+      else if (sortCol === "college") cmp = (a.college ?? "").localeCompare(b.college ?? "");
+      return sortDesc ? -cmp : cmp;
+    });
+    return rows;
+  }, [data, posFilter, sortCol, sortDesc]);
 
   return (
     <Layout>
@@ -104,10 +121,17 @@ export default function BigBoards() {
             Talent rankings — individual analyst evaluations, not team-specific mock drafts
           </p>
         </div>
-        <div className="text-right">
+        <div className="flex items-center gap-3">
           <p className="text-xs text-muted-foreground font-mono">
             {data?.drafts.length ?? 0} board{data?.drafts.length !== 1 ? "s" : ""} · {filteredRows.length} prospects
           </p>
+          <button
+            onClick={() => setShowKey(true)}
+            className="flex items-center gap-1.5 text-xs font-mono text-white/40 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-lg px-3 py-1.5"
+          >
+            <Info className="w-3.5 h-3.5" />
+            Sources Key
+          </button>
         </div>
       </div>
 
@@ -167,16 +191,39 @@ export default function BigBoards() {
             <table className="w-full text-sm" data-testid="bigboards-matrix">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="sticky left-0 z-10 bg-card/90 backdrop-blur-md px-4 py-3 text-left font-mono text-xs text-muted-foreground uppercase tracking-widest w-48">
-                    Prospect
+                  <th className="sticky left-0 z-10 bg-card/90 backdrop-blur-md px-4 py-3 text-left w-48">
+                    <button
+                      onClick={() => toggleSort("name")}
+                      className="flex items-center gap-1 font-mono text-xs text-muted-foreground uppercase tracking-widest hover:text-white transition-colors"
+                    >
+                      <ArrowUpDown className="w-2.5 h-2.5 shrink-0" />
+                      Prospect
+                      {sortCol === "name" && <span className="text-violet-400">{sortDesc ? "↓" : "↑"}</span>}
+                    </button>
                   </th>
-                  <th className="px-3 py-3 text-center font-mono text-xs text-muted-foreground uppercase w-16">ADP</th>
+                  <th className="px-3 py-3 text-center w-16">
+                    <button
+                      onClick={() => toggleSort("avg")}
+                      className="flex items-center gap-1 font-mono text-xs text-muted-foreground uppercase hover:text-white transition-colors mx-auto"
+                    >
+                      ADP
+                      {sortCol === "avg" && <span className="text-violet-400">{sortDesc ? "↓" : "↑"}</span>}
+                    </button>
+                  </th>
                   {data.drafts.map(d => (
                     <th key={d.id} className="px-3 py-3 text-center font-mono text-xs text-violet-400 uppercase whitespace-nowrap">
                       {d.shortName}
                     </th>
                   ))}
-                  <th className="px-3 py-3 text-center font-mono text-xs text-muted-foreground uppercase w-16">Avg</th>
+                  <th className="px-3 py-3 text-center w-16">
+                    <button
+                      onClick={() => toggleSort("avg")}
+                      className="flex items-center gap-1 font-mono text-xs text-muted-foreground uppercase hover:text-white transition-colors mx-auto"
+                    >
+                      Avg
+                      {sortCol === "avg" && <span className="text-violet-400">{sortDesc ? "↓" : "↑"}</span>}
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -257,6 +304,57 @@ export default function BigBoards() {
         <BarChart3 className="w-3 h-3" />
         Big boards reflect talent rankings — players shown in ascending rank order. Color: green = top talent, orange/red = later board placement.
       </div>
+
+      {/* Sources Key Modal */}
+      {showKey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowKey(false)}
+        >
+          <div
+            className="bg-[#0d1117] border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">Big Board Sources</h3>
+              <button onClick={() => setShowKey(false)} className="text-white/40 hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {data?.drafts && data.drafts.length > 0 ? (
+                data.drafts.map(d => (
+                  <div key={d.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-white text-xs font-semibold truncate">{d.sourceName}</span>
+                      <span className="text-muted-foreground text-[10px] font-mono">{d.shortName}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
+                      {d.publishedAt && (
+                        <span className="text-muted-foreground text-[10px] font-mono">
+                          {format(new Date(d.publishedAt), "M/d/yy")}
+                        </span>
+                      )}
+                      {d.url && (
+                        <a
+                          href={d.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-violet-400 hover:text-violet-300 transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-xs font-mono text-center py-4">No sources loaded.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

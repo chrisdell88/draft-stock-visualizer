@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   Loader2, TrendingUp, TrendingDown, Minus, ExternalLink,
-  ArrowUpDown, BarChart3, Eye, EyeOff, RefreshCw, Activity, Award,
+  ArrowUpDown, BarChart3, Eye, EyeOff, RefreshCw, Activity, Award, Info, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -109,6 +109,7 @@ export default function MockDrafts() {
   const [sortDesc, setSortDesc] = useState(false);
   const [filterPos, setFilterPos] = useState<string>("all");
   const [showLegend, setShowLegend] = useState(true);
+  const [showKey, setShowKey] = useState(false);
 
   const positions = useMemo(() => {
     const set = new Set(data?.players.map(p => p.position).filter(Boolean) as string[]);
@@ -241,6 +242,13 @@ export default function MockDrafts() {
             >
               {showLegend ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
               Legend
+            </button>
+            <button
+              onClick={() => setShowKey(true)}
+              className="flex items-center gap-1.5 text-xs font-mono text-white/40 hover:text-white transition-colors border border-white/10 hover:border-white/20 rounded-lg px-3 py-1.5"
+            >
+              <Info className="w-3.5 h-3.5" />
+              Sources Key
             </button>
             <Button
               size="sm"
@@ -446,6 +454,59 @@ export default function MockDrafts() {
           </div>
         </div>
       </div>
+
+      {/* Sources Key Modal */}
+      {showKey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={() => setShowKey(false)}
+        >
+          <div
+            className="bg-[#0d1117] border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
+                {boardView === "mock" ? "Mock Draft Sources" : "Big Board Sources"}
+              </h3>
+              <button onClick={() => setShowKey(false)} className="text-white/40 hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              {sortedDrafts.length > 0 ? (
+                sortedDrafts.map(draft => (
+                  <div key={draft.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-white text-xs font-semibold truncate">{draft.sourceName}</span>
+                      <span className="text-muted-foreground text-[10px] font-mono">{draft.shortName}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
+                      {draft.publishedAt && (
+                        <span className="text-muted-foreground text-[10px] font-mono">
+                          {format(new Date(draft.publishedAt), "M/d/yy")}
+                        </span>
+                      )}
+                      {draft.url && (
+                        <a
+                          href={draft.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary/60 hover:text-primary transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-xs font-mono text-center py-4">No sources loaded.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

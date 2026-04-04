@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { motion } from "framer-motion";
-import { Trophy, Info, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, HelpCircle, X } from "lucide-react";
+import { Trophy, HelpCircle, ChevronDown, ChevronUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -15,13 +15,11 @@ type AnalystRow = {
   scores: ScoreRow[];
 };
 
-type XBRow = { id: number; name: string; outlet: string; n: number; x_thr15: number; rank_b: number };
-
 // ─── Site display config ──────────────────────────────────────────────────────
 const SITE_META: Record<string, { label: string; color: string; max: number; note: string }> = {
-  thr:    { label: "THR",   color: "text-amber-400",  max: 96,  note: "0–96 pts (1pt=player, 2pt=player+team)" },
-  fp:     { label: "FP",    color: "text-blue-400",   max: 320, note: "0–320 pts (4 categories × 32 picks)" },
-  wf:     { label: "WF",    color: "text-emerald-400", max: 32, note: "0–32 correct player+team matches" },
+  thr:    { label: "THR",   color: "text-amber-400",   max: 96,  note: "0–96 pts (1pt=player, 2pt=player+team)" },
+  fp:     { label: "FP",    color: "text-blue-400",    max: 320, note: "0–320 pts (4 categories × 32 picks)" },
+  wf:     { label: "WF",    color: "text-emerald-400", max: 32,  note: "0–32 correct player+team matches" },
 };
 
 // Most recent year first
@@ -60,6 +58,27 @@ function XBadge({ score, rank }: { score: number | null; rank: number | null }) 
   );
 }
 
+// ─── Sortable header ──────────────────────────────────────────────────────────
+function SortTh({ col, label, currentKey, dir, onSort, className }: {
+  col: string; label: string; currentKey: string; dir: "asc" | "desc";
+  onSort: (k: string) => void; className?: string;
+}) {
+  const active = currentKey === col;
+  return (
+    <th
+      className={cn("px-3 py-2.5 text-left cursor-pointer select-none hover:text-white transition-colors group", className)}
+      onClick={() => onSort(col)}
+    >
+      <span className="flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider">
+        {label}
+        <span className={cn("text-[10px]", active ? "text-primary" : "text-white/20 group-hover:text-white/40")}>
+          {active ? (dir === "asc" ? "↑" : "↓") : "↕"}
+        </span>
+      </span>
+    </th>
+  );
+}
+
 // ─── Ratings Key Modal ────────────────────────────────────────────────────────
 function RatingsKeyModal({ onClose }: { onClose: () => void }) {
   return (
@@ -80,7 +99,7 @@ function RatingsKeyModal({ onClose }: { onClose: () => void }) {
             <span className="font-mono font-bold text-white/60">NFLMDD</span>
             <span className="text-white/60">NFL Mock Draft Database — consensus aggregator of 500–1,500+ individual mock drafts.</span>
             <span className="font-mono font-bold text-white/60">X Score</span>
-            <span className="text-white/60">Composite accuracy score — Z-score normalized across all available site-years. Higher = more consistently accurate than the field.</span>
+            <span className="text-white/60">Z-score composite across THR, FP, and WF · weighted by site quality · min 2 site-years. Higher = more consistently accurate than the field.</span>
             <span className="font-mono font-bold text-white/60">#Rank</span>
             <span className="text-white/60">Site-year rank (e.g. #1 = best score that year on that site). Shown when available; raw score shown otherwise.</span>
             <span className="font-mono font-bold text-white/60">%</span>
@@ -89,7 +108,7 @@ function RatingsKeyModal({ onClose }: { onClose: () => void }) {
             <span className="text-white/60">Number of site-year data points included in the X Score calculation.</span>
           </div>
           <div className="pt-3 border-t border-white/8 text-white/30 font-mono text-[10px]">
-            Minimum 2 site-years required for ranking. V-A = equal site weights · V-B = THR counts 1.5×
+            Minimum 2 site-years required for ranking.
           </div>
         </div>
       </div>
@@ -99,42 +118,89 @@ function RatingsKeyModal({ onClose }: { onClose: () => void }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Accuracy() {
-  const [versionB, setVersionB] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [showRatingsKey, setShowRatingsKey] = useState(false);
+  const [sortKey, setSortKey] = useState<string>("xScoreRank");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState("");
+  const [selectedAnalyst, setSelectedAnalyst] = useState<AnalystRow | null>(null);
 
-  const { data: vaData, isLoading: vaLoading } = useQuery<AnalystRow[]>({
+  const handleSort = (key: string) => {
+    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+  };
+
+  const { data: analysts = [], isLoading } = useQuery<AnalystRow[]>({
     queryKey: ["/api/accuracy/leaderboard"],
     queryFn: () => fetch("/api/accuracy/leaderboard?minYears=2").then(r => r.json()),
   });
 
-  const { data: vbData, isLoading: vbLoading, isError: vbError } = useQuery<XBRow[]>({
-    queryKey: ["/api/accuracy/leaderboard/xb"],
-    queryFn: () => fetch("/api/accuracy/leaderboard/xb").then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    }),
-    enabled: versionB,
-    retry: 1,
-  });
+  // Count analysts tracked per site in 2025
+  const siteCounts = useMemo(() => {
+    if (!analysts.length) return { thr: 0, fp: 0, wf: 0 };
+    return {
+      thr: analysts.filter(a => a.scores.some(s => s.site === "thr" && s.year === 2025)).length,
+      fp:  analysts.filter(a => a.scores.some(s => s.site === "fp"  && s.year === 2025)).length,
+      wf:  analysts.filter(a => a.scores.some(s => s.site === "wf"  && s.year === 2025)).length,
+    };
+  }, [analysts]);
 
-  const loading = versionB ? vbLoading : vaLoading;
+  // Build display rows
+  const rows = useMemo(() => {
+    return analysts
+      .filter(a => a.xScore !== null)
+      .map((a, i) => ({
+        id: a.id,
+        name: a.name,
+        outlet: a.outlet,
+        xScore: a.xScore,
+        xScoreRank: a.xScoreRank ?? i + 1,
+        siteYears: a.xScoreSitesCount ?? 0,
+        // Convenience accessors for sort
+        thr25: a.scores.find(s => s.site === "thr" && s.year === 2025)?.rawScore ?? null,
+        fp25:  a.scores.find(s => s.site === "fp"  && s.year === 2025)?.rawScore ?? null,
+        wf25:  a.scores.find(s => s.site === "wf"  && s.year === 2025)?.rawScore ?? null,
+        vaRow: a,
+      }));
+  }, [analysts]);
 
-  // Build display rows — either Version A or Version B
-  const rows: Array<{ id: number; name: string; outlet: string; xScore: number; rank: number; siteYears: number; vaRow?: AnalystRow }> = [];
+  // Filter by search
+  const filteredRows = useMemo(() => {
+    if (!search.trim()) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(r => r.name.toLowerCase().includes(q) || r.outlet.toLowerCase().includes(q));
+  }, [rows, search]);
 
-  if (!versionB && vaData) {
-    vaData.forEach((a, i) => {
-      if (a.xScore !== null) rows.push({ id: a.id, name: a.name, outlet: a.outlet, xScore: a.xScore, rank: a.xScoreRank ?? i + 1, siteYears: a.xScoreSitesCount ?? 0, vaRow: a });
+  // Sort
+  const sortedRows = useMemo(() => {
+    const sorted = [...filteredRows].sort((a, b) => {
+      let av: string | number | null;
+      let bv: string | number | null;
+      switch (sortKey) {
+        case "name":    av = a.name;    bv = b.name;    break;
+        case "outlet":  av = a.outlet;  bv = b.outlet;  break;
+        case "thr25":   av = a.thr25;   bv = b.thr25;   break;
+        case "fp25":    av = a.fp25;    bv = b.fp25;    break;
+        case "wf25":    av = a.wf25;    bv = b.wf25;    break;
+        case "xScore":  av = a.xScore;  bv = b.xScore;  break;
+        default:        av = a.xScoreRank; bv = b.xScoreRank;
+      }
+      // Nulls always last
+      if (av === null && bv === null) return 0;
+      if (av === null) return 1;
+      if (bv === null) return -1;
+      if (typeof av === "string" && typeof bv === "string") {
+        return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+      }
+      const na = av as number, nb = bv as number;
+      return sortDir === "asc" ? na - nb : nb - na;
     });
-  } else if (versionB && vbData) {
-    vbData.forEach(r => rows.push({ id: r.id, name: r.name, outlet: r.outlet, xScore: r.x_thr15, rank: r.rank_b, siteYears: r.n }));
-  }
+    return sorted;
+  }, [filteredRows, sortKey, sortDir]);
 
-  const displayRows = showAll ? rows : rows.slice(0, 30);
+  const displayRows = showAll ? sortedRows : sortedRows.slice(0, 30);
 
-  // For a given analyst get their scores organized by site+year
   function getScore(vaRow: AnalystRow, site: string, year: number): ScoreRow | undefined {
     return vaRow.scores.find(s => s.site === site && s.year === year);
   }
@@ -142,13 +208,14 @@ export default function Accuracy() {
   return (
     <Layout>
       {showRatingsKey && <RatingsKeyModal onClose={() => setShowRatingsKey(false)} />}
+
       <div className="p-6 max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Trophy className="w-6 h-6 text-amber-400" />
-              <h1 className="text-2xl font-bold text-white tracking-tight">Analyst X Score</h1>
+              <h1 className="text-2xl font-bold text-white tracking-tight">Analyst Accuracy Rankings</h1>
               <button
                 onClick={() => setShowRatingsKey(true)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md border border-white/10 text-[11px] text-white/40 hover:text-white/70 hover:border-white/20 transition-all bg-white/3 font-mono"
@@ -159,27 +226,7 @@ export default function Accuracy() {
               </button>
             </div>
             <p className="text-sm text-white/50 max-w-xl">
-              Composite accuracy ranking — Z-score normalized across The Huddle Report (THR), FantasyPros (FP), and WalterFootball (WF), 2021–2025.
-              Higher = more consistently accurate than the field. Min 2 site-years required.
-            </p>
-          </div>
-
-          {/* Version toggle */}
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            <button
-              onClick={() => setVersionB(v => !v)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-all",
-                versionB
-                  ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
-                  : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/8"
-              )}
-            >
-              {versionB ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-              {versionB ? "V-B: THR 1.5×" : "V-A: Equal Weights"}
-            </button>
-            <p className="text-[11px] text-white/30 font-mono">
-              {versionB ? "THR scores weighted 1.5×" : "All sites weighted equally"}
+              X Score composite weighted by The Huddle Report, FantasyPros &amp; WalterFootball · 2021–2025
             </p>
           </div>
         </div>
@@ -194,90 +241,65 @@ export default function Accuracy() {
           <span className="text-white/25">· Cells show site rank (#1 = best) with % of max score</span>
         </div>
 
-        {/* Site legend */}
+        {/* Site legend with analyst counts */}
         <div className="flex flex-wrap gap-3 mb-6">
           {Object.entries(SITE_META).map(([key, meta]) => (
             <div key={key} className="flex items-center gap-1.5 bg-white/3 border border-white/8 rounded-lg px-3 py-1.5">
               <span className={cn("text-xs font-mono font-bold", meta.color)}>{meta.label}</span>
               <span className="text-[11px] text-white/40">{meta.note}</span>
+              {siteCounts[key as keyof typeof siteCounts] > 0 && (
+                <span className="text-[10px] text-white/25 font-mono ml-1">
+                  · {siteCounts[key as keyof typeof siteCounts]} analysts tracked (2025)
+                </span>
+              )}
             </div>
           ))}
         </div>
 
-        {/* Comparison callout */}
-        {vaData && vbData && (
-          <div className="mb-6 p-4 bg-white/3 border border-white/8 rounded-xl">
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="w-4 h-4 text-white/40" />
-              <span className="text-xs font-mono text-white/50 uppercase tracking-wider">V-A vs V-B — Top 10 Comparison</span>
-            </div>
-            <div className="grid grid-cols-2 gap-6 text-xs">
-              <div>
-                <div className="text-white/40 font-mono mb-2">V-A: Equal weights</div>
-                {vaData.slice(0, 10).map((a, i) => (
-                  <div key={a.id} className="flex justify-between py-0.5">
-                    <span className="text-white/60">#{i + 1} {a.name}</span>
-                    <span className="font-mono text-white/80">{a.xScore?.toFixed(3)}</span>
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="text-amber-400/60 font-mono mb-2">V-B: THR 1.5×</div>
-                {vbData.slice(0, 10).map((r, i) => {
-                  const rankShift = (i + 1) - (vaData.findIndex(a => a.id === r.id) + 1);
-                  return (
-                    <div key={r.id} className="flex justify-between py-0.5">
-                      <span className="text-white/60">
-                        #{i + 1} {r.name}
-                        {rankShift !== 0 && (
-                          <span className={cn("ml-1 text-[10px]", rankShift < 0 ? "text-emerald-400" : "text-red-400")}>
-                            ({rankShift > 0 ? "+" : ""}{rankShift})
-                          </span>
-                        )}
-                      </span>
-                      <span className="font-mono text-amber-300/80">{r.x_thr15.toFixed(3)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Search bar */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search analyst or outlet..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full max-w-sm bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/30 font-mono focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
+          />
+        </div>
 
         {/* Main table */}
-        {versionB && vbError ? (
-          <div className="flex items-center justify-center py-20 text-red-400/60 text-sm">Failed to load V-B data — please try again.</div>
-        ) : loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-20 text-white/30 text-sm">Computing X Scores...</div>
-        ) : rows.length === 0 ? (
+        ) : sortedRows.length === 0 ? (
           <div className="flex items-center justify-center py-20 text-white/30 text-sm">No data available.</div>
         ) : (
           <div className="bg-card border border-white/8 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/8 bg-white/2">
-                    <th className="px-4 py-3 text-left text-[11px] font-mono text-white/40 uppercase tracking-wider w-12">#</th>
-                    <th className="px-4 py-3 text-left text-[11px] font-mono text-white/40 uppercase tracking-wider">Analyst</th>
-                    <th className="px-4 py-3 text-center text-[11px] font-mono text-white/40 uppercase tracking-wider">
-                      {versionB ? <span className="text-amber-400">X Score (V-B)</span> : "X Score (V-A)"}
-                    </th>
-                    <th className="px-4 py-3 text-center text-[11px] font-mono text-white/40 uppercase tracking-wider">Yrs</th>
+                  <tr className="border-b border-white/8 bg-white/2 text-white/40">
+                    <th className="px-4 py-2.5 text-left text-[11px] font-mono uppercase tracking-wider w-12">#</th>
+                    <SortTh col="name"       label="Analyst"   currentKey={sortKey} dir={sortDir} onSort={handleSort} className="px-4" />
+                    <SortTh col="outlet"     label="Outlet"    currentKey={sortKey} dir={sortDir} onSort={handleSort} />
+                    <SortTh col="xScoreRank" label="X Score"   currentKey={sortKey} dir={sortDir} onSort={handleSort}
+                      className="text-center"
+                    />
+                    <th className="px-4 py-2.5 text-center text-[11px] font-mono text-white/40 uppercase tracking-wider">Yrs</th>
                     {/* THR year columns */}
                     {YEARS.map(yr => (
-                      <th key={`thr-${yr}`} className="px-3 py-3 text-center text-[11px] font-mono text-amber-400/50 uppercase tracking-wider whitespace-nowrap">
+                      <th key={`thr-${yr}`} className="px-3 py-2.5 text-center text-[11px] font-mono text-amber-400/50 uppercase tracking-wider whitespace-nowrap">
                         THR {String(yr).slice(2)}
                       </th>
                     ))}
                     {/* FP year columns */}
                     {YEARS.map(yr => (
-                      <th key={`fp-${yr}`} className="px-3 py-3 text-center text-[11px] font-mono text-blue-400/50 uppercase tracking-wider whitespace-nowrap">
+                      <th key={`fp-${yr}`} className="px-3 py-2.5 text-center text-[11px] font-mono text-blue-400/50 uppercase tracking-wider whitespace-nowrap">
                         FP {String(yr).slice(2)}
                       </th>
                     ))}
                     {/* WF year columns */}
                     {YEARS.map(yr => (
-                      <th key={`wf-${yr}`} className="px-3 py-3 text-center text-[11px] font-mono text-emerald-400/50 uppercase tracking-wider whitespace-nowrap">
+                      <th key={`wf-${yr}`} className="px-3 py-2.5 text-center text-[11px] font-mono text-emerald-400/50 uppercase tracking-wider whitespace-nowrap">
                         WF {String(yr).slice(2)}
                       </th>
                     ))}
@@ -285,7 +307,6 @@ export default function Accuracy() {
                 </thead>
                 <tbody>
                   {displayRows.map((row, i) => {
-                    const isExpanded = expanded === row.id;
                     const va = row.vaRow;
                     return (
                       <motion.tr
@@ -303,30 +324,33 @@ export default function Accuracy() {
                             "text-sm font-bold font-mono",
                             i === 0 ? "text-amber-400" : i === 1 ? "text-white/70" : i === 2 ? "text-orange-400/70" : "text-white/30"
                           )}>
-                            {row.rank}
+                            {row.xScoreRank}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-white">{row.name}</div>
-                          <div className="text-xs text-white/40 font-mono">{row.outlet}</div>
+                        <td
+                          className="px-3 py-2 font-medium text-white text-sm cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => setSelectedAnalyst(va)}
+                        >
+                          {row.name}
                         </td>
+                        <td className="px-3 py-2 text-xs text-white/40 font-mono">{row.outlet}</td>
                         <td className="px-4 py-3 text-center">
-                          <XBadge score={row.xScore} rank={row.rank} />
+                          <XBadge score={row.xScore} rank={row.xScoreRank} />
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className="text-xs font-mono text-white/40">{row.siteYears}</span>
                         </td>
                         {/* THR scores */}
                         {YEARS.map(yr => (
-                          <ScoreCell key={`thr-${yr}`} score={va ? getScore(va, 'thr', yr) : undefined} site="thr" />
+                          <ScoreCell key={`thr-${yr}`} score={getScore(va, 'thr', yr)} site="thr" />
                         ))}
                         {/* FP scores */}
                         {YEARS.map(yr => (
-                          <ScoreCell key={`fp-${yr}`} score={va ? getScore(va, 'fp', yr) : undefined} site="fp" />
+                          <ScoreCell key={`fp-${yr}`} score={getScore(va, 'fp', yr)} site="fp" />
                         ))}
                         {/* WF scores */}
                         {YEARS.map(yr => (
-                          <ScoreCell key={`wf-${yr}`} score={va ? getScore(va, 'wf', yr) : undefined} site="wf" />
+                          <ScoreCell key={`wf-${yr}`} score={getScore(va, 'wf', yr)} site="wf" />
                         ))}
                       </motion.tr>
                     );
@@ -335,14 +359,14 @@ export default function Accuracy() {
               </table>
             </div>
 
-            {rows.length > 30 && (
+            {sortedRows.length > 30 && (
               <div className="p-4 border-t border-white/5 text-center">
                 <button
                   onClick={() => setShowAll(v => !v)}
                   className="flex items-center gap-2 mx-auto text-sm text-white/50 hover:text-white transition-colors"
                 >
                   {showAll ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  {showAll ? "Show Top 30" : `Show All ${rows.length} Analysts`}
+                  {showAll ? "Show Top 30" : `Show All ${sortedRows.length} Analysts`}
                 </button>
               </div>
             )}
@@ -354,9 +378,50 @@ export default function Accuracy() {
           <p>X SCORE METHODOLOGY: For each site × year group, compute z = (score − μ) / σ. X Score = mean(z) across all site-years with data.</p>
           <p>SOURCES: The Huddle Report (2021–2025) · FantasyPros Mock Draft Accuracy (2021–2025) · WalterFootball Mock Draft Results (2021–2025)</p>
           <p>MINIMUM: 2 site-years required for ranking. Single-year performances excluded to reduce noise.</p>
-          <p>V-A = equal site weights · V-B = THR counts 1.5× (THR is gold standard since 2001, stricter eligibility)</p>
         </div>
       </div>
+
+      {/* Analyst detail modal */}
+      {selectedAnalyst && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setSelectedAnalyst(null)}>
+          <div className="bg-[#0d1117] border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-base font-bold text-white">{selectedAnalyst.name}</h3>
+                <p className="text-xs text-muted-foreground font-mono">{selectedAnalyst.outlet}</p>
+              </div>
+              <button onClick={() => setSelectedAnalyst(null)} className="text-white/40 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {selectedAnalyst.xScore && (
+              <div className="mb-4 p-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground font-mono">Overall X Score</span>
+                <XBadge score={selectedAnalyst.xScore} rank={selectedAnalyst.xScoreRank} />
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-widest text-white/40 font-mono mb-2">Year-by-Year Breakdown</p>
+              {YEARS.flatMap(year =>
+                Object.keys(SITE_META).map(site => {
+                  const sc = selectedAnalyst.scores.find(s => s.site === site && s.year === year);
+                  if (!sc?.rawScore) return null;
+                  const meta = SITE_META[site];
+                  return (
+                    <div key={`${site}-${year}`} className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0">
+                      <span className="text-xs text-white/60 font-mono">{meta.label} {year}</span>
+                      <div className="flex items-center gap-2">
+                        {sc.siteRank && <span className="text-[10px] text-white/40 font-mono">#{sc.siteRank}</span>}
+                        <span className="text-xs font-mono font-bold text-white">{Math.round(sc.rawScore)}/{meta.max}</span>
+                      </div>
+                    </div>
+                  );
+                }).filter(Boolean)
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
