@@ -349,6 +349,26 @@ export async function registerRoutes(
     }
   });
 
+  // ─── Odds Status: check if NFL Draft props are live ──────────────────────
+  app.get("/api/odds/status", async (req, res) => {
+    try {
+      const apiKey = "b5e6b3e773229db2fc9cb916f87d3daf";
+      const response = await fetch(`https://api.the-odds-api.com/v4/sports/?apiKey=${apiKey}`);
+      if (!response.ok) {
+        return res.json({ available: false, message: "Draft props typically post April 10" });
+      }
+      const sports: Array<{ key: string; title: string }> = await response.json();
+      const draftSport = sports.find(s => s.key === "americanfootball_nfl_draft");
+      if (draftSport) {
+        res.json({ available: true });
+      } else {
+        res.json({ available: false, message: "Draft props typically post April 10" });
+      }
+    } catch (err) {
+      res.json({ available: false, message: "Draft props typically post April 10" });
+    }
+  });
+
   // ─── Odds Movers ─────────────────────────────────────────────────────────
   app.get("/api/odds/movers", async (req, res) => {
     try {

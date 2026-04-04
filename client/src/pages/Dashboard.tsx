@@ -9,7 +9,7 @@ import {
   Activity, Loader2, TrendingUp, TrendingDown, ArrowRight,
   Users, Wifi, BarChart3, Zap, Clock, DollarSign,
   Bell, X, ExternalLink, AlertTriangle, CheckCircle2,
-  Minus, ChevronRight, Gauge, Trophy,
+  Minus, ChevronRight, Gauge, Trophy, Lock, CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
@@ -492,6 +492,10 @@ export default function Dashboard() {
   const { data: windowData = [], isLoading: windowLoading } = useQuery<AdpWindowPlayer[]>({ queryKey: ["/api/adp-windows"] });
   const { data: oddsMovers = [], isLoading: oddsLoading } = useQuery<OddsMover[]>({ queryKey: ["/api/odds/movers"] });
   const { data: discrepancy = [], isLoading: discrepancyLoading } = useQuery<DiscrepancyRow[]>({ queryKey: ["/api/discrepancy"] });
+  const { data: oddsStatus } = useQuery<{ available: boolean; message?: string }>({
+    queryKey: ["/api/odds/status"],
+    staleTime: 1000 * 60 * 60, // 1 hour cache
+  });
   const [activityOpen, setActivityOpen] = useState(false);
   const { data: activityItems = [], isLoading: activityLoading } = useQuery<ActivityItem[]>({
     queryKey: ["/api/activity"],
@@ -676,7 +680,20 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          {oddsLoading ? (
+          {oddsStatus?.available === false ? (
+            /* ── Placeholder: props not yet posted ── */
+            <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center gap-4 border border-[#00e676]/10" data-testid="sportsbook-placeholder-line">
+              <div className="flex items-center gap-3">
+                <Lock className="w-6 h-6 text-[#00e676]/60" />
+                <CalendarClock className="w-6 h-6 text-[#00e676]/60" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-mono text-white/70">Draft props typically post 2 weeks before the draft</p>
+                <p className="text-xs font-mono text-[#00e676] mt-1">Check back around April 10</p>
+                <p className="text-[10px] text-muted-foreground font-mono mt-2">NFL Draft · April 24, 2026</p>
+              </div>
+            </div>
+          ) : oddsLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
           ) : oddsMovers.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -731,7 +748,20 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {!discrepancyLoading && discrepancy.length > 0 ? (
+          {oddsStatus?.available === false ? (
+            /* ── Placeholder: props not yet posted ── */
+            <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center gap-4 border border-[#00e676]/10" data-testid="sportsbook-placeholder-signals">
+              <div className="flex items-center gap-3">
+                <Lock className="w-6 h-6 text-[#00e676]/60" />
+                <CalendarClock className="w-6 h-6 text-[#00e676]/60" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-mono text-white/70">Draft props typically post 2 weeks before the draft</p>
+                <p className="text-xs font-mono text-[#00e676] mt-1">Check back around April 10</p>
+                <p className="text-[10px] text-muted-foreground font-mono mt-2">NFL Draft · April 24, 2026</p>
+              </div>
+            </div>
+          ) : !discrepancyLoading && discrepancy.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Bullish: odds say they go earlier than ADP */}
               <section className="glass-card p-5 rounded-2xl border-l-4 border-l-[hsl(var(--stock-up))]">

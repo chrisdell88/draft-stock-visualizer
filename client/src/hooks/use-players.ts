@@ -81,7 +81,7 @@ export function usePlayerRankings(id: number) {
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch player rankings");
       const data = await res.json();
-      return data as Array<{ sourceName: string; pickNumber: number; publishedAt?: string }>;
+      return data as Array<{ sourceName: string; sourceKey?: string | null; boardType?: string | null; pickNumber: number; publishedAt?: string | null }>;
     },
     enabled: !!id,
   });

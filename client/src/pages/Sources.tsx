@@ -141,7 +141,7 @@ export default function Sources() {
   };
 
   const isScrapable = (a: Analyst) =>
-    scrapeStatus?.scrapers.some(s => s.sourceKey === a.sourceKey) ?? false;
+    a.sourceKey != null && (scrapeStatus?.scrapers.some(s => s.sourceKey === a.sourceKey) ?? false);
 
   return (
     <div className="space-y-8">
@@ -194,8 +194,8 @@ export default function Sources() {
         ))}
       </div>
 
-      {/* Scraper Status Cards */}
-      {scrapeStatus && scrapeStatus.scrapers.length > 0 && (
+      {/* Scraper Status Cards — admin only */}
+      {isAdmin && scrapeStatus && scrapeStatus.scrapers.length > 0 && (
         <div>
           <h2 className="text-sm uppercase tracking-widest text-muted-foreground font-mono mb-3 flex items-center gap-2">
             <Wifi className="w-3 h-3 text-stock-up" />Auto-Scrapers

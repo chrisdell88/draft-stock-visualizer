@@ -2,7 +2,7 @@ import { useRoute } from "wouter";
 import { usePlayer, usePlayerTrends, usePlayerRankings } from "@/hooks/use-players";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -18,7 +18,8 @@ import {
 } from "recharts";
 import { Loader2, ArrowLeft, Ruler, Scale, Activity, BarChart2, Trophy, TrendingUp, TrendingDown, Target, Award } from "lucide-react";
 import { Link } from "wouter";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function americanToProb(oddsStr: string): number {
@@ -93,7 +94,6 @@ const SOURCE_COLORS: string[] = [
 
 function getShortName(sourceKey: string | null | undefined, sourceName: string): string {
   if (sourceKey && SOURCE_SHORT[sourceKey]) return SOURCE_SHORT[sourceKey];
-  // Fallback: parse from sourceName
   const nameParts = sourceName.split(/[\s(—]/);
   return nameParts[0].slice(0, 8);
 }
@@ -105,6 +105,44 @@ const POS_COLOR: Record<string, string> = {
   EDGE: "#f472b6", DL: "#f472b6", DT: "#f472b6",
   LB: "#38bdf8", CB: "#4ade80", S: "#4ade80",
 };
+
+// ── Time window types ──────────────────────────────────────────────────────
+type ChartWindow = "3d" | "7d" | "30d" | "all";
+
+const CHART_WINDOW_DAYS: Record<ChartWindow, number | null> = {
+  "3d": 3, "7d": 7, "30d": 30, "all": null,
+};
+
+// Feb 1 2026 — the hard floor for the chart
+const FEB_1_2026 = new Date("2026-02-01T00:00:00.000Z");
+
+function ChartWindowTabs({
+  value,
+  onChange,
+}: {
+  value: ChartWindow;
+  onChange: (w: ChartWindow) => void;
+}) {
+  const tabs: ChartWindow[] = ["3d", "7d", "30d", "all"];
+  return (
+    <div className="flex items-center gap-1 bg-black/40 rounded-lg p-0.5 border border-white/10">
+      {tabs.map(w => (
+        <button
+          key={w}
+          onClick={() => onChange(w)}
+          className={cn(
+            "px-2.5 py-1 rounded-md font-mono font-bold text-[11px] transition-all",
+            value === w
+              ? "bg-primary text-black shadow-sm"
+              : "text-muted-foreground hover:text-white"
+          )}
+        >
+          {w.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function PlayerDetail() {
   const [, params] = useRoute("/players/:id");
@@ -118,14 +156,59 @@ export default function PlayerDetail() {
     enabled: id > 0,
   });
 
-  // ── ADP trend chart data ──────────────────────────────────────────────────
-  const adpChartData = useMemo(() => {
+  // ── Chart + window state ──────────────────────────────────────────────────
+  const [chartWindow, setChartWindow] = useState<ChartWindow>("all");
+  const [mockWindow, setMockWindow] = useState<ChartWindow>("all");
+  const [divWindow, setDivWindow] = useState<ChartWindow>("all");
+
+  // ── ADP trend chart data — always starts from Feb 1, 2026 ────────────────
+  const allAdpChartData = useMemo(() => {
     if (!trends?.adp?.length) return [];
-    return trends.adp.map(entry => ({
-      date: entry.date ? format(new Date(entry.date), "MMM d") : "–",
-      adp: Number(entry.adpValue),
-    }));
+    return trends.adp
+      .map(entry => ({
+        date: entry.date ? new Date(entry.date) : null,
+        dateLabel: entry.date ? format(new Date(entry.date), "MMM d") : "–",
+        adp: Number(entry.adpValue),
+      }))
+      .filter(d => d.date !== null && d.date >= FEB_1_2026)
+      .sort((a, b) => a.date!.getTime() - b.date!.getTime());
   }, [trends]);
+
+  // Filter by chart window
+  const adpChartData = useMemo(() => {
+    const days = CHART_WINDOW_DAYS[chartWindow];
+    if (days === null) return allAdpChartData;
+    const cutoff = subDays(new Date(), days);
+    const filtered = allAdpChartData.filter(d => d.date! >= cutoff);
+    return filtered.length > 0 ? filtered : allAdpChartData;
+  }, [allAdpChartData, chartWindow]);
+
+  // ── Window-aware average pick + direction indicator ───────────────────────
+  const windowAvgData = useMemo(() => {
+    if (adpChartData.length === 0) return { avg: null, prev: null, dir: "flat" as "up" | "down" | "flat" };
+    const avg = Math.round((adpChartData.reduce((s, d) => s + d.adp, 0) / adpChartData.length) * 10) / 10;
+
+    // "Previous window" = the window before the current one for comparison
+    const days = CHART_WINDOW_DAYS[chartWindow];
+    let prev: number | null = null;
+    if (days !== null && allAdpChartData.length > 0) {
+      const now = new Date();
+      const windowStart = subDays(now, days);
+      const windowEnd = subDays(now, days * 2);
+      const prevWindow = allAdpChartData.filter(d => d.date! >= windowEnd && d.date! < windowStart);
+      if (prevWindow.length > 0) {
+        prev = Math.round((prevWindow.reduce((s, d) => s + d.adp, 0) / prevWindow.length) * 10) / 10;
+      }
+    }
+
+    const dir: "up" | "down" | "flat" =
+      prev === null ? "flat"
+      : avg < prev ? "up"    // lower pick number = rising (better)
+      : avg > prev ? "down"
+      : "flat";
+
+    return { avg, prev, dir };
+  }, [adpChartData, allAdpChartData, chartWindow]);
 
   // ── Odds chart data ───────────────────────────────────────────────────────
   const oddsChartData = useMemo(() => {
@@ -147,12 +230,12 @@ export default function PlayerDetail() {
     return Array.from(new Set(trends.odds.map(e => e.marketType)));
   }, [trends]);
 
-  // ── ADP trend stats ───────────────────────────────────────────────────────
-  const currentAdp = adpChartData.length > 0 ? adpChartData[adpChartData.length - 1].adp : null;
-  const prevAdp    = adpChartData.length > 1 ? adpChartData[adpChartData.length - 2].adp : null;
+  // ── ADP trend stats (overall, not window-specific) ────────────────────────
+  const currentAdp = allAdpChartData.length > 0 ? allAdpChartData[allAdpChartData.length - 1].adp : null;
+  const prevAdp    = allAdpChartData.length > 1 ? allAdpChartData[allAdpChartData.length - 2].adp : null;
   const trend      = currentAdp && prevAdp ? (currentAdp < prevAdp ? "up" : currentAdp > prevAdp ? "down" : "flat") : "flat";
-  const totalChange = adpChartData.length >= 2
-    ? adpChartData[0].adp - adpChartData[adpChartData.length - 1].adp
+  const totalChange = allAdpChartData.length >= 2
+    ? allAdpChartData[0].adp - allAdpChartData[allAdpChartData.length - 1].adp
     : null;
 
   // ── Rankings split: mock drafts vs big boards ─────────────────────────────
@@ -161,12 +244,45 @@ export default function PlayerDetail() {
     return [...rankings].sort((a, b) => a.pickNumber - b.pickNumber);
   }, [rankings]);
 
-  const mockRankings = useMemo(() => sortedRankings.filter(r => r.boardType !== "bigboard"), [sortedRankings]);
-  const boardRankings = useMemo(() => sortedRankings.filter(r => r.boardType === "bigboard"), [sortedRankings]);
+  // Filter rankings by time window
+  const filterByWindow = (items: typeof sortedRankings, win: ChartWindow) => {
+    const days = CHART_WINDOW_DAYS[win];
+    if (days === null) return items;
+    const cutoff = subDays(new Date(), days);
+    return items.filter(r => {
+      if (!r.publishedAt) return win === "all";
+      return new Date(r.publishedAt) >= cutoff;
+    });
+  };
+
+  const mockRankingsAll = useMemo(() => sortedRankings.filter(r => r.boardType !== "bigboard"), [sortedRankings]);
+  const mockRankings = useMemo(() => filterByWindow(mockRankingsAll, mockWindow), [mockRankingsAll, mockWindow]);
+
+  // Analyst Divergence (all rankings, with window filter)
+  const divRankings = useMemo(() => filterByWindow(sortedRankings, divWindow), [sortedRankings, divWindow]);
+
+  // Consensus average for divergence
+  const divAvg = useMemo(() => {
+    if (divRankings.length === 0) return null;
+    return divRankings.reduce((s, r) => s + r.pickNumber, 0) / divRankings.length;
+  }, [divRankings]);
 
   // High / Low consensus from all rankings
   const highOn = sortedRankings.length > 0 ? sortedRankings[0] : null;
   const lowOn  = sortedRankings.length > 0 ? sortedRankings[sortedRankings.length - 1] : null;
+
+  // ── Median pick ───────────────────────────────────────────────────────────
+  const medianPick = useMemo(() => {
+    if (sortedRankings.length === 0) return null;
+    const picks = sortedRankings.map(r => r.pickNumber);
+    const mid = Math.floor(picks.length / 2);
+    if (picks.length % 2 === 0) {
+      return Math.round(((picks[mid - 1] + picks[mid]) / 2) * 10) / 10;
+    }
+    return picks[mid];
+  }, [sortedRankings]);
+
+  // Average from all rankings (shown in consensus card)
   const avgPick = sortedRankings.length > 0
     ? Math.round((sortedRankings.reduce((s, r) => s + r.pickNumber, 0) / sortedRankings.length) * 10) / 10
     : null;
@@ -191,6 +307,14 @@ export default function PlayerDetail() {
     { label: "Shuttle",    value: player.shuttleRun   ? `${Number(player.shuttleRun).toFixed(2)}s`   : null },
     { label: "Broad Jump", value: player.broadJump    ? `${player.broadJump}"`                       : null },
   ].filter(s => s.value !== null);
+
+  // ── Position rank display: "2nd / 18 WRs" ────────────────────────────────
+  const posRankDisplay = useMemo(() => {
+    if (!posRank?.rank || !posRank?.total || !posRank?.position) return null;
+    const r = posRank.rank;
+    const suffix = r === 1 ? "st" : r === 2 ? "nd" : r === 3 ? "rd" : "th";
+    return { label: `${r}${suffix} / ${posRank.total} ${posRank.position}s`, rank: r, total: posRank.total };
+  }, [posRank]);
 
   return (
     <Layout>
@@ -252,13 +376,20 @@ export default function PlayerDetail() {
                   {player.rasScore ? Number(player.rasScore).toFixed(2) : "–"}
                 </p>
               </div>
+              {/* Pos Rank: "2nd / 18 WRs" format */}
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center text-center">
                 <p className="text-[10px] text-muted-foreground uppercase font-mono mb-1">Pos Rank</p>
-                <p className="font-bold text-white font-mono text-lg" data-testid="text-position-rank">
-                  {posRank?.rank ? `#${posRank.rank}` : "–"}
-                </p>
-                {posRank?.total && posRank.rank && (
-                  <span className="text-[10px] text-muted-foreground font-mono">of {posRank.total}</span>
+                {posRankDisplay ? (
+                  <>
+                    <p className="font-bold text-white font-mono text-sm leading-tight" data-testid="text-position-rank">
+                      {posRankDisplay.rank === 1 ? "1st" : posRankDisplay.rank === 2 ? "2nd" : posRankDisplay.rank === 3 ? "3rd" : `${posRankDisplay.rank}th`}
+                    </p>
+                    <span className="text-[9px] text-muted-foreground font-mono mt-0.5 leading-tight">
+                      / {posRankDisplay.total} {posRank?.position}s
+                    </span>
+                  </>
+                ) : (
+                  <p className="font-bold text-white font-mono text-lg" data-testid="text-position-rank">–</p>
                 )}
               </div>
             </div>
@@ -301,7 +432,7 @@ export default function PlayerDetail() {
             </div>
           )}
 
-          {/* High / Low Consensus */}
+          {/* Analyst Consensus — with Median + Spread */}
           {sortedRankings.length >= 2 && (
             <div className="glass-card rounded-2xl p-5" data-testid="consensus-card">
               <div className="flex items-center gap-2 mb-3">
@@ -313,6 +444,12 @@ export default function PlayerDetail() {
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-muted-foreground font-mono">Avg Pick</span>
                     <span className="font-mono font-bold text-white text-sm">#{avgPick}</span>
+                  </div>
+                )}
+                {medianPick !== null && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground font-mono">Median Pick</span>
+                    <span className="font-mono font-bold text-amber-400 text-sm" data-testid="text-median-pick">#{medianPick}</span>
                   </div>
                 )}
                 {highOn && (
@@ -349,38 +486,52 @@ export default function PlayerDetail() {
             </div>
           )}
 
-          {/* Mock Draft Rankings */}
-          {!rankingsLoading && mockRankings.length > 0 && (
+          {/* Mock Drafts — with time window filter */}
+          {!rankingsLoading && mockRankingsAll.length > 0 && (
             <div className="glass-card rounded-2xl p-5" data-testid="mock-rankings-card">
-              <div className="flex items-center gap-2 mb-3">
-                <Trophy className="w-4 h-4 text-amber-400" />
-                <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Mock Drafts</h3>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Mock Drafts</h3>
+                </div>
+                <ChartWindowTabs value={mockWindow} onChange={setMockWindow} />
               </div>
-              <div className="space-y-1.5">
-                {mockRankings.map((r, i) => {
-                  const short = getShortName(r.sourceKey, r.sourceName);
-                  const color = SOURCE_COLORS[i % SOURCE_COLORS.length];
-                  return (
-                    <div key={`${r.sourceKey}-${r.pickNumber}`} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0"
-                         data-testid={`mock-rank-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
-                      <span className="text-xs font-mono" style={{ color }}>{short}</span>
-                      <span className="text-sm font-mono font-bold text-white">#{r.pickNumber}</span>
-                    </div>
-                  );
-                })}
-              </div>
+              {mockRankings.length > 0 ? (
+                <div className="space-y-1.5">
+                  {mockRankings.map((r, i) => {
+                    const short = getShortName(r.sourceKey, r.sourceName);
+                    const color = SOURCE_COLORS[i % SOURCE_COLORS.length];
+                    return (
+                      <div key={`${r.sourceKey}-${r.pickNumber}-${i}`} className="flex justify-between items-center py-1.5 border-b border-white/5 last:border-0"
+                           data-testid={`mock-rank-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+                        <div>
+                          <span className="text-xs font-mono" style={{ color }}>{short}</span>
+                          {r.publishedAt && (
+                            <span className="text-[10px] text-muted-foreground font-mono ml-2">
+                              {format(new Date(r.publishedAt), "MMM d")}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm font-mono font-bold text-white">#{r.pickNumber}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground font-mono text-center py-3">No mock drafts in this window</p>
+              )}
             </div>
           )}
 
           {/* Big Board Rankings */}
-          {!rankingsLoading && boardRankings.length > 0 && (
+          {!rankingsLoading && sortedRankings.filter(r => r.boardType === "bigboard").length > 0 && (
             <div className="glass-card rounded-2xl p-5" data-testid="bigboard-rankings-card">
               <div className="flex items-center gap-2 mb-3">
                 <Award className="w-4 h-4 text-violet-400" />
                 <h3 className="font-semibold text-white text-sm uppercase tracking-wider font-mono">Big Boards</h3>
               </div>
               <div className="space-y-1.5">
-                {boardRankings.map((r, i) => {
+                {sortedRankings.filter(r => r.boardType === "bigboard").map((r, i) => {
                   const short = getShortName(r.sourceKey, r.sourceName);
                   const color = ["#a78bfa","#c084fc","#8b5cf6","#7c3aed"][i % 4];
                   return (
@@ -399,23 +550,40 @@ export default function PlayerDetail() {
         {/* ── RIGHT COLUMN ─────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* ADP Trend Chart (gradient area) */}
+          {/* ADP Trend Chart — starts from Feb 1, 2026 */}
           <div className="glass-card rounded-2xl p-6" data-testid="adp-trend-card">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <BarChart2 className="w-4 h-4 text-primary" />
                 <h2 className="text-lg font-display font-semibold text-white">Consensus ADP Trend</h2>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Window-aware avg + direction arrow */}
+                {windowAvgData.avg !== null && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-muted-foreground font-mono">Avg:</span>
+                    <span className="text-sm font-mono font-bold text-white">
+                      #{windowAvgData.avg}
+                    </span>
+                    {windowAvgData.dir !== "flat" && (
+                      <span className={cn(
+                        "text-xs font-mono font-bold",
+                        windowAvgData.dir === "up" ? "text-emerald-400" : "text-red-400"
+                      )}>
+                        {windowAvgData.dir === "up" ? "▲" : "▼"}
+                      </span>
+                    )}
+                  </div>
+                )}
                 {totalChange !== null && Math.abs(totalChange) > 0.2 && (
                   <span className={`text-sm font-mono font-bold ${totalChange > 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    {totalChange > 0 ? "▲" : "▼"} {Math.abs(totalChange).toFixed(1)} pick
-                    {Math.abs(totalChange) !== 1 ? "s" : ""} {totalChange > 0 ? "risen" : "fallen"}
+                    {totalChange > 0 ? "▲" : "▼"} {Math.abs(totalChange).toFixed(1)} overall
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground font-mono">GTM EDP</span>
+                <ChartWindowTabs value={chartWindow} onChange={setChartWindow} />
               </div>
             </div>
+            <p className="text-[10px] text-muted-foreground font-mono mb-3">Feb 1, 2026 → Today · GTM EDP</p>
 
             {trendsLoading ? (
               <div className="h-[240px] flex items-center justify-center">
@@ -424,7 +592,10 @@ export default function PlayerDetail() {
             ) : adpChartData.length > 0 ? (
               <div className="h-[240px] w-full" data-testid="chart-adp-trend">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={adpChartData} margin={{ top: 10, right: 10, bottom: 10, left: 0 }}>
+                  <AreaChart
+                    data={adpChartData.map(d => ({ date: d.dateLabel, adp: d.adp }))}
+                    margin={{ top: 10, right: 10, bottom: 10, left: 0 }}
+                  >
                     <defs>
                       <linearGradient id="adpGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -451,45 +622,91 @@ export default function PlayerDetail() {
               </div>
             ) : (
               <div className="h-[240px] flex items-center justify-center text-muted-foreground border border-dashed border-white/10 rounded-xl text-sm font-mono">
-                No ADP history available
+                No ADP history available since Feb 1
               </div>
             )}
           </div>
 
-          {/* Analyst Divergence Bars */}
-          {!rankingsLoading && sortedRankings.length > 1 && (
+          {/* Analyst Divergence — dot plot, bullish=green, bearish=red */}
+          {!rankingsLoading && divRankings.length > 1 && (
             <div className="glass-card rounded-2xl p-6" data-testid="drafter-comparison-card">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h2 className="text-lg font-display font-semibold text-white">Analyst Divergence</h2>
-                <span className="text-xs text-muted-foreground font-mono ml-auto">where each source has this player</span>
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <h2 className="text-lg font-display font-semibold text-white">Analyst Divergence</h2>
+                </div>
+                <ChartWindowTabs value={divWindow} onChange={setDivWindow} />
               </div>
-              <div className="space-y-2.5">
-                {sortedRankings.map((r, i) => {
-                  const short = getShortName(r.sourceKey, r.sourceName);
-                  const color = r.boardType === "bigboard" ? "#a78bfa" : SOURCE_COLORS[i % SOURCE_COLORS.length];
-                  const maxPick = Math.max(...sortedRankings.map(x => x.pickNumber), 32);
-                  const pct = Math.max(5, Math.round((1 - (r.pickNumber - 1) / maxPick) * 100));
-                  return (
-                    <div key={`${r.sourceKey}-${r.pickNumber}`}
-                         data-testid={`bar-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
-                      <div className="flex justify-between text-xs font-mono mb-1">
-                        <span style={{ color }}>
-                          {short}
-                          {r.boardType === "bigboard" && (
-                            <span className="ml-1 text-[9px] text-violet-400 uppercase">board</span>
-                          )}
-                        </span>
-                        <span className="text-white font-bold">Pick #{r.pickNumber}</span>
-                      </div>
-                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-700"
-                             style={{ width: `${pct}%`, backgroundColor: color }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+
+              {divAvg !== null && (
+                <p className="text-xs text-muted-foreground font-mono mb-4">
+                  Consensus: <span className="text-white font-bold">#{divAvg.toFixed(1)}</span>
+                  <span className="ml-2 text-emerald-400">green = bullish (earlier pick)</span>
+                  <span className="ml-2 text-red-400">red = bearish (later pick)</span>
+                </p>
+              )}
+
+              {/* Dot plot: horizontal axis, consensus in center */}
+              {divAvg !== null && (() => {
+                const maxDeviation = Math.max(...divRankings.map(r => Math.abs(r.pickNumber - divAvg)), 1);
+                return (
+                  <div className="space-y-2.5">
+                    {divRankings.map((r, i) => {
+                      const short = getShortName(r.sourceKey, r.sourceName);
+                      const deviation = r.pickNumber - divAvg; // positive = later (bearish), negative = earlier (bullish)
+                      const isBullish = deviation < -0.5;
+                      const isBearish = deviation > 0.5;
+                      const color = isBullish ? "#34d399" : isBearish ? "#f87171" : "#94a3b8";
+                      const isBoard = r.boardType === "bigboard";
+
+                      // Position as percent: 50% = consensus center
+                      // We map deviation to ±40% of the bar width around center
+                      const pct = 50 + (deviation / (maxDeviation * 2)) * 80;
+                      const clampedPct = Math.min(95, Math.max(5, pct));
+
+                      return (
+                        <div key={`${r.sourceKey}-${r.pickNumber}-${i}`}
+                             data-testid={`div-${short.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+                          <div className="flex justify-between text-[10px] font-mono mb-1">
+                            <span style={{ color }}>
+                              {short}
+                              {isBoard && <span className="ml-1 text-[9px] text-violet-400 uppercase">bb</span>}
+                            </span>
+                            <span className="text-white font-bold">
+                              #{r.pickNumber}
+                              {Math.abs(deviation) > 0.5 && (
+                                <span className={cn("ml-1.5 text-[9px]", isBullish ? "text-emerald-400" : "text-red-400")}>
+                                  {isBullish ? `▲${Math.abs(deviation).toFixed(1)} earlier` : `▼${deviation.toFixed(1)} later`}
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                          {/* Bar: center line + dot */}
+                          <div className="relative h-3 flex items-center">
+                            <div className="absolute inset-0 bg-white/5 rounded-full" />
+                            {/* Center consensus line */}
+                            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/20" />
+                            {/* Analyst dot */}
+                            <div
+                              className="absolute w-3 h-3 rounded-full border-2 transition-all duration-500"
+                              style={{
+                                left: `calc(${clampedPct}% - 6px)`,
+                                backgroundColor: color,
+                                borderColor: color,
+                                boxShadow: `0 0 6px ${color}80`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {divRankings.length === 0 && (
+                <p className="text-xs text-muted-foreground font-mono text-center py-4">No analyst data in this window</p>
+              )}
             </div>
           )}
 
