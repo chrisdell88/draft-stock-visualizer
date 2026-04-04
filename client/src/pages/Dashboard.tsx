@@ -462,6 +462,8 @@ export default function Dashboard() {
     queryKey: ["/api/activity"],
     enabled: activityOpen,
   });
+  const { data: adminCheck } = useQuery<{ isAdmin: boolean }>({ queryKey: ["/api/admin/check"] });
+  const isAdmin = adminCheck?.isAdmin === true;
 
   const [activeWindow, setActiveWindow] = useState<Window>("30d");
 
@@ -776,28 +778,32 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      {/* ── Floating Activity Feed Button ─────────────────────────────── */}
-      <button
-        onClick={() => setActivityOpen(true)}
-        data-testid="btn-activity-feed"
-        className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-primary text-black rounded-full shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all font-semibold text-sm hover:scale-105"
-      >
-        <Bell className="w-4 h-4" />
-        <span className="hidden sm:inline">Activity</span>
-        {activityItems.length > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center bg-black/20 rounded-full text-[10px] font-bold">
-            {activityItems.length}
-          </span>
-        )}
-      </button>
+      {/* ── Floating Activity Feed Button (admin only) ───────────────── */}
+      {isAdmin && (
+        <button
+          onClick={() => setActivityOpen(true)}
+          data-testid="btn-activity-feed"
+          className="fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-primary text-black rounded-full shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all font-semibold text-sm hover:scale-105"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="hidden sm:inline">Activity</span>
+          {activityItems.length > 0 && (
+            <span className="flex h-5 w-5 items-center justify-center bg-black/20 rounded-full text-[10px] font-bold">
+              {activityItems.length}
+            </span>
+          )}
+        </button>
+      )}
 
-      {/* ── Activity Drawer ───────────────────────────────────────────── */}
-      <ActivityDrawer
-        open={activityOpen}
-        onClose={() => setActivityOpen(false)}
-        items={activityItems}
-        loading={activityLoading}
-      />
+      {/* ── Activity Drawer (admin only) ──────────────────────────────── */}
+      {isAdmin && (
+        <ActivityDrawer
+          open={activityOpen}
+          onClose={() => setActivityOpen(false)}
+          items={activityItems}
+          loading={activityLoading}
+        />
+      )}
     </Layout>
   );
 }
