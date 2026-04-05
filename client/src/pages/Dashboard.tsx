@@ -898,7 +898,7 @@ export default function Dashboard() {
             <div className="bg-card/30 border border-white/5 rounded-2xl p-5 flex flex-col justify-center">
               <p className="text-[11px] uppercase tracking-widest text-white/30 font-mono mb-3">About X Score</p>
               <p className="text-sm text-white/60 leading-relaxed mb-4">
-                X Score is a Z-score normalized composite accuracy ranking across three independent tracking sites — The Huddle Report, FantasyPros, and WalterFootball — spanning 2021–2025. Higher is better. Minimum 2 site-years required to qualify.
+                X Score is a Z-score normalized composite accuracy ranking across three independent tracking sites — The Huddle Report, FantasyPros, and WalterFootball — spanning 2021–2025. Higher is better. Must have 2025 data to qualify.
               </p>
               <div className="flex flex-wrap gap-2">
                 {["The Huddle Report", "FantasyPros", "WalterFootball"].map(s => (

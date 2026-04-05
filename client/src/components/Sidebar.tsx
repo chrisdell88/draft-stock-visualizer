@@ -70,13 +70,9 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-6 border-t border-white/5 text-xs font-mono text-muted-foreground">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-[#00e676] text-xs leading-none">●</span>
-          <span className="text-[#00e676]">SYSTEM ONLINE</span>
-        </div>
-        <p className="mb-1">MARKET DATA DELAYED BY 15 MIN</p>
+        <p className="text-[10px] text-white/25">2026 NFL Draft · Apr 24</p>
         {lastUpdatedLabel && (
-          <p className="text-[10px] text-white/30">Updated {lastUpdatedLabel}</p>
+          <p className="text-[10px] text-white/20 mt-0.5">Updated {lastUpdatedLabel}</p>
         )}
       </div>
     </div>
