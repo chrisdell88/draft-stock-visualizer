@@ -53,13 +53,13 @@
 - `odds` — player_id, date, bookmaker, market_type, odds (American)
 - `scrape_jobs` — source_key, status, last_run, error
 
-## Data State (as of 2026-04-04)
-- 143 players tracked, 48 mock drafts, 2255 picks
-- 31 players have currentAdp ≤ 32 (ticker shows these)
+## Data State (as of 2026-04-05)
+- 137 players tracked (removed 3 confirmed 2025 draftees + 3 duplicate entries)
+- 70 mock drafts (added WalterFootball bigboard + Tankathon bigboard)
+- 43 players have headshots; 94 still missing
 - 37 players have RAS scores (2026 class not yet on ras.football — re-run when available)
-- ~42 players have headshots; 101 still missing (expand HEADSHOT_SOURCES in scrape-headshots.mjs)
 - 2025 NFLMDD accuracy data seeded (107 entries, pages 1-4)
-- Weighting formula updated to THR 3×/FP 2×/WF 1× with year multipliers
+- Weighting formula: THR 3×/FP 2×/WF 1× with year multipliers; must have 2025 entry to qualify
 
 ## Mock Draft Sources Currently Tracked (scraped)
 - NFL.com: Jeremiah, Zierlein, Brooks, Reuter, Edholm
@@ -85,17 +85,29 @@ Hayden Winks, Josh Norris, John Daigle, Cory Rindone, Jason Boris, Todd McShay a
 - Accuracy page: V-A/V-B removed, sortable columns, search bar, analyst pop-up card, site counts
 - BigBoards/MockDrafts: Sources Key modal, sortable columns
 
+## Key Fixes Completed (session 2026-04-05)
+- X Score qualification: now requires at least 1 entry from 2025 (was min 2 site-years)
+- DB cleanup: removed 2025 draftees TreVeyon Henderson, Jack Bech, Jarquez Hunter
+- DB cleanup: merged duplicate player entries (Max Iheanachor ×3→1, KC Concepcion ×2→1)
+- BigBoards: prospect search bar; OL umbrella (OT/OG/IOL/G/C), DL umbrella (EDGE/DE/DT); correct position order QB/RB/WR/TE/OL/DL/LB/CB/S
+- MockDrafts: prospect search bar; same OL/DL consolidation; column headers rotated 90° (no more overlap)
+- Ticker: "7D" label added at left edge
+- scrape-headshots.mjs: expanded to 24 NFL.com source URLs (43/137 players now have photos)
+- scrape-walterfootball-bigboard.cjs: WalterFootball big board scraper (26 picks, full coverage)
+- scrape-tankathon-bigboard.cjs: Tankathon big board scraper as board_type=bigboard (109 picks)
+- scrape-cbs-mockdraft.cjs: CBS Sports scraper stub (blocked by WAF, needs puppeteer or direct URLs)
+
 ## Pending Tasks
 - Daily scheduled scraping cron (not yet set up)
-- Mock draft URLs from Chris (12 analysts)
-- Big board URLs from Chris
-- Player photos: 101/143 still missing (expand HEADSHOT_SOURCES in scrape-headshots.mjs)
+- Mock draft URLs from Chris (12 analysts): Jason Boris, Chris Dell, Albert Breer, Field Yates, Jordan Reid, Peter Schrager, Josh Norris, Hayden Winks, John Daigle, Mel Kiper, Dane Brugler, Cory Rindone
+- Big board URLs from Chris (10 boards): Hasan/Wide Left, Thor/FantasyLife, Winks/ETR, Athletic Staff, Brugler T100, R. Esch/THR, Xavier/FF Metrics, Carter/Post-Gazette, Kiper/ESPN+, Feldman Freaks
+- CBS Sports Prisco + Wilson: needs puppeteer OR direct article URLs from Chris (WAF blocks server-side)
+- Player photos: 94/137 still missing — scrape-headshots.mjs already at max NFL.com coverage; need other sources
 - RAS scores: re-run when ras.football/2026-nfl-draft-class/ exists
 - Sportsbook placeholder auto-activates when Odds API adds americanfootball_nfl_draft (~Apr 10)
 - Player Profiler data: college dominator, breakout age, comparable player
 - Analyst page: hyperlinks from player cards to analyst mock draft URLs
 - Activity feed feature: add "feature updates" type for announcements
-- Minimum X Score years: ask Chris if 1 site-year OK (currently requires 2)
 
 ## User Preferences
 - Non-technical — Claude handles ALL technical execution
