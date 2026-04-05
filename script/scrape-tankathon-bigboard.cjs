@@ -27,7 +27,8 @@
 const https = require('https');
 const { Pool } = require('pg');
 
-const DB_URL = 'process.env.DATABASE_URL';
+require('dotenv').config();
+const DB_URL = process.env.DATABASE_URL;
 
 const SOURCE = {
   sourceKey: 'tankathon_bigboard',
@@ -135,7 +136,8 @@ function parseTankathonBigBoard(html) {
     // Get player name
     const nameMatch = block.match(/class="mock-row-name">([^<]+)<\/div>/);
     if (!nameMatch) continue;
-    const playerName = nameMatch[1].trim();
+    const playerName = nameMatch[1].trim()
+      .replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&quot;/g, '"');
     if (!playerName || playerName.length < 2) continue;
 
     // Get position from data-pos attribute on the row or from mock-row-school-position
