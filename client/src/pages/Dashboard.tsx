@@ -154,7 +154,11 @@ function MarketTicker({ players }: { players: ReturnType<typeof usePlayers>["dat
       onPointerLeave={onPointerUp}
       data-testid="market-ticker"
     >
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none" />
+      {/* 7D window label */}
+      <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+        <span className="text-[9px] font-mono text-white/30 bg-black/60 px-1 py-0.5 rounded">7D</span>
+      </div>
+      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/80 to-transparent z-10 pointer-events-none" />
       <div ref={trackRef} className="flex gap-0 whitespace-nowrap will-change-transform">
         {items.map((p, idx) => {
