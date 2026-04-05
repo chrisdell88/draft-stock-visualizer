@@ -15,14 +15,15 @@
 
 ## CRITICAL: Database Connection
 - Must use TRANSACTION POOLER URL (not direct `db.<ref>.supabase.co`)
-- DATABASE_URL: `postgresql://postgres.cafhkmvhxnnlvotrlyvj:Draftx2026pass@aws-1-us-east-2.pooler.supabase.com:6543/postgres`
+- DATABASE_URL: stored in Vercel env vars + local .env only — NOT in code
 - Supabase project ref: `cafhkmvhxnnlvotrlyvj` (us-east-2 region)
+- Format: `postgresql://postgres.cafhkmvhxnnlvotrlyvj:[PASSWORD]@aws-1-us-east-2.pooler.supabase.com:6543/postgres`
 
 ## Environment Variables
-- DATABASE_URL: (see above — pooler URL)
-- SESSION_SECRET / admin password: draftx-admin-secret-2026
+- DATABASE_URL: in Vercel env + local .env (never hardcode in scripts)
+- SESSION_SECRET / admin password: in Vercel env
 - ODDS_API_KEY: b5e6b3e773229db2fc9cb916f87d3daf (the-odds-api.com, sport key: `americanfootball_nfl_draft`)
-- CRON_SECRET: draftx-cron-2026
+- CRON_SECRET: in Vercel env
 
 ## Git Identity
 - Name: Chris Dell / Email: chrisdell88@gmail.com

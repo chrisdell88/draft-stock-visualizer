@@ -11,7 +11,7 @@
 const https = require('https');
 const { Pool } = require('pg');
 
-const DB_URL = 'postgresql://postgres.cafhkmvhxnnlvotrlyvj:Draftx2026pass@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
+const DB_URL = 'process.env.DATABASE_URL';
 
 const SOURCE = {
   sourceKey: 'walterfootball_bigboard',

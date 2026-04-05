@@ -7,7 +7,7 @@
 const { Pool } = require('pg');
 const fs = require('fs');
 
-const DB_URL = 'postgresql://postgres:Draftx2026pass@db.cafhkmvhxnnlvotrlyvj.supabase.co:5432/postgres';
+const DB_URL = 'process.env.DATABASE_URL';
 
 function normalizeName(name) {
   return name.toLowerCase()

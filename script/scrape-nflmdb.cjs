@@ -10,7 +10,7 @@
 const https = require('https');
 const { Pool } = require('pg');
 
-const DB_URL = 'postgresql://postgres:Draftx2026pass@db.cafhkmvhxnnlvotrlyvj.supabase.co:5432/postgres';
+const DB_URL = 'process.env.DATABASE_URL';
 
 const SOURCES = [
   {
