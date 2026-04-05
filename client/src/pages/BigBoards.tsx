@@ -3,9 +3,38 @@ import { Link } from "wouter";
 import Layout from "@/components/Layout";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Loader2, TrendingUp, TrendingDown, ExternalLink, Award, BarChart3, Info, X, ArrowUpDown } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, ExternalLink, Award, BarChart3, Info, X, ArrowUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+
+// ─── Position consolidation ─────────────────────────────────────────────────
+const POS_NORMALIZE: Record<string, string> = {
+  OT: "OL", OG: "OL", IOL: "OL", G: "OL", C: "OL", "OT/G": "OL",
+  EDGE: "DL", DE: "DL", DT: "DL",
+};
+const POS_PILL_ORDER = ["ALL", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "S"];
+
+function normPos(pos: string | null): string {
+  return POS_NORMALIZE[pos ?? ""] ?? (pos ?? "");
+}
+
+// ─── Position pill colors ───────────────────────────────────────────────────
+const POS_COLOR: Record<string, string> = {
+  QB: "text-amber-400 bg-amber-500/10",
+  RB: "text-emerald-400 bg-emerald-500/10",
+  WR: "text-blue-400 bg-blue-500/10",
+  TE: "text-violet-400 bg-violet-500/10",
+  OT: "text-orange-400 bg-orange-500/10",
+  OG: "text-orange-400 bg-orange-500/10",
+  IOL: "text-orange-400 bg-orange-500/10",
+  OL: "text-orange-400 bg-orange-500/10",
+  EDGE: "text-pink-400 bg-pink-500/10",
+  DL: "text-pink-400 bg-pink-500/10",
+  DT: "text-pink-400 bg-pink-500/10",
+  DE: "text-pink-400 bg-pink-500/10",
+  LB: "text-sky-400 bg-sky-500/10",
+  CB: "text-green-400 bg-green-500/10",
+  S: "text-green-400 bg-green-500/10",
+};
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 type PlayerRow = {
@@ -43,22 +72,6 @@ function rankColor(rank: number | undefined): string {
   return "bg-red-500/10 text-red-400";
 }
 
-const POS_COLOR: Record<string, string> = {
-  QB: "text-amber-400 bg-amber-500/10",
-  RB: "text-emerald-400 bg-emerald-500/10",
-  WR: "text-blue-400 bg-blue-500/10",
-  TE: "text-violet-400 bg-violet-500/10",
-  OT: "text-orange-400 bg-orange-500/10",
-  OG: "text-orange-400 bg-orange-500/10",
-  IOL: "text-orange-400 bg-orange-500/10",
-  EDGE: "text-pink-400 bg-pink-500/10",
-  DL: "text-pink-400 bg-pink-500/10",
-  DT: "text-pink-400 bg-pink-500/10",
-  LB: "text-sky-400 bg-sky-500/10",
-  CB: "text-green-400 bg-green-500/10",
-  S: "text-green-400 bg-green-500/10",
-};
-
 export default function BigBoards() {
   const { data, isLoading } = useQuery<MatrixData>({
     queryKey: ["/api/matrix?boardType=bigboard"],
@@ -66,6 +79,7 @@ export default function BigBoards() {
   });
 
   const [posFilter, setPosFilter] = useState<string>("ALL");
+  const [search, setSearch] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [sortCol, setSortCol] = useState<"avg" | "name" | "pos" | "college">("avg");
   const [sortDesc, setSortDesc] = useState(false);
@@ -75,20 +89,30 @@ export default function BigBoards() {
     else { setSortCol(col); setSortDesc(false); }
   };
 
+  // Build consolidated position pills in correct order
   const positions = useMemo(() => {
     if (!data?.players) return ["ALL"];
-    const pos = Array.from(new Set(data.players.map(p => p.position).filter(Boolean) as string[])).sort();
-    return ["ALL", ...pos];
+    const groups = new Set<string>();
+    for (const p of data.players) {
+      if (data.drafts.some(d => data.picks[p.id]?.[d.id] !== undefined)) {
+        groups.add(normPos(p.position));
+      }
+    }
+    const ordered = POS_PILL_ORDER.filter(p => p === "ALL" || groups.has(p));
+    // Add any remaining not in POS_PILL_ORDER
+    for (const g of groups) {
+      if (!POS_PILL_ORDER.includes(g)) ordered.push(g);
+    }
+    return ordered;
   }, [data]);
 
   const filteredRows = useMemo(() => {
     if (!data?.players) return [];
+    const q = search.toLowerCase();
     const rows = data.players
-      .filter(p => posFilter === "ALL" || p.position === posFilter)
-      .filter(p => {
-        // Only show players that have at least one pick in the big board drafts
-        return data.drafts.some(d => data.picks[p.id]?.[d.id] !== undefined);
-      })
+      .filter(p => posFilter === "ALL" || normPos(p.position) === posFilter)
+      .filter(p => !q || p.name.toLowerCase().includes(q) || (p.college ?? "").toLowerCase().includes(q))
+      .filter(p => data.drafts.some(d => data.picks[p.id]?.[d.id] !== undefined))
       .map(p => ({
         ...p,
         picks: data.drafts.map(d => data.picks[p.id]?.[d.id]),
@@ -106,12 +130,12 @@ export default function BigBoards() {
       return sortDesc ? -cmp : cmp;
     });
     return rows;
-  }, [data, posFilter, sortCol, sortDesc]);
+  }, [data, posFilter, search, sortCol, sortDesc]);
 
   return (
     <Layout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-white flex items-center gap-3">
             <Award className="w-7 h-7 text-violet-400" />
@@ -135,23 +159,36 @@ export default function BigBoards() {
         </div>
       </div>
 
-      {/* Position filter */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {positions.map(pos => (
-          <button
-            key={pos}
-            onClick={() => setPosFilter(pos)}
-            data-testid={`filter-pos-${pos.toLowerCase()}`}
-            className={cn(
-              "px-3 py-1 rounded-full text-xs font-mono border transition-all",
-              posFilter === pos
-                ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
-                : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
-            )}
-          >
-            {pos}
-          </button>
-        ))}
+      {/* Search + Position filter row */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search prospects…"
+            className="pl-8 pr-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-violet-500/50 w-44"
+          />
+        </div>
+        {/* Position pills */}
+        <div className="flex flex-wrap gap-1.5">
+          {positions.map(pos => (
+            <button
+              key={pos}
+              onClick={() => setPosFilter(pos)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-mono border transition-all",
+                posFilter === pos
+                  ? "bg-violet-500/20 text-violet-300 border-violet-500/40"
+                  : "bg-white/5 text-muted-foreground border-white/10 hover:bg-white/10"
+              )}
+            >
+              {pos}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Source legend */}
@@ -163,7 +200,7 @@ export default function BigBoards() {
               <span>{d.shortName}</span>
               {d.url && (
                 <a href={d.url} target="_blank" rel="noopener noreferrer"
-                   className="text-violet-400 hover:text-violet-300" data-testid={`link-source-${d.sourceKey}`}>
+                   className="text-violet-400 hover:text-violet-300">
                   <ExternalLink className="w-3 h-3" />
                 </a>
               )}
@@ -181,9 +218,6 @@ export default function BigBoards() {
         <div className="glass-card rounded-2xl p-12 text-center">
           <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
           <p className="text-muted-foreground font-mono text-sm">No big board data available yet.</p>
-          <p className="text-muted-foreground font-mono text-xs mt-1">
-            Big boards include DJ's top-50 rankings and Tankathon's talent board.
-          </p>
         </div>
       ) : (
         <div className="glass-card rounded-2xl overflow-hidden">
@@ -229,12 +263,11 @@ export default function BigBoards() {
               <tbody>
                 {filteredRows.map((row, rowIdx) => (
                   <tr key={row.id}
-                      className={cn("border-b border-white/5 hover:bg-white/5 transition-colors", rowIdx % 2 === 0 ? "" : "bg-white/[0.02]")}
-                      data-testid={`row-player-${row.id}`}>
+                      className={cn("border-b border-white/5 hover:bg-white/5 transition-colors", rowIdx % 2 === 0 ? "" : "bg-white/[0.02]")}>
                     {/* Player name */}
                     <td className="sticky left-0 z-10 bg-card/90 backdrop-blur-md px-4 py-2.5">
                       <Link href={`/players/${row.id}`}
-                            className="flex items-center gap-2 group" data-testid={`link-player-${row.id}`}>
+                            className="flex items-center gap-2 group">
                         <div>
                           <p className="font-medium text-white text-xs group-hover:text-violet-300 transition-colors whitespace-nowrap leading-tight">
                             {row.name}
@@ -268,8 +301,7 @@ export default function BigBoards() {
                     {data.drafts.map(d => {
                       const pick = data.picks[row.id]?.[d.id];
                       return (
-                        <td key={d.id} className="px-2 py-2.5 text-center"
-                            data-testid={`cell-${row.id}-${d.id}`}>
+                        <td key={d.id} className="px-2 py-2.5 text-center">
                           {pick !== undefined ? (
                             <span className={cn("inline-block min-w-[32px] text-center text-xs font-mono px-1.5 py-0.5 rounded", rankColor(pick))}>
                               #{pick}
@@ -336,12 +368,8 @@ export default function BigBoards() {
                         </span>
                       )}
                       {d.url && (
-                        <a
-                          href={d.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-violet-400 hover:text-violet-300 transition-colors"
-                        >
+                        <a href={d.url} target="_blank" rel="noopener noreferrer"
+                           className="text-violet-400 hover:text-violet-300 transition-colors">
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}

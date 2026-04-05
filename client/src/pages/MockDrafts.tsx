@@ -5,11 +5,22 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   Loader2, TrendingUp, TrendingDown, Minus, ExternalLink,
-  ArrowUpDown, BarChart3, Eye, EyeOff, RefreshCw, Activity, Award, Info, X,
+  ArrowUpDown, BarChart3, Eye, EyeOff, RefreshCw, Activity, Award, Info, X, Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
+// ─── Position consolidation ─────────────────────────────────────────────────
+const POS_NORMALIZE: Record<string, string> = {
+  OT: "OL", OG: "OL", IOL: "OL", G: "OL", C: "OL", "OT/G": "OL",
+  EDGE: "DL", DE: "DL", DT: "DL",
+};
+const POS_PILL_ORDER = ["all", "QB", "RB", "WR", "TE", "OL", "DL", "LB", "CB", "S"];
+
+function normPos(pos: string | null): string {
+  return POS_NORMALIZE[pos ?? ""] ?? (pos ?? "");
+}
 
 type BoardView = "mock" | "bigboard";
 
@@ -108,18 +119,28 @@ export default function MockDrafts() {
   const [sortBy, setSortBy] = useState<"adp" | "name" | "pos">("adp");
   const [sortDesc, setSortDesc] = useState(false);
   const [filterPos, setFilterPos] = useState<string>("all");
+  const [search, setSearch] = useState("");
   const [showLegend, setShowLegend] = useState(true);
   const [showKey, setShowKey] = useState(false);
 
+  // Build consolidated position pills in correct order
   const positions = useMemo(() => {
-    const set = new Set(data?.players.map(p => p.position).filter(Boolean) as string[]);
-    return ["all", ...Array.from(set).sort()];
+    if (!data?.players) return ["all"];
+    const groups = new Set<string>();
+    for (const p of data.players) groups.add(normPos(p.position));
+    const ordered = POS_PILL_ORDER.filter(p => p === "all" || groups.has(p));
+    for (const g of groups) {
+      if (!POS_PILL_ORDER.includes(g)) ordered.push(g);
+    }
+    return ordered;
   }, [data?.players]);
 
   const sortedPlayers = useMemo(() => {
     if (!data?.players) return [];
+    const q = search.toLowerCase();
     let list = [...data.players];
-    if (filterPos !== "all") list = list.filter(p => p.position === filterPos);
+    if (filterPos !== "all") list = list.filter(p => normPos(p.position) === filterPos);
+    if (q) list = list.filter(p => p.name.toLowerCase().includes(q) || (p.college ?? "").toLowerCase().includes(q));
     list.sort((a, b) => {
       if (sortBy === "adp") {
         const av = a.currentAdp ?? 99;
@@ -218,6 +239,17 @@ export default function MockDrafts() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Search bar */}
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search prospects…"
+                className="pl-8 pr-3 py-1.5 text-xs font-mono rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-primary/50 w-44"
+              />
+            </div>
             {/* Position filter */}
             <div className="flex gap-1 flex-wrap">
               {positions.map(pos => (
@@ -306,24 +338,31 @@ export default function MockDrafts() {
                   </button>
                 </th>
 
-                {/* One column per mock draft */}
+                {/* One column per mock draft — rotated header for compact layout */}
                 {sortedDrafts.map(draft => (
                   <th
                     key={draft.id}
-                    className="border-r border-white/5 px-2 py-2 text-center"
-                    style={{ minWidth: 60, maxWidth: 80 }}
-                    title={draft.sourceName}
+                    className="border-r border-white/5 px-0 text-center"
+                    style={{ minWidth: 44, width: 44 }}
+                    title={`${draft.sourceName}${draft.publishedAt ? " · " + draftDate(draft) : ""}`}
                   >
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="font-mono font-bold text-white text-[11px] leading-tight">{draft.shortName}</span>
-                      {draft.publishedAt && (
-                        <span className="text-muted-foreground text-[9px] font-mono">{draftDate(draft)}</span>
-                      )}
-                      {draft.url && (
-                        <a href={draft.url} target="_blank" rel="noreferrer" className="text-primary/50 hover:text-primary transition-colors">
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
-                      )}
+                    <div
+                      className="flex flex-col items-center justify-end pb-2"
+                      style={{ height: 80 }}
+                    >
+                      <div
+                        style={{
+                          writingMode: "vertical-lr",
+                          transform: "rotate(180deg)",
+                          whiteSpace: "nowrap",
+                        }}
+                        className="font-mono font-bold text-white/80 text-[10px] leading-none tracking-wide"
+                      >
+                        {draft.shortName}
+                        {draft.publishedAt && (
+                          <span className="text-white/30 font-normal"> {draftDate(draft)}</span>
+                        )}
+                      </div>
                     </div>
                   </th>
                 ))}

@@ -22,10 +22,36 @@ const HEADSHOT_BASE =
 
 // NFL.com articles that carry 2026 prospect headshots
 const HEADSHOT_SOURCES = [
+  // Daniel Jeremiah big boards
   "https://www.nfl.com/news/daniel-jeremiah-s-top-50-2026-nfl-draft-prospect-rankings-3-0",
+  "https://www.nfl.com/news/daniel-jeremiah-s-top-50-2026-nfl-draft-prospect-rankings-2-0",
+  "https://www.nfl.com/news/daniel-jeremiah-s-top-50-2026-nfl-draft-prospect-rankings-1-0",
+  // Lance Zierlein mock drafts
   "https://www.nfl.com/news/lance-zierlein-2026-nfl-mock-draft-2-0-two-cbs-in-top-five-combine-star-sonny-styles-cracks-top-10",
+  "https://www.nfl.com/news/lance-zierlein-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/lance-zierlein-2026-nfl-mock-draft-3-0",
+  // Charles Davis mock drafts
   "https://www.nfl.com/news/charles-davis-2026-nfl-mock-draft-2-0-cardinals-seahawks-select-notre-dame-rbs-in-round-1",
+  "https://www.nfl.com/news/charles-davis-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/charles-davis-2026-nfl-mock-draft-3-0",
+  // Bucky Brooks mock drafts
   "https://www.nfl.com/news/bucky-brooks-2026-nfl-mock-draft-2-0-jets-grab-edge-rusher-receiver-rams-double-dip-on-dbs",
+  "https://www.nfl.com/news/bucky-brooks-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/bucky-brooks-2026-nfl-mock-draft-3-0",
+  // Other NFL.com mock drafts
+  "https://www.nfl.com/news/ryan-dunleavy-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/ryan-dunleavy-2026-nfl-mock-draft-2-0",
+  "https://www.nfl.com/news/ryan-dunleavy-2026-nfl-mock-draft-3-0",
+  "https://www.nfl.com/news/eric-edholm-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/eric-edholm-2026-nfl-mock-draft-2-0",
+  "https://www.nfl.com/news/eric-edholm-2026-nfl-mock-draft-3-0",
+  "https://www.nfl.com/news/peter-schrager-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/peter-schrager-2026-nfl-mock-draft-2-0",
+  "https://www.nfl.com/news/daniel-jeremiah-2026-nfl-mock-draft-1-0",
+  "https://www.nfl.com/news/daniel-jeremiah-2026-nfl-mock-draft-2-0",
+  // NFL.com top prospect features
+  "https://www.nfl.com/news/2026-nfl-draft-top-prospects-rankings",
+  "https://www.nfl.com/news/2026-nfl-draft-prospects-position-rankings",
 ];
 
 function fetchHtml(url) {
