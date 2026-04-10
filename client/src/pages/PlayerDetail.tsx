@@ -647,7 +647,7 @@ export default function PlayerDetail() {
                            tickMargin={8} />
                     <YAxis reversed={true} stroke="rgba(255,255,255,0.2)"
                            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "var(--font-mono)" }}
-                           tickFormatter={v => `#${Math.round(Number(v))}`} domain={["dataMin - 1", "dataMax + 1"]} />
+                           tickFormatter={v => `#${Number(v).toFixed(1)}`} domain={["dataMin - 1", "dataMax + 1"]} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "rgba(255,255,255,0.12)", borderRadius: "8px", color: "white", fontFamily: "var(--font-mono)", fontSize: "12px" }}
                       formatter={(v: any) => [`#${Number(v).toFixed(1)}`, "ADP"]}
