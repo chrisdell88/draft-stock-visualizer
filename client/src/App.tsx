@@ -3,6 +3,23 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Component, type ReactNode } from "react";
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e.message + '\n' + e.stack }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 32, fontFamily: 'monospace', color: '#ff4444', background: '#0d1117', minHeight: '100vh' }}>
+          <h2 style={{ color: '#fff' }}>Render Error (debug)</h2>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{this.state.error}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -37,12 +54,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Router />
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ErrorBoundary>
+            <Router />
+          </ErrorBoundary>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
