@@ -100,6 +100,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         dominatorRating: r.dominator_rating !== null ? Number(r.dominator_rating) : null,
         breakoutAge: r.breakout_age !== null ? Number(r.breakout_age) : null,
         playerProfilerUrl: r.player_profiler_url ?? null,
+        age: r.age !== null ? Number(r.age) : null,
+        handSize: r.hand_size ?? null,
+        collegeQbrPct: r.college_qbr_pct ?? null,
+        collegeYpaPct: r.college_ypa_pct ?? null,
+        breakoutAgePct: r.breakout_age_pct ?? null,
       });
     }
 
@@ -244,9 +249,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           zScore: row.z_score !== null ? Number(row.z_score) : null,
         });
       }
-      // Weighted formula: THR=3x, FP=2x, WF=1x · 2025=3x, 2024=2x, 2023=1.5x, 2022=1x, 2021=0.75x
+      // Weighted formula: THR=3x, FP=2x, WF=1x, NFLMDD=2x · 2025=3x, 2024=2x, 2023=1.5x, 2022=1x, 2021=0.75x
       // Qualification rule: must have at least 1 score entry from 2025 to appear on leaderboard
-      const SITE_W: Record<string, number> = { thr: 3, fp: 2, wf: 1 };
+      const SITE_W: Record<string, number> = { thr: 3, fp: 2, wf: 1, nflmdd: 2 };
       const YEAR_W: Record<number, number> = { 2025: 3, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
       const withWeighted = analysts_result.rows.map((a: any) => {
         const scores = scoresByAnalyst[a.id] ?? [];
@@ -277,7 +282,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (path === "/adp-windows" || path === "/adp-windows/") {
       const result = await pool.query(`
-        SELECT p.id, p.name, p.position, p.college,
+        SELECT p.id, p.name, p.position, p.college, p.image_url,
           latest.adp_value::numeric as current_adp,
           CASE
             WHEN latest.adp_value IS NOT NULL AND ago3d.adp_value IS NOT NULL
@@ -322,6 +327,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         name: r.name,
         position: r.position,
         college: r.college,
+        imageUrl: r.image_url ?? null,
         currentAdp: r.current_adp !== null ? Number(r.current_adp) : null,
         change3d: r.change3d !== null ? Number(r.change3d) : null,
         change7d: r.change7d !== null ? Number(r.change7d) : null,
@@ -355,7 +361,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `, queryArgs);
 
       const playersResult = await pool.query(`
-        SELECT p.id, p.name, p.position, p.college,
+        SELECT p.id, p.name, p.position, p.college, p.image_url,
           latest.adp_value::numeric as current_adp,
           CASE
             WHEN latest.adp_value IS NOT NULL AND prev7.adp_value IS NOT NULL
@@ -408,6 +414,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           name: p.name,
           position: p.position,
           college: p.college,
+          imageUrl: p.image_url ?? null,
           currentAdp: p.current_adp !== null ? Number(p.current_adp) : null,
           adpChange: p.adp_change !== null ? Number(p.adp_change) : null,
           trend: p.trend,

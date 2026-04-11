@@ -17,6 +17,14 @@ function normPos(pos: string | null): string {
   return POS_NORMALIZE[pos ?? ""] ?? (pos ?? "");
 }
 
+// ─── Position avatar hex colors ────────────────────────────────────────────
+const POS_HEX: Record<string, string> = {
+  QB: "#f59e0b", RB: "#34d399", WR: "#60a5fa", TE: "#a78bfa",
+  OT: "#fb923c", OG: "#fb923c", IOL: "#fb923c", C: "#fb923c",
+  EDGE: "#f472b6", DL: "#f472b6", DT: "#f472b6",
+  LB: "#38bdf8", CB: "#4ade80", S: "#4ade80",
+};
+
 // ─── Position pill colors ───────────────────────────────────────────────────
 const POS_COLOR: Record<string, string> = {
   QB: "text-amber-400 bg-amber-500/10",
@@ -42,6 +50,7 @@ type PlayerRow = {
   name: string;
   position: string | null;
   college: string | null;
+  imageUrl: string | null;
   currentAdp: number | null;
   adpChange: number | null;
   trend: string | null;
@@ -268,6 +277,17 @@ export default function BigBoards() {
                     <td className="sticky left-0 z-10 bg-card/90 backdrop-blur-md px-4 py-2.5">
                       <Link href={`/players/${row.id}`}
                             className="flex items-center gap-2 group">
+                        {/* Avatar */}
+                        {row.imageUrl ? (
+                          <img src={row.imageUrl} alt={row.name}
+                               className="w-7 h-7 rounded-full object-cover border flex-shrink-0"
+                               style={{ borderColor: `${POS_HEX[row.position ?? ""] ?? "#94a3b8"}40` }} />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 border"
+                               style={{ background: `${POS_HEX[row.position ?? ""] ?? "#94a3b8"}20`, borderColor: `${POS_HEX[row.position ?? ""] ?? "#94a3b8"}40`, color: POS_HEX[row.position ?? ""] ?? "#94a3b8" }}>
+                            {row.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <p className="font-medium text-white text-xs group-hover:text-violet-300 transition-colors whitespace-nowrap leading-tight">
                             {row.name}

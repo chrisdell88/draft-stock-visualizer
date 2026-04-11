@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Activity, Users, LayoutDashboard, TrendingUp, Radio, Award, BarChart2, Menu, X } from "lucide-react";
+import { Activity, Users, LayoutDashboard, TrendingUp, Radio, Award, BarChart2, Menu, X, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
@@ -9,6 +9,7 @@ const links = [
   { href: "/players", label: "Prospects", icon: Users },
   { href: "/big-boards", label: "Big Boards", icon: Award },
   { href: "/mock-drafts", label: "Mock Drafts", icon: Activity },
+  { href: "/mockx-draft", label: "MockX Draft", icon: Trophy },
   { href: "/accuracy", label: "Analyst X Score", icon: BarChart2 },
   { href: "/sources", label: "Sources & Scrapers", icon: Radio },
 ];

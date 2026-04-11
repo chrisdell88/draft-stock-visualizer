@@ -21,6 +21,12 @@ export const players = pgTable("players", {
   dominatorRating: numeric("dominator_rating"),
   breakoutAge: numeric("breakout_age"),
   playerProfilerUrl: text("player_profiler_url"),
+  // Player Profiler enrichment
+  age: numeric("age"),
+  handSize: text("hand_size"),
+  collegeQbrPct: integer("college_qbr_pct"),
+  collegeYpaPct: integer("college_ypa_pct"),
+  breakoutAgePct: integer("breakout_age_pct"),
 });
 
 // Analyst accuracy data sourced from The Huddle Report, FantasyPros, WalterFootball, NFLMDD

@@ -402,8 +402,8 @@ export default function PlayerDetail() {
               </div>
             </div>
 
-            {/* Height / Weight */}
-            <div className="grid grid-cols-2 gap-2 mt-2">
+            {/* Height / Weight / Age / Hand Size */}
+            <div className={`grid gap-2 mt-2 ${(player.age || player.handSize) ? "grid-cols-2" : "grid-cols-2"}`}>
               <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
                 <Ruler className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div>
@@ -418,6 +418,24 @@ export default function PlayerDetail() {
                   <p className="font-mono text-white text-sm font-semibold" data-testid="text-weight">{player.weight ? `${player.weight} lbs` : "–"}</p>
                 </div>
               </div>
+              {player.age && (
+                <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
+                  <Activity className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground font-mono">Age</p>
+                    <p className="font-mono text-white text-sm font-semibold">{Number(player.age).toFixed(1)}</p>
+                  </div>
+                </div>
+              )}
+              {player.handSize && (
+                <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex items-center gap-3">
+                  <Ruler className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-muted-foreground font-mono">Hand Size</p>
+                    <p className="font-mono text-white text-sm font-semibold">{player.handSize}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -441,7 +459,7 @@ export default function PlayerDetail() {
           )}
 
           {/* Player Profiler Scouting */}
-          {(player.comparablePlayer || player.playerProfilerUrl) && (
+          {(player.comparablePlayer || player.playerProfilerUrl || player.collegeQbrPct || player.collegeYpaPct || player.breakoutAgePct) && (
             <div className="glass-card rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Award className="w-4 h-4 text-primary" />
@@ -454,6 +472,29 @@ export default function PlayerDetail() {
                     <span className="font-mono font-bold text-amber-400 text-sm">{player.comparablePlayer}</span>
                   </div>
                 )}
+                {/* Percentile bars */}
+                {[
+                  { label: "College QBR", pct: player.collegeQbrPct },
+                  { label: "College YPA", pct: player.collegeYpaPct },
+                  { label: "Breakout Age", pct: player.breakoutAgePct },
+                ].filter(s => s.pct !== null && s.pct !== undefined).map(({ label, pct }) => {
+                  const p = Number(pct);
+                  const color = p >= 80 ? "#4ade80" : p >= 60 ? "#f59e0b" : p >= 40 ? "#94a3b8" : "#f87171";
+                  return (
+                    <div key={label}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] text-muted-foreground font-mono">{label}</span>
+                        <span className="text-[10px] font-mono font-bold" style={{ color }}>
+                          {p}th %ile
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700"
+                             style={{ width: `${p}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  );
+                })}
                 {player.playerProfilerUrl && (
                   <a href={player.playerProfilerUrl} target="_blank" rel="noopener noreferrer"
                      className="block text-center text-[10px] text-primary/60 hover:text-primary font-mono mt-2 transition-colors">

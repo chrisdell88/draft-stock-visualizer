@@ -22,6 +22,7 @@ type Analyst = {
 
 type AdpWindowPlayer = {
   id: number; name: string; position: string | null; college: string | null;
+  imageUrl: string | null;
   currentAdp: number | null;
   change3d: number | null; change7d: number | null; change30d: number | null;
   changeAll: number | null;
@@ -218,19 +219,36 @@ function WindowSelector({ value, onChange }: { value: Window; onChange: (w: Wind
   );
 }
 
+// ─── Position badge colors ─────────────────────────────────────────────────────
+const POS_COLOR: Record<string, string> = {
+  QB: "#f59e0b", RB: "#34d399", WR: "#60a5fa", TE: "#a78bfa",
+  OT: "#fb923c", OG: "#fb923c", IOL: "#fb923c", C: "#fb923c",
+  EDGE: "#f472b6", DL: "#f472b6", DT: "#f472b6",
+  LB: "#38bdf8", CB: "#4ade80", S: "#4ade80",
+};
+
 // ─── Mover Row (window-aware) ─────────────────────────────────────────────────
 function MoverRow({ player, rank, type, change }: {
   player: AdpWindowPlayer; rank: number; type: "up" | "down"; change: number;
 }) {
   const abs = Math.abs(change);
   const isUp = type === "up";
+  const posColor = POS_COLOR[player.position ?? ""] ?? "#94a3b8";
+  const initials = player.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
   return (
     <Link href={`/players/${player.id}`}>
       <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/3 hover:bg-white/7 transition-all border border-white/3 hover:border-white/10 cursor-pointer group" data-testid={`mover-row-${player.id}`}>
         <div className="flex items-center gap-3">
-          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0", isUp ? "bg-stock-up/15 text-stock-up" : "bg-stock-down/15 text-stock-down")}>
-            {rank}
-          </div>
+          {player.imageUrl ? (
+            <img src={player.imageUrl} alt={player.name}
+                 className="w-9 h-9 rounded-full object-cover border-2 flex-shrink-0"
+                 style={{ borderColor: `${posColor}40` }} />
+          ) : (
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 border-2"
+                 style={{ background: `linear-gradient(135deg, ${posColor}30, ${posColor}10)`, borderColor: `${posColor}40`, color: posColor }}>
+              {initials}
+            </div>
+          )}
           <div>
             <p className="font-semibold text-white text-sm group-hover:text-primary transition-colors leading-tight">{player.name}</p>
             <p className="text-xs text-muted-foreground">{player.position} · {player.college}</p>
