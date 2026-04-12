@@ -252,7 +252,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Weighted formula: all sites equal (1x), WF=0.5x · 2025=3x, 2024=2x, 2023=1.5x, 2022=1x, 2021=0.75x
       // Qualification rule: must have at least 1 score entry from 2025 to appear on leaderboard
       const SITE_W: Record<string, number> = { thr: 1, fp: 1, wf: 0.5, nflmdd: 1, thr_bigboard: 1 };
-      const YEAR_W: Record<number, number> = { 2025: 3.1, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
+      const YEAR_W: Record<number, number> = { 2025: 3.25, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
       const withWeighted = analysts_result.rows.map((a: any) => {
         const scores = scoresByAnalyst[a.id] ?? [];
         const zEntries = scores.filter((s: any) => s.zScore !== null);

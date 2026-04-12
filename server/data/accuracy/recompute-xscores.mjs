@@ -10,7 +10,7 @@ const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const SITE_W = { thr: 1, fp: 1, wf: 0.5, nflmdd: 1, thr_bigboard: 1 };
-const YEAR_W = { 2025: 3.1, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
+const YEAR_W = { 2025: 3.25, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
 
 async function main() {
   const client = await pool.connect();

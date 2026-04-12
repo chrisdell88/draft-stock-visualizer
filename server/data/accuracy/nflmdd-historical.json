@@ -1,225 +1,4465 @@
 {
-  "note": "Source: nflmockdraftdatabase.com/mock-drafts/YEAR/final-scores. Pages 1-4 (top 108) for 2025; page 1 (top 27) for 2021-2024. Per-submission scoring. For X Score: group by analyst, use best score per year. Scale: 0-100%.",
+  "note": "Source: nflmockdraftdatabase.com/mock-drafts/YEAR/final-scores. Full data for 2021-2024 (all pages scraped). Per-submission scoring. For X Score: group by analyst, use best score per year. Scale: 0-100%.",
   "2025": [
-    {"rank": 1, "outlet": "KSHB", "name": "Nick Jacobs", "score": 38.94},
-    {"rank": 2, "outlet": "Johns Hopkins News-Letter", "name": "Freddy Branson", "score": 36.30},
-    {"rank": 3, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 33.89},
-    {"rank": 4, "outlet": "NFL.com", "name": "Mike Band", "score": 33.65},
-    {"rank": 5, "outlet": "Fantasy Pros", "name": "Andrew Erickson", "score": 33.41},
-    {"rank": 6, "outlet": "Fantasy Pros", "name": "Matthew Jones", "score": 33.17},
-    {"rank": 7, "outlet": "USA Today", "name": "Nick Brinkerhoff", "score": 33.17},
-    {"rank": 8, "outlet": "Eleven Warriors", "name": "Dan Hope", "score": 32.69},
-    {"rank": 9, "outlet": "USA Today", "name": "Jacob Camenker", "score": 31.01},
-    {"rank": 10, "outlet": "In The Aggregate", "name": "Anthony Amico", "score": 30.77},
-    {"rank": 11, "outlet": "Newsweek", "name": "Seth Quinn", "score": 30.77},
-    {"rank": 12, "outlet": "SI", "name": "Matt Brandon", "score": 30.77},
-    {"rank": 13, "outlet": "Chicago Tribune", "name": "Brad Biggs", "score": 30.29},
-    {"rank": 14, "outlet": "Draft Sharks", "name": "Jared Smola", "score": 30.29},
-    {"rank": 15, "outlet": "CBS", "name": "Ryan Wilson", "score": 30.05},
-    {"rank": 16, "outlet": "CBS", "name": "Ryan Wilson", "score": 30.05},
-    {"rank": 17, "outlet": "Mile High Report", "name": "Scotty Payne", "score": 30.05},
-    {"rank": 18, "outlet": "Pro Football Focus", "name": "Trevor Sikkema", "score": 30.05},
-    {"rank": 19, "outlet": "Panthers Wire", "name": "Anthony Rizzuti", "score": 29.81},
-    {"rank": 20, "outlet": "Pro Football Focus", "name": "John Kosko", "score": 29.57},
-    {"rank": 21, "outlet": "SI", "name": "Michael Fabiano", "score": 29.57},
-    {"rank": 22, "outlet": "NBC Sports Boston", "name": "Phil Perry", "score": 29.33},
-    {"rank": 23, "outlet": "RotoViz", "name": "Scott Smith", "score": 29.33},
-    {"rank": 24, "outlet": "CBS", "name": "Josh Edwards", "score": 29.09},
-    {"rank": 25, "outlet": "CBS", "name": "Ryan Wilson", "score": 29.09},
-    {"rank": 26, "outlet": "NFL.com", "name": "Dan Parr", "score": 28.85},
-    {"rank": 27, "outlet": "ESPN", "name": "Jordan Reid", "score": 28.61},
-    {"rank": 28, "outlet": "CBS", "name": "Pete Prisco", "score": 28.13},
-    {"rank": 29, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 28.13},
-    {"rank": 30, "outlet": "Fantasy Pros", "name": "Pat Fitzmaurice", "score": 28.13},
-    {"rank": 31, "outlet": "NFL Trade Rumors", "name": "Nate Bouda", "score": 28.13},
-    {"rank": 32, "outlet": "NJ.com", "name": "Ryan Novozinsky", "score": 28.13},
-    {"rank": 33, "outlet": "Outer Banks Voice", "name": "Aaron Jurkowitz", "score": 28.13},
-    {"rank": 34, "outlet": "SI", "name": "Matt Brandon", "score": 28.13},
-    {"rank": 35, "outlet": "SI", "name": "Michael Fabiano", "score": 28.13},
-    {"rank": 36, "outlet": "The Huddle", "name": "HC Green", "score": 28.13},
-    {"rank": 37, "outlet": "Fantasy Law Guy", "name": "Nick Guarisco", "score": 27.88},
-    {"rank": 38, "outlet": "Fantasy Pros", "name": "Kent Weyrauch", "score": 27.88},
-    {"rank": 39, "outlet": "For The Win", "name": "Michelle R. Martinelli", "score": 27.88},
-    {"rank": 40, "outlet": "NFL.com", "name": "Dan Parr", "score": 27.88},
-    {"rank": 41, "outlet": "Pro Football Focus", "name": "Gordon McGuinness", "score": 27.88},
-    {"rank": 42, "outlet": "Pro Football Network", "name": "Jacob Infante", "score": 27.88},
-    {"rank": 43, "outlet": "Sports Talk", "name": "Sam Teets", "score": 27.88},
-    {"rank": 44, "outlet": "USA Today", "name": "Ayrton Ostly", "score": 27.88},
-    {"rank": 45, "outlet": "USA Today", "name": "Joe Rivera", "score": 27.88},
-    {"rank": 46, "outlet": "CBS", "name": "Josh Edwards", "score": 27.64},
-    {"rank": 47, "outlet": "Establish The Run", "name": "John Daigle", "score": 27.64},
-    {"rank": 48, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 27.64},
-    {"rank": 49, "outlet": "Football Guys", "name": "Alfredo Brown", "score": 27.64},
-    {"rank": 50, "outlet": "Fox Sports", "name": "Nick Wright", "score": 27.64},
-    {"rank": 51, "outlet": "FTN Fantasy", "name": "Jeff Ratcliffe", "score": 27.64},
-    {"rank": 52, "outlet": "SI", "name": "Matt Brandon", "score": 27.64},
-    {"rank": 53, "outlet": "4 For 4", "name": "Ryan Noonan", "score": 27.40},
-    {"rank": 54, "outlet": "The Huddle Report", "name": "Jonathan Cook", "score": 27.40},
-    {"rank": 55, "outlet": "College Football Network", "name": "Owain Jones", "score": 27.40},
-    {"rank": 56, "outlet": "Rotoballer", "name": "Matt Donnelly", "score": 27.40},
-    {"rank": 57, "outlet": "Vikings Wire", "name": "Andrew Harbaugh", "score": 27.40},
-    {"rank": 58, "outlet": "Walter Football", "name": "Walter Cherepinsky", "score": 27.40},
-    {"rank": 59, "outlet": "NFL Draft Lounge", "name": "Sean Balzer", "score": 27.16},
-    {"rank": 60, "outlet": "Seahawks Draft Blog", "name": "Rob Staton", "score": 27.16},
-    {"rank": 61, "outlet": "4 For 4", "name": "Scott Smith", "score": 26.92},
-    {"rank": 62, "outlet": "CBS", "name": "Ryan Wilson", "score": 26.92},
-    {"rank": 63, "outlet": "CBS", "name": "Ryan Wilson", "score": 26.92},
-    {"rank": 64, "outlet": "NBC Sports", "name": "Eric Froton", "score": 26.92},
-    {"rank": 65, "outlet": "Player Profiler", "name": "Cody Carpentier", "score": 26.92},
-    {"rank": 66, "outlet": "Takeaways", "name": "Staff", "score": 26.92},
-    {"rank": 67, "outlet": "USA Today", "name": "Jacob Camenker", "score": 26.92},
-    {"rank": 68, "outlet": "Pro Football Network", "name": "Cameron Sheath", "score": 26.68},
-    {"rank": 69, "outlet": "CBS", "name": "Kyle Stackpole", "score": 26.20},
-    {"rank": 70, "outlet": "CBS", "name": "Michael Renner", "score": 26.20},
-    {"rank": 71, "outlet": "Pro Football Focus", "name": "Mason Cameron", "score": 26.20},
-    {"rank": 72, "outlet": "CBS", "name": "Bryan DeArdo", "score": 25.96},
-    {"rank": 73, "outlet": "Pro Football Focus", "name": "John Kosko", "score": 25.96},
-    {"rank": 74, "outlet": "CBS", "name": "Michael Renner", "score": 25.72},
-    {"rank": 75, "outlet": "VSIN", "name": "Matt Youmans", "score": 25.72},
-    {"rank": 76, "outlet": "NBC Sports", "name": "Connor Rogers", "score": 25.48},
-    {"rank": 77, "outlet": "The Daily Targum", "name": "Sean Newcomb", "score": 25.48},
-    {"rank": 78, "outlet": "The Huddle", "name": "David Dorey", "score": 25.48},
-    {"rank": 79, "outlet": "USA Today", "name": "Michael Middlehurst-Schwartz", "score": 25.48},
-    {"rank": 80, "outlet": "The Collegian", "name": "Michaela Althouse", "score": 25.24},
-    {"rank": 81, "outlet": "Mock Draft NFL", "name": "Lou Pickney", "score": 25.24},
-    {"rank": 82, "outlet": "Chicago Tribune", "name": "Brad Biggs", "score": 25.24},
-    {"rank": 83, "outlet": "Establish The Run", "name": "John Daigle", "score": 25.24},
-    {"rank": 84, "outlet": "Fantasy Pros", "name": "Pat Fitzmaurice", "score": 25.24},
-    {"rank": 85, "outlet": "M Live", "name": "Kory Woods", "score": 25.24},
-    {"rank": 86, "outlet": "NBC Sports", "name": "Kyle Dvorchak", "score": 25.24},
-    {"rank": 87, "outlet": "NFL Spin Zone", "name": "Sayre Bedinger", "score": 25.24},
-    {"rank": 88, "outlet": "Penn Live", "name": "Johnny McGonigal", "score": 25.24},
-    {"rank": 89, "outlet": "Sumer Sports", "name": "Matt Stopsky", "score": 25.24},
-    {"rank": 90, "outlet": "Takeaways", "name": "Staff", "score": 25.24},
-    {"rank": 92, "outlet": "Akron Beacon Journal", "name": "Dan Kadar", "score": 25.00},
-    {"rank": 93, "outlet": "Bucs Nation", "name": "Evan Wanish", "score": 25.00},
-    {"rank": 94, "outlet": "College Football Network", "name": "Owain Jones", "score": 25.00},
-    {"rank": 95, "outlet": "Daft on Draft", "name": "Cory Kinnan", "score": 25.00},
-    {"rank": 96, "outlet": "Milwaukee Journal Sentinel", "name": "Ayrton Ostly", "score": 25.00},
-    {"rank": 97, "outlet": "The Huddle", "name": "Cory Bonini", "score": 25.00},
-    {"rank": 98, "outlet": "USA Today", "name": "Tyler Dragon", "score": 25.00},
-    {"rank": 99, "outlet": "33rd Team", "name": "Kyle Crabbs", "score": 24.76},
-    {"rank": 100, "outlet": "ESPN", "name": "Peter Schrager", "score": 24.76},
-    {"rank": 101, "outlet": "NBC Sports Boston", "name": "Phil Perry", "score": 24.76},
-    {"rank": 102, "outlet": "NFL Trade Rumors", "name": "Nate Bouda", "score": 24.76},
-    {"rank": 103, "outlet": "Raiders Wire", "name": "A.J. Cola", "score": 24.76},
-    {"rank": 104, "outlet": "San Diego Union Tribune", "name": "Eddie Brown", "score": 24.76},
-    {"rank": 105, "outlet": "SI", "name": "Richie Bradshaw", "score": 24.76},
-    {"rank": 106, "outlet": "The Huddle", "name": "Cory Bonini", "score": 24.76},
-    {"rank": 107, "outlet": "Underdog", "name": "Hayden Winks", "score": 24.76}
-  ],
-  "2024": [
-    {"rank": 1, "outlet": "Walter Football", "name": "Charlie Campbell", "score": 38.70},
-    {"rank": 2, "outlet": "NFL Spin Zone", "name": "Sayre Bedinger", "score": 38.22},
-    {"rank": 3, "outlet": "Fox Sports", "name": "Staff", "score": 36.06},
-    {"rank": 4, "outlet": "USA Today", "name": "Nate Davis", "score": 36.06},
-    {"rank": 5, "outlet": "Player Profiler", "name": "Josh Larky", "score": 34.38},
-    {"rank": 6, "outlet": "DraftBlaster", "name": "Staff", "score": 33.65},
-    {"rank": 7, "outlet": "Touchdown Wire", "name": "Natalie Miller", "score": 33.65},
-    {"rank": 8, "outlet": "Arizona Republic", "name": "Bob McManaman", "score": 33.41},
-    {"rank": 9, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 33.41},
-    {"rank": 10, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 33.41},
-    {"rank": 11, "outlet": "33rd Team", "name": "Ari Meirov", "score": 32.69},
-    {"rank": 12, "outlet": "NFL.com", "name": "Peter Schrager", "score": 32.69},
-    {"rank": 13, "outlet": "Sporting News", "name": "Vinnie Iyer", "score": 32.69},
-    {"rank": 14, "outlet": "Fantasy Six Pack", "name": "Jon Witt", "score": 32.21},
-    {"rank": 15, "outlet": "Fox Sports", "name": "Joel Klatt", "score": 32.21},
-    {"rank": 16, "outlet": "UPI", "name": "Alex Butler", "score": 32.21},
-    {"rank": 17, "outlet": "247 Sports", "name": "Zack Pearson", "score": 31.97},
-    {"rank": 18, "outlet": "On3", "name": "Andy Staples", "score": 31.97},
-    {"rank": 19, "outlet": "Chicago Sun Times", "name": "Patrick Finley", "score": 31.49},
-    {"rank": 20, "outlet": "33rd Team", "name": "Marcus Mosher", "score": 31.25},
-    {"rank": 21, "outlet": "Denver Sports", "name": "Cecil Lammey", "score": 31.01},
-    {"rank": 22, "outlet": "The Huddle", "name": "HC Green", "score": 31.01},
-    {"rank": 23, "outlet": "AP News", "name": "Rob Maaddi", "score": 30.77},
-    {"rank": 24, "outlet": "Bucs Wire", "name": "Staff", "score": 30.77},
-    {"rank": 25, "outlet": "Dallas Morning News", "name": "Calvin Watkins", "score": 30.77},
-    {"rank": 26, "outlet": "Fantasy Life", "name": "Matthew Freedman", "score": 30.77},
-    {"rank": 27, "outlet": "Pats Football Now", "name": "Dan Kelley", "score": 30.77}
-  ],
-  "2023": [
-    {"rank": 1, "outlet": "Sports Gambling Podcast", "name": "Sean Green", "score": 29.57},
-    {"rank": 2, "outlet": "NFL Science", "name": "Dustin Nelson", "score": 28.85},
-    {"rank": 3, "outlet": "Pro Football Focus", "name": "Gordon McGuinness", "score": 26.44},
-    {"rank": 4, "outlet": "Chicago Sun Times", "name": "Jason Lieser", "score": 25.96},
-    {"rank": 5, "outlet": "Steelers Now", "name": "Alan Saunders", "score": 24.76},
-    {"rank": 6, "outlet": "Tankathon", "name": "Staff", "score": 24.04},
-    {"rank": 7, "outlet": "The Athletic", "name": "Staff", "score": 23.80},
-    {"rank": 8, "outlet": "CBS", "name": "Garrett Podell", "score": 23.56},
-    {"rank": 9, "outlet": "NBC Sports", "name": "Staff", "score": 23.56},
-    {"rank": 10, "outlet": "AP News", "name": "Rob Maaddi", "score": 23.32},
-    {"rank": 11, "outlet": "KSL Sports", "name": "Sam Farnsworth", "score": 23.32},
-    {"rank": 12, "outlet": "4 For 4", "name": "John Daigle", "score": 23.08},
-    {"rank": 13, "outlet": "Fox Sports", "name": "Joel Klatt", "score": 23.08},
-    {"rank": 14, "outlet": "NFL.com", "name": "Daniel Jeremiah", "score": 23.08},
-    {"rank": 15, "outlet": "Shaw Local News Network", "name": "Hub Arkush", "score": 23.08},
-    {"rank": 16, "outlet": "FTN Fantasy", "name": "Jeff Ratcliffe", "score": 22.84},
-    {"rank": 17, "outlet": "Action Network", "name": "Sean Koerner", "score": 22.36},
-    {"rank": 18, "outlet": "Underdog Fantasy", "name": "Hayden Winks", "score": 22.36},
-    {"rank": 19, "outlet": "The Athletic", "name": "Dane Brugler", "score": 21.63},
-    {"rank": 20, "outlet": "Pro Football Focus", "name": "Cris Collinsworth", "score": 21.39},
-    {"rank": 21, "outlet": "Yardbarker", "name": "Seth Trachtman", "score": 21.39},
-    {"rank": 22, "outlet": "Mile High Report", "name": "Scotty Payne", "score": 21.15},
-    {"rank": 23, "outlet": "NFL.com", "name": "Daniel Jeremiah", "score": 21.15},
-    {"rank": 24, "outlet": "NFL Trade Rumors", "name": "Logan Ulrich", "score": 21.15},
-    {"rank": 25, "outlet": "Pro Football Network", "name": "Oliver Hodgkinson", "score": 21.15},
-    {"rank": 26, "outlet": "USA Today", "name": "Michael Middlehurst-Schwartz", "score": 21.15},
-    {"rank": 27, "outlet": "Brooklyn Beat", "name": "Justin Worsley", "score": 20.91}
-  ],
-  "2022": [
-    {"rank": 1, "outlet": "Walter Football", "name": "Charlie Campbell", "score": 28.37},
-    {"rank": 2, "outlet": "Yahoo Sports", "name": "Eric Edholm", "score": 25.96},
-    {"rank": 3, "outlet": "VSIN", "name": "Matt Youmans", "score": 25.72},
-    {"rank": 4, "outlet": "Barstool Sports", "name": "Steven Cheah", "score": 25.24},
-    {"rank": 5, "outlet": "Philly Voice", "name": "Jimmy Kempski", "score": 24.04},
-    {"rank": 6, "outlet": "The Huddle Report", "name": "Brian Johannes", "score": 23.80},
-    {"rank": 7, "outlet": "SI", "name": "Albert Breer", "score": 23.56},
-    {"rank": 8, "outlet": "The Palm Beach Post", "name": "Joe Schad", "score": 23.32},
-    {"rank": 9, "outlet": "Bleacher Report", "name": "Staff", "score": 23.08},
-    {"rank": 10, "outlet": "Houston Chronicle", "name": "Brooks Kubena", "score": 23.08},
-    {"rank": 11, "outlet": "Walter Football", "name": "Walter Cherepinsky", "score": 23.08},
-    {"rank": 12, "outlet": "4 For 4", "name": "Anthony Staggs", "score": 22.84},
-    {"rank": 13, "outlet": "Houston Chronicle", "name": "Brooks Kubena", "score": 22.60},
-    {"rank": 14, "outlet": "Behind The Steel Curtain", "name": "Andrew Wilbar", "score": 22.12},
-    {"rank": 15, "outlet": "Mile High Report", "name": "Scotty Payne", "score": 22.12},
-    {"rank": 16, "outlet": "Pro Football Focus", "name": "Sam Monson", "score": 21.63},
-    {"rank": 17, "outlet": "Drafticipation", "name": "Staff", "score": 21.15},
-    {"rank": 18, "outlet": "NFL.com", "name": "Lance Zierlein", "score": 21.15},
-    {"rank": 19, "outlet": "Fantasy Law Guy", "name": "Nick Guarisco", "score": 20.91},
-    {"rank": 20, "outlet": "Camden News", "name": "Michael Hanich", "score": 20.67},
-    {"rank": 21, "outlet": "DRAFTPLEX", "name": "Jason Pruett", "score": 20.67},
-    {"rank": 22, "outlet": "Draftwire", "name": "Luke Easterling", "score": 20.67},
-    {"rank": 23, "outlet": "Fantasy Pros", "name": "Derek Brown", "score": 20.67},
-    {"rank": 24, "outlet": "Action Network", "name": "Sean Koerner", "score": 20.43},
-    {"rank": 25, "outlet": "Draft ID", "name": "Sawyer Hicks", "score": 20.43}
+    {
+      "rank": 1,
+      "outlet": "KSHB",
+      "name": "Nick Jacobs",
+      "score": 38.94
+    },
+    {
+      "rank": 2,
+      "outlet": "Johns Hopkins News-Letter",
+      "name": "Freddy Branson",
+      "score": 36.3
+    },
+    {
+      "rank": 3,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 33.89
+    },
+    {
+      "rank": 4,
+      "outlet": "NFL.com",
+      "name": "Mike Band",
+      "score": 33.65
+    },
+    {
+      "rank": 5,
+      "outlet": "Fantasy Pros",
+      "name": "Andrew Erickson",
+      "score": 33.41
+    },
+    {
+      "rank": 6,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Jones",
+      "score": 33.17
+    },
+    {
+      "rank": 7,
+      "outlet": "USA Today",
+      "name": "Nick Brinkerhoff",
+      "score": 33.17
+    },
+    {
+      "rank": 8,
+      "outlet": "Eleven Warriors",
+      "name": "Dan Hope",
+      "score": 32.69
+    },
+    {
+      "rank": 9,
+      "outlet": "USA Today",
+      "name": "Jacob Camenker",
+      "score": 31.01
+    },
+    {
+      "rank": 10,
+      "outlet": "In The Aggregate",
+      "name": "Anthony Amico",
+      "score": 30.77
+    },
+    {
+      "rank": 11,
+      "outlet": "Newsweek",
+      "name": "Seth Quinn",
+      "score": 30.77
+    },
+    {
+      "rank": 12,
+      "outlet": "SI",
+      "name": "Matt Brandon",
+      "score": 30.77
+    },
+    {
+      "rank": 13,
+      "outlet": "Chicago Tribune",
+      "name": "Brad Biggs",
+      "score": 30.29
+    },
+    {
+      "rank": 14,
+      "outlet": "Draft Sharks",
+      "name": "Jared Smola",
+      "score": 30.29
+    },
+    {
+      "rank": 15,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 30.05
+    },
+    {
+      "rank": 16,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 30.05
+    },
+    {
+      "rank": 17,
+      "outlet": "Mile High Report",
+      "name": "Scotty Payne",
+      "score": 30.05
+    },
+    {
+      "rank": 18,
+      "outlet": "Pro Football Focus",
+      "name": "Trevor Sikkema",
+      "score": 30.05
+    },
+    {
+      "rank": 19,
+      "outlet": "Panthers Wire",
+      "name": "Anthony Rizzuti",
+      "score": 29.81
+    },
+    {
+      "rank": 20,
+      "outlet": "Pro Football Focus",
+      "name": "John Kosko",
+      "score": 29.57
+    },
+    {
+      "rank": 21,
+      "outlet": "SI",
+      "name": "Michael Fabiano",
+      "score": 29.57
+    },
+    {
+      "rank": 22,
+      "outlet": "NBC Sports Boston",
+      "name": "Phil Perry",
+      "score": 29.33
+    },
+    {
+      "rank": 23,
+      "outlet": "RotoViz",
+      "name": "Scott Smith",
+      "score": 29.33
+    },
+    {
+      "rank": 24,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 29.09
+    },
+    {
+      "rank": 25,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 29.09
+    },
+    {
+      "rank": 26,
+      "outlet": "NFL.com",
+      "name": "Dan Parr",
+      "score": 28.85
+    },
+    {
+      "rank": 27,
+      "outlet": "ESPN",
+      "name": "Jordan Reid",
+      "score": 28.61
+    },
+    {
+      "rank": 28,
+      "outlet": "CBS",
+      "name": "Pete Prisco",
+      "score": 28.13
+    },
+    {
+      "rank": 29,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 28.13
+    },
+    {
+      "rank": 30,
+      "outlet": "Fantasy Pros",
+      "name": "Pat Fitzmaurice",
+      "score": 28.13
+    },
+    {
+      "rank": 31,
+      "outlet": "NFL Trade Rumors",
+      "name": "Nate Bouda",
+      "score": 28.13
+    },
+    {
+      "rank": 32,
+      "outlet": "NJ.com",
+      "name": "Ryan Novozinsky",
+      "score": 28.13
+    },
+    {
+      "rank": 33,
+      "outlet": "Outer Banks Voice",
+      "name": "Aaron Jurkowitz",
+      "score": 28.13
+    },
+    {
+      "rank": 34,
+      "outlet": "SI",
+      "name": "Matt Brandon",
+      "score": 28.13
+    },
+    {
+      "rank": 35,
+      "outlet": "SI",
+      "name": "Michael Fabiano",
+      "score": 28.13
+    },
+    {
+      "rank": 36,
+      "outlet": "The Huddle",
+      "name": "HC Green",
+      "score": 28.13
+    },
+    {
+      "rank": 37,
+      "outlet": "Fantasy Law Guy",
+      "name": "Nick Guarisco",
+      "score": 27.88
+    },
+    {
+      "rank": 38,
+      "outlet": "Fantasy Pros",
+      "name": "Kent Weyrauch",
+      "score": 27.88
+    },
+    {
+      "rank": 39,
+      "outlet": "For The Win",
+      "name": "Michelle R. Martinelli",
+      "score": 27.88
+    },
+    {
+      "rank": 40,
+      "outlet": "NFL.com",
+      "name": "Dan Parr",
+      "score": 27.88
+    },
+    {
+      "rank": 41,
+      "outlet": "Pro Football Focus",
+      "name": "Gordon McGuinness",
+      "score": 27.88
+    },
+    {
+      "rank": 42,
+      "outlet": "Pro Football Network",
+      "name": "Jacob Infante",
+      "score": 27.88
+    },
+    {
+      "rank": 43,
+      "outlet": "Sports Talk",
+      "name": "Sam Teets",
+      "score": 27.88
+    },
+    {
+      "rank": 44,
+      "outlet": "USA Today",
+      "name": "Ayrton Ostly",
+      "score": 27.88
+    },
+    {
+      "rank": 45,
+      "outlet": "USA Today",
+      "name": "Joe Rivera",
+      "score": 27.88
+    },
+    {
+      "rank": 46,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 27.64
+    },
+    {
+      "rank": 47,
+      "outlet": "Establish The Run",
+      "name": "John Daigle",
+      "score": 27.64
+    },
+    {
+      "rank": 48,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 27.64
+    },
+    {
+      "rank": 49,
+      "outlet": "Football Guys",
+      "name": "Alfredo Brown",
+      "score": 27.64
+    },
+    {
+      "rank": 50,
+      "outlet": "Fox Sports",
+      "name": "Nick Wright",
+      "score": 27.64
+    },
+    {
+      "rank": 51,
+      "outlet": "FTN Fantasy",
+      "name": "Jeff Ratcliffe",
+      "score": 27.64
+    },
+    {
+      "rank": 52,
+      "outlet": "SI",
+      "name": "Matt Brandon",
+      "score": 27.64
+    },
+    {
+      "rank": 53,
+      "outlet": "4 For 4",
+      "name": "Ryan Noonan",
+      "score": 27.4
+    },
+    {
+      "rank": 54,
+      "outlet": "The Huddle Report",
+      "name": "Jonathan Cook",
+      "score": 27.4
+    },
+    {
+      "rank": 55,
+      "outlet": "College Football Network",
+      "name": "Owain Jones",
+      "score": 27.4
+    },
+    {
+      "rank": 56,
+      "outlet": "Rotoballer",
+      "name": "Matt Donnelly",
+      "score": 27.4
+    },
+    {
+      "rank": 57,
+      "outlet": "Vikings Wire",
+      "name": "Andrew Harbaugh",
+      "score": 27.4
+    },
+    {
+      "rank": 58,
+      "outlet": "Walter Football",
+      "name": "Walter Cherepinsky",
+      "score": 27.4
+    },
+    {
+      "rank": 59,
+      "outlet": "NFL Draft Lounge",
+      "name": "Sean Balzer",
+      "score": 27.16
+    },
+    {
+      "rank": 60,
+      "outlet": "Seahawks Draft Blog",
+      "name": "Rob Staton",
+      "score": 27.16
+    },
+    {
+      "rank": 61,
+      "outlet": "4 For 4",
+      "name": "Scott Smith",
+      "score": 26.92
+    },
+    {
+      "rank": 62,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 26.92
+    },
+    {
+      "rank": 63,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 26.92
+    },
+    {
+      "rank": 64,
+      "outlet": "NBC Sports",
+      "name": "Eric Froton",
+      "score": 26.92
+    },
+    {
+      "rank": 65,
+      "outlet": "Player Profiler",
+      "name": "Cody Carpentier",
+      "score": 26.92
+    },
+    {
+      "rank": 66,
+      "outlet": "Takeaways",
+      "name": "Staff",
+      "score": 26.92
+    },
+    {
+      "rank": 67,
+      "outlet": "USA Today",
+      "name": "Jacob Camenker",
+      "score": 26.92
+    },
+    {
+      "rank": 68,
+      "outlet": "Pro Football Network",
+      "name": "Cameron Sheath",
+      "score": 26.68
+    },
+    {
+      "rank": 69,
+      "outlet": "CBS",
+      "name": "Kyle Stackpole",
+      "score": 26.2
+    },
+    {
+      "rank": 70,
+      "outlet": "CBS",
+      "name": "Michael Renner",
+      "score": 26.2
+    },
+    {
+      "rank": 71,
+      "outlet": "Pro Football Focus",
+      "name": "Mason Cameron",
+      "score": 26.2
+    },
+    {
+      "rank": 72,
+      "outlet": "CBS",
+      "name": "Bryan DeArdo",
+      "score": 25.96
+    },
+    {
+      "rank": 73,
+      "outlet": "Pro Football Focus",
+      "name": "John Kosko",
+      "score": 25.96
+    },
+    {
+      "rank": 74,
+      "outlet": "CBS",
+      "name": "Michael Renner",
+      "score": 25.72
+    },
+    {
+      "rank": 75,
+      "outlet": "VSIN",
+      "name": "Matt Youmans",
+      "score": 25.72
+    },
+    {
+      "rank": 76,
+      "outlet": "NBC Sports",
+      "name": "Connor Rogers",
+      "score": 25.48
+    },
+    {
+      "rank": 77,
+      "outlet": "The Daily Targum",
+      "name": "Sean Newcomb",
+      "score": 25.48
+    },
+    {
+      "rank": 78,
+      "outlet": "The Huddle",
+      "name": "David Dorey",
+      "score": 25.48
+    },
+    {
+      "rank": 79,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 25.48
+    },
+    {
+      "rank": 80,
+      "outlet": "The Collegian",
+      "name": "Michaela Althouse",
+      "score": 25.24
+    },
+    {
+      "rank": 81,
+      "outlet": "Mock Draft NFL",
+      "name": "Lou Pickney",
+      "score": 25.24
+    },
+    {
+      "rank": 82,
+      "outlet": "Chicago Tribune",
+      "name": "Brad Biggs",
+      "score": 25.24
+    },
+    {
+      "rank": 83,
+      "outlet": "Establish The Run",
+      "name": "John Daigle",
+      "score": 25.24
+    },
+    {
+      "rank": 84,
+      "outlet": "Fantasy Pros",
+      "name": "Pat Fitzmaurice",
+      "score": 25.24
+    },
+    {
+      "rank": 85,
+      "outlet": "M Live",
+      "name": "Kory Woods",
+      "score": 25.24
+    },
+    {
+      "rank": 86,
+      "outlet": "NBC Sports",
+      "name": "Kyle Dvorchak",
+      "score": 25.24
+    },
+    {
+      "rank": 87,
+      "outlet": "NFL Spin Zone",
+      "name": "Sayre Bedinger",
+      "score": 25.24
+    },
+    {
+      "rank": 88,
+      "outlet": "Penn Live",
+      "name": "Johnny McGonigal",
+      "score": 25.24
+    },
+    {
+      "rank": 89,
+      "outlet": "Sumer Sports",
+      "name": "Matt Stopsky",
+      "score": 25.24
+    },
+    {
+      "rank": 90,
+      "outlet": "Takeaways",
+      "name": "Staff",
+      "score": 25.24
+    },
+    {
+      "rank": 92,
+      "outlet": "Akron Beacon Journal",
+      "name": "Dan Kadar",
+      "score": 25.0
+    },
+    {
+      "rank": 93,
+      "outlet": "Bucs Nation",
+      "name": "Evan Wanish",
+      "score": 25.0
+    },
+    {
+      "rank": 94,
+      "outlet": "College Football Network",
+      "name": "Owain Jones",
+      "score": 25.0
+    },
+    {
+      "rank": 95,
+      "outlet": "Daft on Draft",
+      "name": "Cory Kinnan",
+      "score": 25.0
+    },
+    {
+      "rank": 96,
+      "outlet": "Milwaukee Journal Sentinel",
+      "name": "Ayrton Ostly",
+      "score": 25.0
+    },
+    {
+      "rank": 97,
+      "outlet": "The Huddle",
+      "name": "Cory Bonini",
+      "score": 25.0
+    },
+    {
+      "rank": 98,
+      "outlet": "USA Today",
+      "name": "Tyler Dragon",
+      "score": 25.0
+    },
+    {
+      "rank": 99,
+      "outlet": "33rd Team",
+      "name": "Kyle Crabbs",
+      "score": 24.76
+    },
+    {
+      "rank": 100,
+      "outlet": "ESPN",
+      "name": "Peter Schrager",
+      "score": 24.76
+    },
+    {
+      "rank": 101,
+      "outlet": "NBC Sports Boston",
+      "name": "Phil Perry",
+      "score": 24.76
+    },
+    {
+      "rank": 102,
+      "outlet": "NFL Trade Rumors",
+      "name": "Nate Bouda",
+      "score": 24.76
+    },
+    {
+      "rank": 103,
+      "outlet": "Raiders Wire",
+      "name": "A.J. Cola",
+      "score": 24.76
+    },
+    {
+      "rank": 104,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 24.76
+    },
+    {
+      "rank": 105,
+      "outlet": "SI",
+      "name": "Richie Bradshaw",
+      "score": 24.76
+    },
+    {
+      "rank": 106,
+      "outlet": "The Huddle",
+      "name": "Cory Bonini",
+      "score": 24.76
+    },
+    {
+      "rank": 107,
+      "outlet": "Underdog",
+      "name": "Hayden Winks",
+      "score": 24.76
+    }
   ],
   "2021": [
-    {"rank": 1, "outlet": "Underdog Fantasy", "name": "Josh Norris", "score": 47.12},
-    {"rank": 2, "outlet": "Fantasy Law Guy", "name": "Nick Guarisco", "score": 42.31},
-    {"rank": 3, "outlet": "NFL.com", "name": "Charles Davis", "score": 41.83},
-    {"rank": 4, "outlet": "Walter Football", "name": "Charlie Campbell", "score": 39.18},
-    {"rank": 5, "outlet": "WKYC", "name": "Ben Axelrod", "score": 39.18},
-    {"rank": 6, "outlet": "Pro Football Network", "name": "Dalton Miller", "score": 38.94},
-    {"rank": 7, "outlet": "Riggo's Rag", "name": "Jacob Camenker", "score": 38.94},
-    {"rank": 8, "outlet": "NFL Spin Zone", "name": "Zach Cohen", "score": 37.98},
-    {"rank": 9, "outlet": "ESPN", "name": "Staff", "score": 36.54},
-    {"rank": 10, "outlet": "Windy City Gridiron", "name": "Jacob Infante", "score": 36.54},
-    {"rank": 11, "outlet": "Philadelphia Inquirer", "name": "Les Bowen", "score": 36.30},
-    {"rank": 12, "outlet": "The Draft Network", "name": "Jordan Reid", "score": 36.30},
-    {"rank": 13, "outlet": "The Huddle Report", "name": "Brian Johannes", "score": 36.30},
-    {"rank": 14, "outlet": "San Diego Union Tribune", "name": "Eddie Brown", "score": 36.06},
-    {"rank": 15, "outlet": "Walter Football", "name": "Walter Cherepinsky", "score": 35.82},
-    {"rank": 16, "outlet": "Draftwire", "name": "Luke Easterling", "score": 35.34},
-    {"rank": 17, "outlet": "CBS", "name": "Ryan Wilson", "score": 34.86},
-    {"rank": 18, "outlet": "Sharp Football Analysis", "name": "Brendan Donahue", "score": 34.86},
-    {"rank": 19, "outlet": "SI", "name": "Zach Goodall", "score": 34.86},
-    {"rank": 20, "outlet": "USA Today", "name": "Michael Middlehurst-Schwartz", "score": 33.89},
-    {"rank": 21, "outlet": "UK Draft", "name": "Staff", "score": 33.65},
-    {"rank": 22, "outlet": "Bama Hammer", "name": "Dakota Cox", "score": 33.41},
-    {"rank": 23, "outlet": "SI", "name": "Albert Breer", "score": 33.41},
-    {"rank": 24, "outlet": "UCSD Guardian", "name": "Nelson Espinal", "score": 33.41},
-    {"rank": 25, "outlet": "NY Post", "name": "Steve Serby", "score": 33.17},
-    {"rank": 26, "outlet": "Sharp Football Analysis", "name": "Brendan Donahue", "score": 33.17},
-    {"rank": 27, "outlet": "Waiting For Next Year", "name": "Joe Gilbert", "score": 33.17}
+    {
+      "rank": 1,
+      "outlet": "Underdog Fantasy",
+      "name": "Josh Norris",
+      "score": 47.12
+    },
+    {
+      "rank": 2,
+      "outlet": "Fantasy Law Guy",
+      "name": "Nick Guarisco",
+      "score": 42.31
+    },
+    {
+      "rank": 3,
+      "outlet": "NFL.com",
+      "name": "Charles Davis",
+      "score": 41.83
+    },
+    {
+      "rank": 4,
+      "outlet": "Walter Football",
+      "name": "Charlie Campbell",
+      "score": 39.18
+    },
+    {
+      "rank": 5,
+      "outlet": "WKYC",
+      "name": "Ben Axelrod",
+      "score": 39.18
+    },
+    {
+      "rank": 6,
+      "outlet": "Pro Football Network",
+      "name": "Dalton Miller",
+      "score": 38.94
+    },
+    {
+      "rank": 7,
+      "outlet": "Riggo's Rag",
+      "name": "Jacob Camenker",
+      "score": 38.94
+    },
+    {
+      "rank": 8,
+      "outlet": "NFL Spin Zone",
+      "name": "Zach Cohen",
+      "score": 37.98
+    },
+    {
+      "rank": 9,
+      "outlet": "ESPN",
+      "name": "Staff",
+      "score": 36.54
+    },
+    {
+      "rank": 10,
+      "outlet": "Windy City Gridiron",
+      "name": "Jacob Infante",
+      "score": 36.54
+    },
+    {
+      "rank": 11,
+      "outlet": "Philadelphia Inquirer",
+      "name": "Les Bowen",
+      "score": 36.3
+    },
+    {
+      "rank": 12,
+      "outlet": "The Draft Network",
+      "name": "Jordan Reid",
+      "score": 36.3
+    },
+    {
+      "rank": 13,
+      "outlet": "The Huddle Report",
+      "name": "Brian Johannes",
+      "score": 36.3
+    },
+    {
+      "rank": 14,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 36.06
+    },
+    {
+      "rank": 15,
+      "outlet": "Walter Football",
+      "name": "Walter Cherepinsky",
+      "score": 35.82
+    },
+    {
+      "rank": 16,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 35.34
+    },
+    {
+      "rank": 17,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 34.86
+    },
+    {
+      "rank": 18,
+      "outlet": "Sharp Football Analysis",
+      "name": "Brendan Donahue",
+      "score": 34.86
+    },
+    {
+      "rank": 19,
+      "outlet": "SI",
+      "name": "Zach Goodall",
+      "score": 34.86
+    },
+    {
+      "rank": 20,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 33.89
+    },
+    {
+      "rank": 21,
+      "outlet": "UK Draft",
+      "name": "Staff",
+      "score": 33.65
+    },
+    {
+      "rank": 22,
+      "outlet": "Bama Hammer",
+      "name": "Dakota Cox",
+      "score": 33.41
+    },
+    {
+      "rank": 23,
+      "outlet": "SI",
+      "name": "Albert Breer",
+      "score": 33.41
+    },
+    {
+      "rank": 24,
+      "outlet": "UCSD Guardian",
+      "name": "Nelson Espinal",
+      "score": 33.41
+    },
+    {
+      "rank": 25,
+      "outlet": "NY Post",
+      "name": "Steve Serby",
+      "score": 33.17
+    },
+    {
+      "rank": 26,
+      "outlet": "Sharp Football Analysis",
+      "name": "Brendan Donahue",
+      "score": 33.17
+    },
+    {
+      "rank": 27,
+      "outlet": "Waiting For Next Year",
+      "name": "Joe Gilbert",
+      "score": 33.17
+    },
+    {
+      "rank": 29,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 32.93
+    },
+    {
+      "rank": 30,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 32.93
+    },
+    {
+      "rank": 31,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 32.93
+    },
+    {
+      "rank": 32,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 32.93
+    },
+    {
+      "rank": 33,
+      "outlet": "The Draft Network",
+      "name": "Jaime Eisner",
+      "score": 32.93
+    },
+    {
+      "rank": 34,
+      "outlet": "WKYC",
+      "name": "Ben Axelrod",
+      "score": 32.93
+    },
+    {
+      "rank": 35,
+      "outlet": "The Draft Network",
+      "name": "Benjamin Solak",
+      "score": 32.69
+    },
+    {
+      "rank": 36,
+      "outlet": "NBC Sports",
+      "name": "Peter King",
+      "score": 32.45
+    },
+    {
+      "rank": 37,
+      "outlet": "NFL.com",
+      "name": "Lance Zierlein",
+      "score": 32.21
+    },
+    {
+      "rank": 38,
+      "outlet": "Behind The Steel Curtain",
+      "name": "Andrew Wilbar",
+      "score": 31.73
+    },
+    {
+      "rank": 39,
+      "outlet": "The Draft Network",
+      "name": "Justin Melo",
+      "score": 31.73
+    },
+    {
+      "rank": 40,
+      "outlet": "NBC Sports",
+      "name": "John Daigle",
+      "score": 31.01
+    },
+    {
+      "rank": 41,
+      "outlet": "The Draft Network",
+      "name": "Trevor Sikkema",
+      "score": 31.01
+    },
+    {
+      "rank": 42,
+      "outlet": "The Draft Network",
+      "name": "Staff",
+      "score": 31.01
+    },
+    {
+      "rank": 43,
+      "outlet": "Draftwire",
+      "name": "Staff",
+      "score": 30.77
+    },
+    {
+      "rank": 44,
+      "outlet": "Riggo's Rag",
+      "name": "Jacob Camenker",
+      "score": 30.77
+    },
+    {
+      "rank": 45,
+      "outlet": "The Lines",
+      "name": "Brett Gibbons",
+      "score": 30.77
+    },
+    {
+      "rank": 46,
+      "outlet": "USA Today",
+      "name": "Staff",
+      "score": 30.77
+    },
+    {
+      "rank": 47,
+      "outlet": "Akron Beacon Journal",
+      "name": "Dan Kadar",
+      "score": 30.53
+    },
+    {
+      "rank": 48,
+      "outlet": "Primetime Sports Talk",
+      "name": "Andersen Pickard",
+      "score": 30.53
+    },
+    {
+      "rank": 49,
+      "outlet": "Primetime Sports Talk",
+      "name": "Steve Seufert",
+      "score": 30.53
+    },
+    {
+      "rank": 50,
+      "outlet": "Pro Football Focus",
+      "name": "Ian Hartitz",
+      "score": 30.53
+    },
+    {
+      "rank": 51,
+      "outlet": "The Draft Network",
+      "name": "Joe Marino",
+      "score": 30.53
+    },
+    {
+      "rank": 52,
+      "outlet": "CBS",
+      "name": "Pete Prisco",
+      "score": 30.29
+    },
+    {
+      "rank": 53,
+      "outlet": "DRAFTPLEX",
+      "name": "Jason Pruett",
+      "score": 30.29
+    },
+    {
+      "rank": 54,
+      "outlet": "Fansided",
+      "name": "Matt Lombardo",
+      "score": 30.05
+    },
+    {
+      "rank": 55,
+      "outlet": "NJ.com",
+      "name": "Joe Giglio",
+      "score": 30.05
+    },
+    {
+      "rank": 56,
+      "outlet": "Pewter Report",
+      "name": "Jon Ledyard",
+      "score": 30.05
+    },
+    {
+      "rank": 57,
+      "outlet": "SI",
+      "name": "Ric Serritella",
+      "score": 30.05
+    },
+    {
+      "rank": 58,
+      "outlet": "Fantasy Pros",
+      "name": "Mike Tagliere",
+      "score": 29.81
+    },
+    {
+      "rank": 59,
+      "outlet": "Pro Football Network",
+      "name": "Ben Allbright",
+      "score": 29.81
+    },
+    {
+      "rank": 60,
+      "outlet": "Saints Wire",
+      "name": "Maddy Hudak",
+      "score": 29.81
+    },
+    {
+      "rank": 61,
+      "outlet": "Still Curtain",
+      "name": "Ryan Pawloski",
+      "score": 29.81
+    },
+    {
+      "rank": 62,
+      "outlet": "The Draft Zone",
+      "name": "Michael Campbell",
+      "score": 29.57
+    },
+    {
+      "rank": 63,
+      "outlet": "Raiders Wire",
+      "name": "Levi Damien",
+      "score": 29.33
+    },
+    {
+      "rank": 64,
+      "outlet": "The Draft Network",
+      "name": "Kyle Crabbs",
+      "score": 29.33
+    },
+    {
+      "rank": 65,
+      "outlet": "CBS",
+      "name": "Chris Trapasso",
+      "score": 28.85
+    },
+    {
+      "rank": 66,
+      "outlet": "CBS",
+      "name": "Pete Prisco",
+      "score": 28.85
+    },
+    {
+      "rank": 67,
+      "outlet": "NBC Sports",
+      "name": "Hayden Winks",
+      "score": 28.85
+    },
+    {
+      "rank": 68,
+      "outlet": "Action Network",
+      "name": "Matthew Freedman",
+      "score": 28.61
+    },
+    {
+      "rank": 69,
+      "outlet": "WKYC",
+      "name": "Ben Axelrod",
+      "score": 28.61
+    },
+    {
+      "rank": 70,
+      "outlet": "CBS",
+      "name": "Jason La Canfora",
+      "score": 28.37
+    },
+    {
+      "rank": 71,
+      "outlet": "Action Network",
+      "name": "Scott Smith",
+      "score": 28.13
+    },
+    {
+      "rank": 72,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 28.13
+    },
+    {
+      "rank": 73,
+      "outlet": "Mockout",
+      "name": "Micky McKeon",
+      "score": 28.13
+    },
+    {
+      "rank": 74,
+      "outlet": "NFL Spin Zone",
+      "name": "Daniel Spencer",
+      "score": 28.13
+    },
+    {
+      "rank": 75,
+      "outlet": "Philly Voice",
+      "name": "Jimmy Kempski",
+      "score": 28.13
+    },
+    {
+      "rank": 76,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 28.13
+    },
+    {
+      "rank": 77,
+      "outlet": "Sportsnet",
+      "name": "Andy McNamara",
+      "score": 28.13
+    },
+    {
+      "rank": 78,
+      "outlet": "247 Sports",
+      "name": "Montel Hardy",
+      "score": 27.88
+    },
+    {
+      "rank": 79,
+      "outlet": "Draft Utopia",
+      "name": "Chris Ransom",
+      "score": 27.88
+    },
+    {
+      "rank": 81,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Reuben Frank",
+      "score": 27.88
+    },
+    {
+      "rank": 82,
+      "outlet": "News Herald",
+      "name": "Jeff Schudel",
+      "score": 27.88
+    },
+    {
+      "rank": 83,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 27.88
+    },
+    {
+      "rank": 84,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 27.88
+    },
+    {
+      "rank": 85,
+      "outlet": "SI",
+      "name": "Hondo Carpenter",
+      "score": 27.88
+    },
+    {
+      "rank": 86,
+      "outlet": "Steelers Depot",
+      "name": "Daniel Kitchen",
+      "score": 27.88
+    },
+    {
+      "rank": 87,
+      "outlet": "The Huddle",
+      "name": "Cletis Cutts",
+      "score": 27.88
+    },
+    {
+      "rank": 88,
+      "outlet": "Yahoo Sports",
+      "name": "Eric Edholm",
+      "score": 27.88
+    },
+    {
+      "rank": 89,
+      "outlet": "Draft Utopia",
+      "name": "Chris Ransom",
+      "score": 27.64
+    },
+    {
+      "rank": 90,
+      "outlet": "Establish The Run",
+      "name": "Evan Silva",
+      "score": 27.64
+    },
+    {
+      "rank": 91,
+      "outlet": "Newsday",
+      "name": "Nick Klopsis",
+      "score": 27.4
+    },
+    {
+      "rank": 92,
+      "outlet": "Tankathon",
+      "name": "Staff",
+      "score": 27.4
+    },
+    {
+      "rank": 93,
+      "outlet": "The Game Day",
+      "name": "Marcus Mosher",
+      "score": 27.4
+    },
+    {
+      "rank": 94,
+      "outlet": "Nashville Tennessean",
+      "name": "Gentry Estes",
+      "score": 27.16
+    },
+    {
+      "rank": 95,
+      "outlet": "Pro Football Network",
+      "name": "Ben Rolfe",
+      "score": 27.16
+    },
+    {
+      "rank": 96,
+      "outlet": "Sharp Football Analysis",
+      "name": "Ryan McCrystal",
+      "score": 27.16
+    },
+    {
+      "rank": 97,
+      "outlet": "Weekly Spiral",
+      "name": "Matthew Durgin",
+      "score": 27.16
+    },
+    {
+      "rank": 98,
+      "outlet": "Mike Drop Sports",
+      "name": "Mike Schneid",
+      "score": 26.92
+    },
+    {
+      "rank": 99,
+      "outlet": "NFL Draft Rite",
+      "name": "Staff",
+      "score": 26.92
+    },
+    {
+      "rank": 100,
+      "outlet": "Primetime Sports Talk",
+      "name": "Kamran Nia",
+      "score": 26.92
+    },
+    {
+      "rank": 101,
+      "outlet": "Bucs Nation",
+      "name": "Mike Kiwak",
+      "score": 26.68
+    },
+    {
+      "rank": 102,
+      "outlet": "NBC Sports Bayarea",
+      "name": "Josh Schrock",
+      "score": 26.68
+    },
+    {
+      "rank": 103,
+      "outlet": "Pro Football Network",
+      "name": "Matthew Valdovinos",
+      "score": 26.68
+    },
+    {
+      "rank": 104,
+      "outlet": "The Huddle Report",
+      "name": "Jeremy Bissett",
+      "score": 26.68
+    },
+    {
+      "rank": 105,
+      "outlet": "Action Network",
+      "name": "Scott Smith",
+      "score": 26.44
+    },
+    {
+      "rank": 107,
+      "outlet": "NFL Spin Zone",
+      "name": "Randy Gurzi",
+      "score": 26.44
+    },
+    {
+      "rank": 108,
+      "outlet": "Underdog Fantasy",
+      "name": "Josh Norris",
+      "score": 26.44
+    },
+    {
+      "rank": 109,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 26.2
+    },
+    {
+      "rank": 110,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 26.2
+    },
+    {
+      "rank": 111,
+      "outlet": "Draft ID",
+      "name": "Harris Oates",
+      "score": 26.2
+    },
+    {
+      "rank": 112,
+      "outlet": "Inside The Star",
+      "name": "Jason Ramirez",
+      "score": 26.2
+    },
+    {
+      "rank": 113,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 26.2
+    },
+    {
+      "rank": 114,
+      "outlet": "Pro Football Focus",
+      "name": "Michael Renner",
+      "score": 26.2
+    },
+    {
+      "rank": 115,
+      "outlet": "Riggo's Rag",
+      "name": "Ian Cummings",
+      "score": 26.2
+    },
+    {
+      "rank": 116,
+      "outlet": "Toro Times",
+      "name": "Brian Emory",
+      "score": 26.2
+    },
+    {
+      "rank": 117,
+      "outlet": "Pro Football Network",
+      "name": "Tony Pauline",
+      "score": 25.96
+    },
+    {
+      "rank": 118,
+      "outlet": "Draft ID",
+      "name": "Sawyer Hicks",
+      "score": 25.72
+    },
+    {
+      "rank": 119,
+      "outlet": "SI",
+      "name": "Jack Borowsky",
+      "score": 25.72
+    },
+    {
+      "rank": 120,
+      "outlet": "The Draft Network",
+      "name": "Ryan Fowler",
+      "score": 25.72
+    },
+    {
+      "rank": 121,
+      "outlet": "NFL Draft Rite",
+      "name": "Hunter Thompson",
+      "score": 25.48
+    },
+    {
+      "rank": 122,
+      "outlet": "Touchdown Wire",
+      "name": "Doug Farrar",
+      "score": 25.48
+    },
+    {
+      "rank": 123,
+      "outlet": "Baltimore Sun",
+      "name": "C.J. Doon",
+      "score": 25.24
+    },
+    {
+      "rank": 124,
+      "outlet": "Pro Football Focus",
+      "name": "Andrew Erickson",
+      "score": 25.24
+    },
+    {
+      "rank": 125,
+      "outlet": "Pro Football Network",
+      "name": "James Fragoza",
+      "score": 25.24
+    },
+    {
+      "rank": 126,
+      "outlet": "CBS",
+      "name": "Will Brinson",
+      "score": 25.0
+    },
+    {
+      "rank": 127,
+      "outlet": "Draft Utopia",
+      "name": "Tony Mario",
+      "score": 25.0
+    },
+    {
+      "rank": 128,
+      "outlet": "Football Outsiders",
+      "name": "Benjamin Robinson",
+      "score": 25.0
+    },
+    {
+      "rank": 129,
+      "outlet": "Fox News",
+      "name": "Staff",
+      "score": 25.0
+    },
+    {
+      "rank": 130,
+      "outlet": "NFL Draft Rite",
+      "name": "Conor Dorney",
+      "score": 25.0
+    },
+    {
+      "rank": 131,
+      "outlet": "NFL Mocks",
+      "name": "John Blair",
+      "score": 25.0
+    },
+    {
+      "rank": 132,
+      "outlet": "NJ.com",
+      "name": "Joe Giglio",
+      "score": 25.0
+    },
+    {
+      "rank": 133,
+      "outlet": "SI",
+      "name": "Logan Lamorandier",
+      "score": 25.0
+    },
+    {
+      "rank": 134,
+      "outlet": "The Huddle",
+      "name": "Harley Schultz",
+      "score": 25.0
+    },
+    {
+      "rank": 135,
+      "outlet": "Black And Teal",
+      "name": "Jess Overby",
+      "score": 24.76
+    },
+    {
+      "rank": 136,
+      "outlet": "Drafttek",
+      "name": "Staff",
+      "score": 24.76
+    },
+    {
+      "rank": 137,
+      "outlet": "Fox Sports",
+      "name": "Jason McIntyre",
+      "score": 24.76
+    },
+    {
+      "rank": 138,
+      "outlet": "Fox Sports",
+      "name": "Jason McIntyre",
+      "score": 24.76
+    },
+    {
+      "rank": 139,
+      "outlet": "Inside The Star",
+      "name": "Jason Ramirez",
+      "score": 24.76
+    },
+    {
+      "rank": 140,
+      "outlet": "Loaded Box Podcast",
+      "name": "Staff",
+      "score": 24.76
+    },
+    {
+      "rank": 141,
+      "outlet": "NFL Spin Zone",
+      "name": "Randy Gurzi",
+      "score": 24.76
+    },
+    {
+      "rank": 142,
+      "outlet": "SB Nation",
+      "name": "James Dator",
+      "score": 24.76
+    },
+    {
+      "rank": 143,
+      "outlet": "SI",
+      "name": "Conor Orr",
+      "score": 24.76
+    },
+    {
+      "rank": 144,
+      "outlet": "The Dallas Morning News",
+      "name": "Calvin Watkins",
+      "score": 24.76
+    },
+    {
+      "rank": 145,
+      "outlet": "The Huddle Report",
+      "name": "Brian Johannes",
+      "score": 24.76
+    },
+    {
+      "rank": 146,
+      "outlet": "The Mercury News",
+      "name": "Cam Inman",
+      "score": 24.76
+    },
+    {
+      "rank": 147,
+      "outlet": "Buffalo Rumblings",
+      "name": "Bruce Nolan",
+      "score": 24.52
+    },
+    {
+      "rank": 148,
+      "outlet": "Cards Wire",
+      "name": "Staff",
+      "score": 24.52
+    },
+    {
+      "rank": 149,
+      "outlet": "Outkick",
+      "name": "Clint Lamb",
+      "score": 24.52
+    },
+    {
+      "rank": 150,
+      "outlet": "Sun Sentinel",
+      "name": "Omar Kelly",
+      "score": 24.52
+    },
+    {
+      "rank": 151,
+      "outlet": "The Huddle",
+      "name": "Ken Pomponio",
+      "score": 24.52
+    },
+    {
+      "rank": 152,
+      "outlet": "The Phinsider",
+      "name": "Kevin Nogle",
+      "score": 24.52
+    },
+    {
+      "rank": 153,
+      "outlet": "Eleven Warriors",
+      "name": "Dan Hope",
+      "score": 24.28
+    },
+    {
+      "rank": 154,
+      "outlet": "Fox Sports",
+      "name": "Rob Rang",
+      "score": 24.28
+    },
+    {
+      "rank": 155,
+      "outlet": "Grueling Truth",
+      "name": "Daniel Kornhauser",
+      "score": 24.28
+    },
+    {
+      "rank": 156,
+      "outlet": "Grueling Truth",
+      "name": "Daniel Kornhauser",
+      "score": 24.28
+    },
+    {
+      "rank": 157,
+      "outlet": "Inside The Star",
+      "name": "Brian Martin",
+      "score": 24.28
+    },
+    {
+      "rank": 158,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 24.28
+    },
+    {
+      "rank": 159,
+      "outlet": "The Draft Network",
+      "name": "Jordan Reid",
+      "score": 24.28
+    },
+    {
+      "rank": 160,
+      "outlet": "The Game Haus",
+      "name": "Joe DiTullio",
+      "score": 24.28
+    },
+    {
+      "rank": 161,
+      "outlet": "UCSD Guardian",
+      "name": "Donovan Perez-Schipper",
+      "score": 24.28
+    },
+    {
+      "rank": 162,
+      "outlet": "Yardbarker",
+      "name": "Seth Trachtman",
+      "score": 24.28
+    },
+    {
+      "rank": 163,
+      "outlet": "Blogging The Boys",
+      "name": "David Howman",
+      "score": 24.04
+    },
+    {
+      "rank": 164,
+      "outlet": "Buzzfeed",
+      "name": "Jeremy Hayes",
+      "score": 24.04
+    },
+    {
+      "rank": 165,
+      "outlet": "Cowboys Coffee Talk",
+      "name": "Gino Tomaselli",
+      "score": 24.04
+    },
+    {
+      "rank": 166,
+      "outlet": "Draft Kings",
+      "name": "Pat Mayo",
+      "score": 24.04
+    },
+    {
+      "rank": 167,
+      "outlet": "Fox 59",
+      "name": "Joe Hopkins",
+      "score": 24.04
+    },
+    {
+      "rank": 168,
+      "outlet": "Houston Chronicle",
+      "name": "John McClain",
+      "score": 24.04
+    },
+    {
+      "rank": 169,
+      "outlet": "NBC Sports Northwest",
+      "name": "Dylan Mickanen",
+      "score": 24.04
+    },
+    {
+      "rank": 170,
+      "outlet": "Overtime Heroics",
+      "name": "Alex Simpson",
+      "score": 24.04
+    },
+    {
+      "rank": 171,
+      "outlet": "Pro Football Focus",
+      "name": "Sam Monson",
+      "score": 24.04
+    },
+    {
+      "rank": 172,
+      "outlet": "Pro Football Network",
+      "name": "A.J. Schulte",
+      "score": 24.04
+    },
+    {
+      "rank": 173,
+      "outlet": "CBS",
+      "name": "Chris Trapasso",
+      "score": 23.8
+    },
+    {
+      "rank": 174,
+      "outlet": "CBS",
+      "name": "Chris Trapasso",
+      "score": 23.8
+    },
+    {
+      "rank": 175,
+      "outlet": "DRAFTPLEX",
+      "name": "Jason Pruett",
+      "score": 23.8
+    },
+    {
+      "rank": 176,
+      "outlet": "Grueling Truth",
+      "name": "Samuel Teets",
+      "score": 23.8
+    },
+    {
+      "rank": 177,
+      "outlet": "Houston Chronicle",
+      "name": "John McClain",
+      "score": 23.8
+    },
+    {
+      "rank": 178,
+      "outlet": "Pro Football Network",
+      "name": "Matt Williamson",
+      "score": 23.8
+    },
+    {
+      "rank": 179,
+      "outlet": "Still Curtain",
+      "name": "Tommy Jaggi",
+      "score": 23.8
+    },
+    {
+      "rank": 180,
+      "outlet": "Loaded Box Podcast",
+      "name": "Ben Morgan",
+      "score": 23.56
+    },
+    {
+      "rank": 181,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Mike Mulhern",
+      "score": 23.56
+    },
+    {
+      "rank": 182,
+      "outlet": "Bama Hammer",
+      "name": "Dakota Cox",
+      "score": 23.32
+    },
+    {
+      "rank": 183,
+      "outlet": "CBS",
+      "name": "Tom Fornelli",
+      "score": 23.32
+    },
+    {
+      "rank": 184,
+      "outlet": "Chicago Sun Times",
+      "name": "Jason Lieser",
+      "score": 23.32
+    },
+    {
+      "rank": 185,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 23.32
+    },
+    {
+      "rank": 186,
+      "outlet": "NBC Sports Bayarea",
+      "name": "Josh Schrock",
+      "score": 23.32
+    },
+    {
+      "rank": 187,
+      "outlet": "Stampede Blue",
+      "name": "Andrew Aziz",
+      "score": 23.32
+    },
+    {
+      "rank": 188,
+      "outlet": "EEDS Football",
+      "name": "Kevin Hanson",
+      "score": 23.08
+    },
+    {
+      "rank": 189,
+      "outlet": "M Live",
+      "name": "Kyle Meinke",
+      "score": 23.08
+    },
+    {
+      "rank": 190,
+      "outlet": "SI",
+      "name": "Roy Countryman",
+      "score": 22.84
+    },
+    {
+      "rank": 191,
+      "outlet": "The Big Lead",
+      "name": "Ryan Phillips",
+      "score": 22.84
+    },
+    {
+      "rank": 192,
+      "outlet": "Yahoo Sports",
+      "name": "Eric Edholm",
+      "score": 22.84
+    },
+    {
+      "rank": 193,
+      "outlet": "Just Blog Baby",
+      "name": "Khaled Abdallah",
+      "score": 22.6
+    },
+    {
+      "rank": 194,
+      "outlet": "St. Louis Post-Dispatch",
+      "name": "Barry Wilner",
+      "score": 22.6
+    },
+    {
+      "rank": 195,
+      "outlet": "AL.com",
+      "name": "Mark Inabinett",
+      "score": 22.36
+    },
+    {
+      "rank": 196,
+      "outlet": "CBS",
+      "name": "Patrik Walker",
+      "score": 22.36
+    },
+    {
+      "rank": 197,
+      "outlet": "DRAFTPLEX",
+      "name": "Jason Pruett",
+      "score": 22.36
+    },
+    {
+      "rank": 198,
+      "outlet": "LA Times",
+      "name": "Sam Farmer",
+      "score": 22.36
+    },
+    {
+      "rank": 199,
+      "outlet": "NBC Sports Chicago",
+      "name": "Glynn Morgan",
+      "score": 22.36
+    },
+    {
+      "rank": 200,
+      "outlet": "NFL Draft Pro",
+      "name": "Staff",
+      "score": 22.36
+    },
+    {
+      "rank": 201,
+      "outlet": "Pro Football Focus",
+      "name": "Jarad Evans",
+      "score": 22.36
+    },
+    {
+      "rank": 202,
+      "outlet": "Rotoheat",
+      "name": "Kraig Rueth",
+      "score": 22.36
+    },
+    {
+      "rank": 203,
+      "outlet": "Sharp Football Analysis",
+      "name": "Ryan McCrystal",
+      "score": 22.36
+    },
+    {
+      "rank": 204,
+      "outlet": "The Draft Network",
+      "name": "Alexis Mansanarez",
+      "score": 22.36
+    },
+    {
+      "rank": 205,
+      "outlet": "The Huddle Report",
+      "name": "Brian Johannes",
+      "score": 22.36
+    },
+    {
+      "rank": 206,
+      "outlet": "Yardbarker",
+      "name": "Seth Trachtman",
+      "score": 22.36
+    },
+    {
+      "rank": 207,
+      "outlet": "Akron Beacon Journal",
+      "name": "Dan Kadar",
+      "score": 22.12
+    },
+    {
+      "rank": 208,
+      "outlet": "Atlanta Journal-Constitution",
+      "name": "D. Orlando Ledbetter",
+      "score": 22.12
+    },
+    {
+      "rank": 209,
+      "outlet": "Mass Live",
+      "name": "Nick O'Malley",
+      "score": 22.12
+    },
+    {
+      "rank": 210,
+      "outlet": "NFL.com",
+      "name": "Chad Reuter",
+      "score": 22.12
+    },
+    {
+      "rank": 211,
+      "outlet": "NFL.com",
+      "name": "Charley Casserly",
+      "score": 22.12
+    },
+    {
+      "rank": 212,
+      "outlet": "Pro Football Network",
+      "name": "Matt Williamson",
+      "score": 22.12
+    },
+    {
+      "rank": 213,
+      "outlet": "SI",
+      "name": "James Rapien",
+      "score": 22.12
+    },
+    {
+      "rank": 214,
+      "outlet": "Sun Sentinel",
+      "name": "Omar Kelly",
+      "score": 22.12
+    },
+    {
+      "rank": 215,
+      "outlet": "The Huddle Report",
+      "name": "Brian Johannes",
+      "score": 22.12
+    },
+    {
+      "rank": 216,
+      "outlet": "Elite Sports NY",
+      "name": "Tab Bamford",
+      "score": 21.88
+    },
+    {
+      "rank": 217,
+      "outlet": "FF Today",
+      "name": "Justin Bales",
+      "score": 21.88
+    },
+    {
+      "rank": 218,
+      "outlet": "FFueled",
+      "name": "SportsBy Staff",
+      "score": 21.88
+    },
+    {
+      "rank": 219,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 21.88
+    },
+    {
+      "rank": 220,
+      "outlet": "SI",
+      "name": "Alec Pulido",
+      "score": 21.88
+    },
+    {
+      "rank": 221,
+      "outlet": "SI",
+      "name": "Michael Fabiano",
+      "score": 21.88
+    },
+    {
+      "rank": 222,
+      "outlet": "Sportstime HQ",
+      "name": "Keith Sheeran",
+      "score": 21.88
+    },
+    {
+      "rank": 223,
+      "outlet": "The Game Haus",
+      "name": "Joe DiTullio",
+      "score": 21.88
+    },
+    {
+      "rank": 224,
+      "outlet": "UPI",
+      "name": "Alex Butler",
+      "score": 21.88
+    },
+    {
+      "rank": 225,
+      "outlet": "USA Today",
+      "name": "Nate Davis",
+      "score": 21.88
+    },
+    {
+      "rank": 226,
+      "outlet": "CBS",
+      "name": "Jonathan Jones",
+      "score": 21.63
+    },
+    {
+      "rank": 227,
+      "outlet": "Cowboys Coffee Talk",
+      "name": "Gino Tomaselli",
+      "score": 21.63
+    },
+    {
+      "rank": 228,
+      "outlet": "Denver Post",
+      "name": "Ryan O'Halloran",
+      "score": 21.63
+    },
+    {
+      "rank": 229,
+      "outlet": "Inside The Star",
+      "name": "Brian Martin",
+      "score": 21.63
+    },
+    {
+      "rank": 230,
+      "outlet": "Pats Buzz",
+      "name": "Andrew Doherty",
+      "score": 21.63
+    },
+    {
+      "rank": 231,
+      "outlet": "The Draft Network",
+      "name": "Rob Judin",
+      "score": 21.63
+    },
+    {
+      "rank": 232,
+      "outlet": "Touchdown Wire",
+      "name": "Mark Schofield",
+      "score": 21.63
+    },
+    {
+      "rank": 233,
+      "outlet": "Behind The Steel Curtain",
+      "name": "Staff",
+      "score": 21.39
+    },
+    {
+      "rank": 234,
+      "outlet": "Bucs Nation",
+      "name": "Mike Kiwak",
+      "score": 21.39
+    },
+    {
+      "rank": 235,
+      "outlet": "Clutch Points",
+      "name": "Staff",
+      "score": 21.39
+    },
+    {
+      "rank": 236,
+      "outlet": "Elite Sports NY",
+      "name": "Tab Bamford",
+      "score": 21.39
+    },
+    {
+      "rank": 237,
+      "outlet": "Fantasy Six Pack",
+      "name": "Jon Witt",
+      "score": 21.39
+    },
+    {
+      "rank": 238,
+      "outlet": "M Live",
+      "name": "Ben Raven",
+      "score": 21.39
+    },
+    {
+      "rank": 239,
+      "outlet": "Pats Buzz",
+      "name": "Andrew Doherty",
+      "score": 21.39
+    },
+    {
+      "rank": 240,
+      "outlet": "Sharp Football Analysis",
+      "name": "Brendan Donahue",
+      "score": 21.39
+    },
+    {
+      "rank": 241,
+      "outlet": "The Draft Network",
+      "name": "Jake Arians",
+      "score": 21.39
+    },
+    {
+      "rank": 242,
+      "outlet": "Underdog Fantasy",
+      "name": "Hayden Winks",
+      "score": 21.39
+    },
+    {
+      "rank": 243,
+      "outlet": "Brooklyn Beat",
+      "name": "Justin Worsley",
+      "score": 21.15
+    }
+  ],
+  "2022": [
+    {
+      "rank": 1,
+      "outlet": "Walter Football",
+      "name": "Charlie Campbell",
+      "score": 28.37
+    },
+    {
+      "rank": 2,
+      "outlet": "Yahoo Sports",
+      "name": "Eric Edholm",
+      "score": 25.96
+    },
+    {
+      "rank": 3,
+      "outlet": "VSIN",
+      "name": "Matt Youmans",
+      "score": 25.72
+    },
+    {
+      "rank": 4,
+      "outlet": "Barstool Sports",
+      "name": "Steven Cheah",
+      "score": 25.24
+    },
+    {
+      "rank": 5,
+      "outlet": "Philly Voice",
+      "name": "Jimmy Kempski",
+      "score": 24.04
+    },
+    {
+      "rank": 6,
+      "outlet": "The Huddle Report",
+      "name": "Brian Johannes",
+      "score": 23.8
+    },
+    {
+      "rank": 7,
+      "outlet": "SI",
+      "name": "Albert Breer",
+      "score": 23.56
+    },
+    {
+      "rank": 8,
+      "outlet": "The Palm Beach Post",
+      "name": "Joe Schad",
+      "score": 23.32
+    },
+    {
+      "rank": 9,
+      "outlet": "Bleacher Report",
+      "name": "Staff",
+      "score": 23.08
+    },
+    {
+      "rank": 10,
+      "outlet": "Houston Chronicle",
+      "name": "Brooks Kubena",
+      "score": 23.08
+    },
+    {
+      "rank": 11,
+      "outlet": "Walter Football",
+      "name": "Walter Cherepinsky",
+      "score": 23.08
+    },
+    {
+      "rank": 13,
+      "outlet": "Houston Chronicle",
+      "name": "Brooks Kubena",
+      "score": 22.6
+    },
+    {
+      "rank": 14,
+      "outlet": "Behind The Steel Curtain",
+      "name": "Andrew Wilbar",
+      "score": 22.12
+    },
+    {
+      "rank": 15,
+      "outlet": "Mile High Report",
+      "name": "Scotty Payne",
+      "score": 22.12
+    },
+    {
+      "rank": 16,
+      "outlet": "Pro Football Focus",
+      "name": "Sam Monson",
+      "score": 21.63
+    },
+    {
+      "rank": 17,
+      "outlet": "Drafticipation",
+      "name": "Staff",
+      "score": 21.15
+    },
+    {
+      "rank": 18,
+      "outlet": "NFL.com",
+      "name": "Lance Zierlein",
+      "score": 21.15
+    },
+    {
+      "rank": 19,
+      "outlet": "Fantasy Law Guy",
+      "name": "Nick Guarisco",
+      "score": 20.91
+    },
+    {
+      "rank": 20,
+      "outlet": "Camden News",
+      "name": "Michael Hanich",
+      "score": 20.67
+    },
+    {
+      "rank": 21,
+      "outlet": "DRAFTPLEX",
+      "name": "Jason Pruett",
+      "score": 20.67
+    },
+    {
+      "rank": 22,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 20.67
+    },
+    {
+      "rank": 23,
+      "outlet": "Fantasy Pros",
+      "name": "Derek Brown",
+      "score": 20.67
+    },
+    {
+      "rank": 24,
+      "outlet": "Action Network",
+      "name": "Sean Koerner",
+      "score": 20.43
+    },
+    {
+      "rank": 25,
+      "outlet": "Draft ID",
+      "name": "Sawyer Hicks",
+      "score": 20.43
+    },
+    {
+      "rank": 27,
+      "outlet": "NBC Sports",
+      "name": "Peter King",
+      "score": 20.43
+    },
+    {
+      "rank": 28,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 20.19
+    },
+    {
+      "rank": 29,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Mike Mulhern",
+      "score": 20.19
+    },
+    {
+      "rank": 30,
+      "outlet": "Sharp Football Analysis",
+      "name": "Ryan McCrystal",
+      "score": 20.19
+    },
+    {
+      "rank": 31,
+      "outlet": "SI",
+      "name": "Collin Haalboom",
+      "score": 20.19
+    },
+    {
+      "rank": 32,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 20.19
+    },
+    {
+      "rank": 33,
+      "outlet": "Action Network",
+      "name": "Scott Smith",
+      "score": 19.95
+    },
+    {
+      "rank": 34,
+      "outlet": "Barstool Sports",
+      "name": "Matt Fitzgerald",
+      "score": 19.95
+    },
+    {
+      "rank": 35,
+      "outlet": "Battle Red Blog",
+      "name": "Matt Robinson",
+      "score": 19.95
+    },
+    {
+      "rank": 36,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 19.95
+    },
+    {
+      "rank": 37,
+      "outlet": "Grueling Truth",
+      "name": "Daniel Kornhauser",
+      "score": 19.95
+    },
+    {
+      "rank": 38,
+      "outlet": "SB Nation",
+      "name": "James Dator",
+      "score": 19.95
+    },
+    {
+      "rank": 39,
+      "outlet": "The Draft Network",
+      "name": "Rob Judin",
+      "score": 19.95
+    },
+    {
+      "rank": 40,
+      "outlet": "UPI",
+      "name": "Alex Butler",
+      "score": 19.95
+    },
+    {
+      "rank": 41,
+      "outlet": "Draft Utopia",
+      "name": "Chris Ransom",
+      "score": 19.71
+    },
+    {
+      "rank": 42,
+      "outlet": "Fantasy Pros",
+      "name": "Andrew Erickson",
+      "score": 19.71
+    },
+    {
+      "rank": 43,
+      "outlet": "Fantasy Pros",
+      "name": "Derek Brown",
+      "score": 19.71
+    },
+    {
+      "rank": 44,
+      "outlet": "NESN",
+      "name": "Sean T. McGuire",
+      "score": 19.71
+    },
+    {
+      "rank": 45,
+      "outlet": "Pro Football Focus",
+      "name": "Ari Meirov",
+      "score": 19.71
+    },
+    {
+      "rank": 46,
+      "outlet": "Sporting News",
+      "name": "Jacob Camenker",
+      "score": 19.71
+    },
+    {
+      "rank": 47,
+      "outlet": "SI",
+      "name": "Donnie Druin",
+      "score": 19.47
+    },
+    {
+      "rank": 48,
+      "outlet": "Draft Utopia",
+      "name": "Jason Bantle",
+      "score": 19.23
+    },
+    {
+      "rank": 49,
+      "outlet": "NBC Sports Boston",
+      "name": "Phil Perry",
+      "score": 18.99
+    },
+    {
+      "rank": 50,
+      "outlet": "Behind The Steel Curtain",
+      "name": "Andrew Wilbar",
+      "score": 18.75
+    },
+    {
+      "rank": 51,
+      "outlet": "Draft Countdown",
+      "name": "Shane Hallam",
+      "score": 18.75
+    },
+    {
+      "rank": 52,
+      "outlet": "SB Nation",
+      "name": "James Dator",
+      "score": 18.75
+    },
+    {
+      "rank": 53,
+      "outlet": "Still Curtain",
+      "name": "Ryan Pawloski",
+      "score": 18.75
+    },
+    {
+      "rank": 54,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 18.51
+    },
+    {
+      "rank": 55,
+      "outlet": "Fantasy Pros",
+      "name": "Mike Fanelli",
+      "score": 18.51
+    },
+    {
+      "rank": 56,
+      "outlet": "NY Post",
+      "name": "Steve Serby",
+      "score": 18.51
+    },
+    {
+      "rank": 58,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 18.03
+    },
+    {
+      "rank": 59,
+      "outlet": "PPackernet",
+      "name": "Ryan Schlipp",
+      "score": 18.03
+    },
+    {
+      "rank": 60,
+      "outlet": "Underdog Fantasy",
+      "name": "Hayden Winks",
+      "score": 18.03
+    },
+    {
+      "rank": 61,
+      "outlet": "Draft Countdown",
+      "name": "Brian Bosarge",
+      "score": 17.79
+    },
+    {
+      "rank": 62,
+      "outlet": "Fansided",
+      "name": "Brad Weiss",
+      "score": 17.79
+    },
+    {
+      "rank": 63,
+      "outlet": "Houston Chronicle",
+      "name": "Brooks Kubena",
+      "score": 17.79
+    },
+    {
+      "rank": 64,
+      "outlet": "The Huddle",
+      "name": "David Dorey",
+      "score": 17.79
+    },
+    {
+      "rank": 65,
+      "outlet": "Blue Chip Scouting",
+      "name": "Mike Hrynyshyn",
+      "score": 17.55
+    },
+    {
+      "rank": 66,
+      "outlet": "Chat Sports",
+      "name": "Tom Downey",
+      "score": 17.55
+    },
+    {
+      "rank": 67,
+      "outlet": "Draft ID",
+      "name": "Harris Oates",
+      "score": 17.55
+    },
+    {
+      "rank": 68,
+      "outlet": "Draftwire",
+      "name": "Luke Easterling",
+      "score": 17.55
+    },
+    {
+      "rank": 69,
+      "outlet": "Fantasy Data",
+      "name": "Jake Oliver",
+      "score": 17.55
+    },
+    {
+      "rank": 70,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 17.55
+    },
+    {
+      "rank": 71,
+      "outlet": "Football Nick",
+      "name": "Nick Barrett",
+      "score": 17.55
+    },
+    {
+      "rank": 72,
+      "outlet": "Newsday",
+      "name": "Nick Klopsis",
+      "score": 17.55
+    },
+    {
+      "rank": 73,
+      "outlet": "Pewter Report",
+      "name": "Jon Ledyard",
+      "score": 17.55
+    },
+    {
+      "rank": 74,
+      "outlet": "Pro Football Network",
+      "name": "Aaron Wilson",
+      "score": 17.55
+    },
+    {
+      "rank": 75,
+      "outlet": "SI",
+      "name": "Ric Serritella",
+      "score": 17.55
+    },
+    {
+      "rank": 76,
+      "outlet": "The Draft Network",
+      "name": "Brentley Weissman",
+      "score": 17.55
+    },
+    {
+      "rank": 77,
+      "outlet": "Washington Post",
+      "name": "Mark Maske",
+      "score": 17.55
+    },
+    {
+      "rank": 79,
+      "outlet": "College Football News",
+      "name": "Pete Fiutak",
+      "score": 17.31
+    },
+    {
+      "rank": 80,
+      "outlet": "For The Win",
+      "name": "Christian D'Andrea",
+      "score": 17.31
+    },
+    {
+      "rank": 81,
+      "outlet": "Loaded Box Podcast",
+      "name": "Mikey Ostrowski",
+      "score": 17.31
+    },
+    {
+      "rank": 82,
+      "outlet": "NFL Trade Rumors",
+      "name": "Nate Bouda",
+      "score": 17.31
+    },
+    {
+      "rank": 83,
+      "outlet": "Pro Football Focus",
+      "name": "Michael Renner",
+      "score": 17.31
+    },
+    {
+      "rank": 84,
+      "outlet": "Purple PTSD",
+      "name": "Josh Frey",
+      "score": 17.31
+    },
+    {
+      "rank": 85,
+      "outlet": "Sports Krunch",
+      "name": "David Kromelow",
+      "score": 17.31
+    },
+    {
+      "rank": 86,
+      "outlet": "The Draft Network",
+      "name": "Jaime Eisner",
+      "score": 17.31
+    },
+    {
+      "rank": 87,
+      "outlet": "Underdog Fantasy",
+      "name": "Hayden Winks",
+      "score": 17.31
+    },
+    {
+      "rank": 88,
+      "outlet": "AM NY",
+      "name": "Joe Pantorno",
+      "score": 17.07
+    },
+    {
+      "rank": 89,
+      "outlet": "CBS",
+      "name": "Adam Aizer",
+      "score": 17.07
+    },
+    {
+      "rank": 90,
+      "outlet": "CBS",
+      "name": "Dan Schneier",
+      "score": 17.07
+    },
+    {
+      "rank": 91,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 17.07
+    },
+    {
+      "rank": 92,
+      "outlet": "Fantrax HQ",
+      "name": "Reese Jones",
+      "score": 17.07
+    },
+    {
+      "rank": 93,
+      "outlet": "Fox Sports",
+      "name": "Jason McIntyre",
+      "score": 17.07
+    },
+    {
+      "rank": 94,
+      "outlet": "Manistee News",
+      "name": "Mitch Vosburg",
+      "score": 17.07
+    },
+    {
+      "rank": 95,
+      "outlet": "NFL.com",
+      "name": "Lance Zierlein",
+      "score": 17.07
+    },
+    {
+      "rank": 96,
+      "outlet": "NFL.com",
+      "name": "Peter Schrager",
+      "score": 17.07
+    },
+    {
+      "rank": 97,
+      "outlet": "Pro Football Network",
+      "name": "Tony Pauline",
+      "score": 17.07
+    },
+    {
+      "rank": 98,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 17.07
+    },
+    {
+      "rank": 99,
+      "outlet": "Stacking The Board",
+      "name": "Cam Marino",
+      "score": 17.07
+    },
+    {
+      "rank": 100,
+      "outlet": "Tankathon",
+      "name": "Staff",
+      "score": 17.07
+    },
+    {
+      "rank": 101,
+      "outlet": "The Draft Network",
+      "name": "Zach Cohen",
+      "score": 17.07
+    },
+    {
+      "rank": 102,
+      "outlet": "UCSD Guardian",
+      "name": "Miguel Carias",
+      "score": 17.07
+    },
+    {
+      "rank": 103,
+      "outlet": "With The First Pick",
+      "name": "Geoffrey Godfrey",
+      "score": 17.07
+    },
+    {
+      "rank": 104,
+      "outlet": "Bolt Beat",
+      "name": "Jason Reed",
+      "score": 16.85
+    },
+    {
+      "rank": 106,
+      "outlet": "CBS",
+      "name": "Jonathan Jones",
+      "score": 16.83
+    },
+    {
+      "rank": 107,
+      "outlet": "Draft ID",
+      "name": "Harris Oates",
+      "score": 16.83
+    },
+    {
+      "rank": 108,
+      "outlet": "Draft Utopia",
+      "name": "Tony Mario",
+      "score": 16.83
+    }
+  ],
+  "2023": [
+    {
+      "rank": 1,
+      "outlet": "Sports Gambling Podcast",
+      "name": "Sean Green",
+      "score": 29.57
+    },
+    {
+      "rank": 2,
+      "outlet": "NFL Science",
+      "name": "Dustin Nelson",
+      "score": 28.85
+    },
+    {
+      "rank": 3,
+      "outlet": "Pro Football Focus",
+      "name": "Gordon McGuinness",
+      "score": 26.44
+    },
+    {
+      "rank": 4,
+      "outlet": "Chicago Sun Times",
+      "name": "Jason Lieser",
+      "score": 25.96
+    },
+    {
+      "rank": 5,
+      "outlet": "Steelers Now",
+      "name": "Alan Saunders",
+      "score": 24.76
+    },
+    {
+      "rank": 6,
+      "outlet": "Tankathon",
+      "name": "Staff",
+      "score": 24.04
+    },
+    {
+      "rank": 7,
+      "outlet": "The Athletic",
+      "name": "Staff",
+      "score": 23.8
+    },
+    {
+      "rank": 8,
+      "outlet": "CBS",
+      "name": "Garrett Podell",
+      "score": 23.56
+    },
+    {
+      "rank": 9,
+      "outlet": "NBC Sports",
+      "name": "Staff",
+      "score": 23.56
+    },
+    {
+      "rank": 10,
+      "outlet": "AP News",
+      "name": "Rob Maaddi",
+      "score": 23.32
+    },
+    {
+      "rank": 11,
+      "outlet": "KSL Sports",
+      "name": "Sam Farnsworth",
+      "score": 23.32
+    },
+    {
+      "rank": 13,
+      "outlet": "Fox Sports",
+      "name": "Joel Klatt",
+      "score": 23.08
+    },
+    {
+      "rank": 14,
+      "outlet": "NFL.com",
+      "name": "Daniel Jeremiah",
+      "score": 23.08
+    },
+    {
+      "rank": 15,
+      "outlet": "Shaw Local News Network",
+      "name": "Hub Arkush",
+      "score": 23.08
+    },
+    {
+      "rank": 16,
+      "outlet": "FTN Fantasy",
+      "name": "Jeff Ratcliffe",
+      "score": 22.84
+    },
+    {
+      "rank": 17,
+      "outlet": "Action Network",
+      "name": "Sean Koerner",
+      "score": 22.36
+    },
+    {
+      "rank": 18,
+      "outlet": "Underdog Fantasy",
+      "name": "Hayden Winks",
+      "score": 22.36
+    },
+    {
+      "rank": 19,
+      "outlet": "The Athletic",
+      "name": "Dane Brugler",
+      "score": 21.63
+    },
+    {
+      "rank": 20,
+      "outlet": "Pro Football Focus",
+      "name": "Cris Collinsworth",
+      "score": 21.39
+    },
+    {
+      "rank": 21,
+      "outlet": "Yardbarker",
+      "name": "Seth Trachtman",
+      "score": 21.39
+    },
+    {
+      "rank": 22,
+      "outlet": "Mile High Report",
+      "name": "Scotty Payne",
+      "score": 21.15
+    },
+    {
+      "rank": 23,
+      "outlet": "NFL.com",
+      "name": "Daniel Jeremiah",
+      "score": 21.15
+    },
+    {
+      "rank": 24,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 21.15
+    },
+    {
+      "rank": 25,
+      "outlet": "Pro Football Network",
+      "name": "Oliver Hodgkinson",
+      "score": 21.15
+    },
+    {
+      "rank": 26,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 21.15
+    },
+    {
+      "rank": 27,
+      "outlet": "Brooklyn Beat",
+      "name": "Justin Worsley",
+      "score": 20.91
+    },
+    {
+      "rank": 28,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 20.91
+    },
+    {
+      "rank": 30,
+      "outlet": "Draft Countdown",
+      "name": "Staff",
+      "score": 20.67
+    },
+    {
+      "rank": 31,
+      "outlet": "Draftwire",
+      "name": "Curt Popejoy",
+      "score": 20.67
+    },
+    {
+      "rank": 32,
+      "outlet": "Shaw Local News Network",
+      "name": "Hub Arkush",
+      "score": 20.67
+    },
+    {
+      "rank": 33,
+      "outlet": "Steelers Depot",
+      "name": "Dave Bryan",
+      "score": 20.67
+    },
+    {
+      "rank": 34,
+      "outlet": "AL.com",
+      "name": "Mark Inabinett",
+      "score": 20.43
+    },
+    {
+      "rank": 35,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 20.43
+    },
+    {
+      "rank": 36,
+      "outlet": "Lombardi Ave",
+      "name": "Freddie Boston",
+      "score": 20.43
+    },
+    {
+      "rank": 37,
+      "outlet": "Touchdown Wire",
+      "name": "Doug Farrar",
+      "score": 20.43
+    },
+    {
+      "rank": 38,
+      "outlet": "NBC Sports",
+      "name": "Connor Rogers",
+      "score": 20.19
+    },
+    {
+      "rank": 39,
+      "outlet": "Shaw Local News Network",
+      "name": "Sean Hammond",
+      "score": 20.19
+    },
+    {
+      "rank": 40,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 20.19
+    },
+    {
+      "rank": 41,
+      "outlet": "The Score",
+      "name": "Dan Wilkins",
+      "score": 20.19
+    },
+    {
+      "rank": 42,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 19.95
+    },
+    {
+      "rank": 43,
+      "outlet": "Fox Sports",
+      "name": "Joel Klatt",
+      "score": 19.95
+    },
+    {
+      "rank": 44,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 19.95
+    },
+    {
+      "rank": 45,
+      "outlet": "Purple PTSD",
+      "name": "Josh Frey",
+      "score": 19.95
+    },
+    {
+      "rank": 46,
+      "outlet": "Just Blog Baby",
+      "name": "Brad Weiss",
+      "score": 19.71
+    },
+    {
+      "rank": 47,
+      "outlet": "CBS",
+      "name": "Cody Benjamin",
+      "score": 19.47
+    },
+    {
+      "rank": 48,
+      "outlet": "Eagles Wire",
+      "name": "Glenn Erby",
+      "score": 19.47
+    },
+    {
+      "rank": 49,
+      "outlet": "Fantasy Footballers",
+      "name": "Matthew Betz",
+      "score": 19.23
+    },
+    {
+      "rank": 50,
+      "outlet": "Around The Block",
+      "name": "Daniel Garrett",
+      "score": 18.99
+    },
+    {
+      "rank": 51,
+      "outlet": "CBS",
+      "name": "Chris Trapasso",
+      "score": 18.99
+    },
+    {
+      "rank": 52,
+      "outlet": "Fox Sports",
+      "name": "Rob Rang",
+      "score": 18.75
+    },
+    {
+      "rank": 53,
+      "outlet": "Covers",
+      "name": "Andrew Caley",
+      "score": 18.51
+    },
+    {
+      "rank": 54,
+      "outlet": "Draft Countdown",
+      "name": "Brad Menendez",
+      "score": 18.51
+    },
+    {
+      "rank": 55,
+      "outlet": "NFL Trade Rumors",
+      "name": "Nate Bouda",
+      "score": 18.51
+    },
+    {
+      "rank": 56,
+      "outlet": "Pro Football Focus",
+      "name": "Staff",
+      "score": 18.51
+    },
+    {
+      "rank": 57,
+      "outlet": "The Athletic",
+      "name": "Dane Brugler",
+      "score": 18.51
+    },
+    {
+      "rank": 58,
+      "outlet": "Vikings Wire",
+      "name": "Kevin Fielder",
+      "score": 18.51
+    },
+    {
+      "rank": 59,
+      "outlet": "Action Network",
+      "name": "Nick Guarisco",
+      "score": 18.27
+    },
+    {
+      "rank": 60,
+      "outlet": "CBS",
+      "name": "Dan Schneier",
+      "score": 18.27
+    },
+    {
+      "rank": 61,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 18.27
+    },
+    {
+      "rank": 62,
+      "outlet": "Pro Football Network",
+      "name": "Joe Broback",
+      "score": 18.27
+    },
+    {
+      "rank": 63,
+      "outlet": "Rotoballer",
+      "name": "Gladys Tyler",
+      "score": 18.27
+    },
+    {
+      "rank": 64,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 18.27
+    },
+    {
+      "rank": 65,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 18.27
+    },
+    {
+      "rank": 66,
+      "outlet": "Steelers Depot",
+      "name": "Alex Kozora",
+      "score": 18.27
+    },
+    {
+      "rank": 67,
+      "outlet": "Sun Sentinel",
+      "name": "Chris Perkins",
+      "score": 18.27
+    },
+    {
+      "rank": 68,
+      "outlet": "Sun Sentinel",
+      "name": "David Furones",
+      "score": 18.27
+    },
+    {
+      "rank": 69,
+      "outlet": "The Game Haus",
+      "name": "Joe DiTullio",
+      "score": 18.27
+    },
+    {
+      "rank": 70,
+      "outlet": "Blogging Dirty",
+      "name": "Scott Carasik",
+      "score": 18.03
+    },
+    {
+      "rank": 71,
+      "outlet": "CBS",
+      "name": "Adam Aizer",
+      "score": 18.03
+    },
+    {
+      "rank": 72,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 18.03
+    },
+    {
+      "rank": 73,
+      "outlet": "NFL.com",
+      "name": "Rhett Lewis",
+      "score": 18.03
+    },
+    {
+      "rank": 74,
+      "outlet": "Pro Football Focus",
+      "name": "Michael Renner",
+      "score": 18.03
+    },
+    {
+      "rank": 75,
+      "outlet": "Browns Wire",
+      "name": "Cory Kinnan",
+      "score": 17.79
+    },
+    {
+      "rank": 76,
+      "outlet": "Draft Kings",
+      "name": "Chet Gresham",
+      "score": 17.79
+    },
+    {
+      "rank": 77,
+      "outlet": "ESPN",
+      "name": "Mike Tannenbaum",
+      "score": 17.79
+    },
+    {
+      "rank": 78,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 17.79
+    },
+    {
+      "rank": 79,
+      "outlet": "Last Word on Sports",
+      "name": "Mike Kashuba",
+      "score": 17.79
+    },
+    {
+      "rank": 80,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Dan Roche",
+      "score": 17.79
+    },
+    {
+      "rank": 81,
+      "outlet": "Pro Football Focus",
+      "name": "Trevor Sikkema",
+      "score": 17.79
+    },
+    {
+      "rank": 82,
+      "outlet": "Sporting News",
+      "name": "Jacob Camenker",
+      "score": 17.79
+    },
+    {
+      "rank": 83,
+      "outlet": "Sports Gambling Podcast",
+      "name": "Cody Zeeb",
+      "score": 17.79
+    },
+    {
+      "rank": 84,
+      "outlet": "WUTK Radio",
+      "name": "Riley Haltom",
+      "score": 17.79
+    },
+    {
+      "rank": 85,
+      "outlet": "Yahoo Sports",
+      "name": "Charles McDonald",
+      "score": 17.79
+    },
+    {
+      "rank": 86,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 17.55
+    },
+    {
+      "rank": 87,
+      "outlet": "CBS",
+      "name": "Pete Prisco",
+      "score": 17.55
+    },
+    {
+      "rank": 88,
+      "outlet": "Fantasy Points",
+      "name": "Scott Barrett",
+      "score": 17.55
+    },
+    {
+      "rank": 89,
+      "outlet": "NBC Sports",
+      "name": "Kyle Dvorchak",
+      "score": 17.55
+    },
+    {
+      "rank": 90,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Adam Hermann",
+      "score": 17.55
+    },
+    {
+      "rank": 91,
+      "outlet": "Vikings Wire",
+      "name": "Matt Anderson",
+      "score": 17.55
+    },
+    {
+      "rank": 92,
+      "outlet": "Action Network",
+      "name": "Nick Guarisco",
+      "score": 17.31
+    },
+    {
+      "rank": 93,
+      "outlet": "CBS",
+      "name": "Garrett Podell",
+      "score": 17.31
+    },
+    {
+      "rank": 94,
+      "outlet": "Draftwire",
+      "name": "Natalie Miller",
+      "score": 17.31
+    },
+    {
+      "rank": 95,
+      "outlet": "Pro Football Network",
+      "name": "James Fragoza",
+      "score": 17.31
+    },
+    {
+      "rank": 96,
+      "outlet": "The Draft Network",
+      "name": "Chris Schubert",
+      "score": 17.31
+    },
+    {
+      "rank": 97,
+      "outlet": "The Draft Network",
+      "name": "Ryan Fowler",
+      "score": 17.31
+    },
+    {
+      "rank": 98,
+      "outlet": "The News Tribune",
+      "name": "Gregg Bell",
+      "score": 17.31
+    },
+    {
+      "rank": 99,
+      "outlet": "TWSN",
+      "name": "Isaac Nelson",
+      "score": 17.31
+    },
+    {
+      "rank": 100,
+      "outlet": "College Sports Wire",
+      "name": "Patrick Conn",
+      "score": 17.07
+    },
+    {
+      "rank": 101,
+      "outlet": "Draft ID",
+      "name": "Harris Oates",
+      "score": 17.07
+    },
+    {
+      "rank": 102,
+      "outlet": "Fantasy Pros",
+      "name": "Kent Weyrauch",
+      "score": 17.07
+    },
+    {
+      "rank": 103,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Jones",
+      "score": 17.07
+    },
+    {
+      "rank": 104,
+      "outlet": "Full Press Coverage",
+      "name": "Terrance Biggs",
+      "score": 17.07
+    },
+    {
+      "rank": 105,
+      "outlet": "Sports Gambling Podcast",
+      "name": "Emerson Beery",
+      "score": 17.07
+    },
+    {
+      "rank": 106,
+      "outlet": "CBS",
+      "name": "Kyle Stackpole",
+      "score": 16.83
+    },
+    {
+      "rank": 107,
+      "outlet": "Establish The Run",
+      "name": "Evan Silva",
+      "score": 16.83
+    },
+    {
+      "rank": 108,
+      "outlet": "Fantasy Pros",
+      "name": "Russell Brown",
+      "score": 16.83
+    },
+    {
+      "rank": 109,
+      "outlet": "Sportsnaut",
+      "name": "Matt Johnson",
+      "score": 16.83
+    },
+    {
+      "rank": 110,
+      "outlet": "UCSD Guardian",
+      "name": "Donovan Perez-Schipper",
+      "score": 16.83
+    },
+    {
+      "rank": 111,
+      "outlet": "CBS",
+      "name": "Dave Richard",
+      "score": 16.59
+    },
+    {
+      "rank": 112,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 16.59
+    },
+    {
+      "rank": 113,
+      "outlet": "FTN Fantasy",
+      "name": "Jeff Ratcliffe",
+      "score": 16.59
+    },
+    {
+      "rank": 114,
+      "outlet": "NBC Sports Chicago",
+      "name": "Glynn Morgan",
+      "score": 16.59
+    },
+    {
+      "rank": 115,
+      "outlet": "Pro Football Focus",
+      "name": "Brad Spielberger",
+      "score": 16.59
+    },
+    {
+      "rank": 117,
+      "outlet": "Action Network",
+      "name": "Sean Koerner",
+      "score": 16.35
+    },
+    {
+      "rank": 118,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 16.35
+    },
+    {
+      "rank": 119,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 16.35
+    },
+    {
+      "rank": 120,
+      "outlet": "Centre Daily Times",
+      "name": "Staff",
+      "score": 16.35
+    },
+    {
+      "rank": 121,
+      "outlet": "Stacking The Board",
+      "name": "Cam Marino",
+      "score": 16.35
+    },
+    {
+      "rank": 122,
+      "outlet": "Action Network",
+      "name": "Nick Guarisco",
+      "score": 16.11
+    },
+    {
+      "rank": 123,
+      "outlet": "Blogging The Boys",
+      "name": "David Howman",
+      "score": 16.11
+    },
+    {
+      "rank": 124,
+      "outlet": "Draft Utopia",
+      "name": "Chris Ransom",
+      "score": 16.11
+    },
+    {
+      "rank": 125,
+      "outlet": "Pro Football Network",
+      "name": "Ben Rolfe",
+      "score": 16.11
+    },
+    {
+      "rank": 126,
+      "outlet": "247 Sports",
+      "name": "Zack Pearson",
+      "score": 15.87
+    },
+    {
+      "rank": 127,
+      "outlet": "Action Network",
+      "name": "Nick Guarisco",
+      "score": 15.87
+    },
+    {
+      "rank": 128,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 15.87
+    },
+    {
+      "rank": 129,
+      "outlet": "Fantasy Pros",
+      "name": "Ken Zalis",
+      "score": 15.87
+    },
+    {
+      "rank": 130,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Freedman",
+      "score": 15.87
+    },
+    {
+      "rank": 131,
+      "outlet": "Fantasy Pros",
+      "name": "Thor Nystrom",
+      "score": 15.87
+    },
+    {
+      "rank": 132,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Reuben Frank",
+      "score": 15.87
+    },
+    {
+      "rank": 133,
+      "outlet": "NFL Trade Rumors",
+      "name": "Logan Ulrich",
+      "score": 15.87
+    },
+    {
+      "rank": 134,
+      "outlet": "Press Box",
+      "name": "Joe Serpico",
+      "score": 15.87
+    },
+    {
+      "rank": 135,
+      "outlet": "Pro Football Network",
+      "name": "Cam Mellor",
+      "score": 15.87
+    }
+  ],
+  "2024": [
+    {
+      "rank": 1,
+      "outlet": "Walter Football",
+      "name": "Charlie Campbell",
+      "score": 38.7
+    },
+    {
+      "rank": 2,
+      "outlet": "NFL Spin Zone",
+      "name": "Sayre Bedinger",
+      "score": 38.22
+    },
+    {
+      "rank": 3,
+      "outlet": "Fox Sports",
+      "name": "Staff",
+      "score": 36.06
+    },
+    {
+      "rank": 4,
+      "outlet": "USA Today",
+      "name": "Nate Davis",
+      "score": 36.06
+    },
+    {
+      "rank": 5,
+      "outlet": "Player Profiler",
+      "name": "Josh Larky",
+      "score": 34.38
+    },
+    {
+      "rank": 6,
+      "outlet": "DraftBlaster",
+      "name": "Staff",
+      "score": 33.65
+    },
+    {
+      "rank": 7,
+      "outlet": "Touchdown Wire",
+      "name": "Natalie Miller",
+      "score": 33.65
+    },
+    {
+      "rank": 8,
+      "outlet": "Arizona Republic",
+      "name": "Bob McManaman",
+      "score": 33.41
+    },
+    {
+      "rank": 9,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 33.41
+    },
+    {
+      "rank": 10,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 33.41
+    },
+    {
+      "rank": 11,
+      "outlet": "33rd Team",
+      "name": "Ari Meirov",
+      "score": 32.69
+    },
+    {
+      "rank": 12,
+      "outlet": "NFL.com",
+      "name": "Peter Schrager",
+      "score": 32.69
+    },
+    {
+      "rank": 13,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 32.69
+    },
+    {
+      "rank": 14,
+      "outlet": "Fantasy Six Pack",
+      "name": "Jon Witt",
+      "score": 32.21
+    },
+    {
+      "rank": 15,
+      "outlet": "Fox Sports",
+      "name": "Joel Klatt",
+      "score": 32.21
+    },
+    {
+      "rank": 16,
+      "outlet": "UPI",
+      "name": "Alex Butler",
+      "score": 32.21
+    },
+    {
+      "rank": 17,
+      "outlet": "247 Sports",
+      "name": "Zack Pearson",
+      "score": 31.97
+    },
+    {
+      "rank": 18,
+      "outlet": "On3",
+      "name": "Andy Staples",
+      "score": 31.97
+    },
+    {
+      "rank": 19,
+      "outlet": "Chicago Sun Times",
+      "name": "Patrick Finley",
+      "score": 31.49
+    },
+    {
+      "rank": 20,
+      "outlet": "33rd Team",
+      "name": "Marcus Mosher",
+      "score": 31.25
+    },
+    {
+      "rank": 21,
+      "outlet": "Denver Sports",
+      "name": "Cecil Lammey",
+      "score": 31.01
+    },
+    {
+      "rank": 22,
+      "outlet": "The Huddle",
+      "name": "HC Green",
+      "score": 31.01
+    },
+    {
+      "rank": 23,
+      "outlet": "AP News",
+      "name": "Rob Maaddi",
+      "score": 30.77
+    },
+    {
+      "rank": 24,
+      "outlet": "Bucs Wire",
+      "name": "Staff",
+      "score": 30.77
+    },
+    {
+      "rank": 25,
+      "outlet": "Dallas Morning News",
+      "name": "Calvin Watkins",
+      "score": 30.77
+    },
+    {
+      "rank": 26,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 30.77
+    },
+    {
+      "rank": 27,
+      "outlet": "Pats Football Now",
+      "name": "Dan Kelley",
+      "score": 30.77
+    },
+    {
+      "rank": 28,
+      "outlet": "CBS",
+      "name": "Kyle Stackpole",
+      "score": 30.53
+    },
+    {
+      "rank": 29,
+      "outlet": "Denver Post",
+      "name": "Ryan McFadden",
+      "score": 30.53
+    },
+    {
+      "rank": 30,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 30.53
+    },
+    {
+      "rank": 31,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 30.53
+    },
+    {
+      "rank": 32,
+      "outlet": "Fantasy Pros",
+      "name": "Andrew Erickson",
+      "score": 30.53
+    },
+    {
+      "rank": 33,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 30.53
+    },
+    {
+      "rank": 34,
+      "outlet": "Daily Mail",
+      "name": "Staff",
+      "score": 30.29
+    },
+    {
+      "rank": 35,
+      "outlet": "Draft Kings",
+      "name": "Chet Gresham",
+      "score": 30.29
+    },
+    {
+      "rank": 36,
+      "outlet": "Sporting News",
+      "name": "Jacob Camenker",
+      "score": 30.29
+    },
+    {
+      "rank": 37,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 30.29
+    },
+    {
+      "rank": 38,
+      "outlet": "CLNS",
+      "name": "Mike Kadlick",
+      "score": 30.05
+    },
+    {
+      "rank": 39,
+      "outlet": "Football Guys",
+      "name": "Jeff Bell",
+      "score": 30.05
+    },
+    {
+      "rank": 40,
+      "outlet": "NFL.com",
+      "name": "Bucky Brooks",
+      "score": 30.05
+    },
+    {
+      "rank": 41,
+      "outlet": "NFL.com",
+      "name": "Charles Davis",
+      "score": 30.05
+    },
+    {
+      "rank": 42,
+      "outlet": "NFL Spin Zone",
+      "name": "Jon O'Donnell",
+      "score": 30.05
+    },
+    {
+      "rank": 43,
+      "outlet": "PHNX",
+      "name": "Johnny Venerable",
+      "score": 30.05
+    },
+    {
+      "rank": 44,
+      "outlet": "Pro Football Focus",
+      "name": "College Football Show",
+      "score": 30.05
+    },
+    {
+      "rank": 45,
+      "outlet": "The Huddle",
+      "name": "Cletis Cutts",
+      "score": 30.05
+    },
+    {
+      "rank": 46,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 30.05
+    },
+    {
+      "rank": 47,
+      "outlet": "USA Today",
+      "name": "Nate Davis",
+      "score": 30.05
+    },
+    {
+      "rank": 48,
+      "outlet": "The Huddle",
+      "name": "Kevin Hickey",
+      "score": 29.81
+    },
+    {
+      "rank": 49,
+      "outlet": "ESPN",
+      "name": "James Meche",
+      "score": 29.57
+    },
+    {
+      "rank": 50,
+      "outlet": "Fantasy Pros",
+      "name": "Russell Brown",
+      "score": 29.57
+    },
+    {
+      "rank": 51,
+      "outlet": "Sportsnaut",
+      "name": "Andrew Buller-Russ",
+      "score": 29.57
+    },
+    {
+      "rank": 52,
+      "outlet": "VSIN",
+      "name": "Tim Murray",
+      "score": 29.57
+    },
+    {
+      "rank": 53,
+      "outlet": "Panthers Wire",
+      "name": "Anthony Rizzuti",
+      "score": 29.09
+    },
+    {
+      "rank": 54,
+      "outlet": "Fantasy Pros",
+      "name": "Mike Fanelli",
+      "score": 28.85
+    },
+    {
+      "rank": 55,
+      "outlet": "CBS",
+      "name": "Jonathan Jones",
+      "score": 28.61
+    },
+    {
+      "rank": 56,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 28.61
+    },
+    {
+      "rank": 57,
+      "outlet": "CBS",
+      "name": "Tom Fornelli",
+      "score": 28.37
+    },
+    {
+      "rank": 58,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 28.37
+    },
+    {
+      "rank": 59,
+      "outlet": "The Draft Network",
+      "name": "Brentley Weissman",
+      "score": 28.37
+    },
+    {
+      "rank": 60,
+      "outlet": "Baltimore Sun",
+      "name": "Brian Wacker",
+      "score": 28.13
+    },
+    {
+      "rank": 61,
+      "outlet": "Behind The Steel Curtain",
+      "name": "Mike Nicastro",
+      "score": 28.13
+    },
+    {
+      "rank": 62,
+      "outlet": "Establish The Run",
+      "name": "Evan Silva",
+      "score": 28.13
+    },
+    {
+      "rank": 63,
+      "outlet": "NY Post",
+      "name": "Steve Serby",
+      "score": 28.13
+    },
+    {
+      "rank": 64,
+      "outlet": "Player Profiler",
+      "name": "Theo Gremminger",
+      "score": 28.13
+    },
+    {
+      "rank": 65,
+      "outlet": "33rd Team",
+      "name": "Ian Valentino",
+      "score": 27.88
+    },
+    {
+      "rank": 66,
+      "outlet": "Bengals Wire",
+      "name": "Chris Roling",
+      "score": 27.88
+    },
+    {
+      "rank": 67,
+      "outlet": "Bleacher Nation",
+      "name": "Matt Rooney",
+      "score": 27.88
+    },
+    {
+      "rank": 68,
+      "outlet": "Bucs Wire",
+      "name": "Staff",
+      "score": 27.88
+    },
+    {
+      "rank": 69,
+      "outlet": "CBS",
+      "name": "Dan Schneier",
+      "score": 27.88
+    },
+    {
+      "rank": 70,
+      "outlet": "CBS",
+      "name": "Tyler Sullivan",
+      "score": 27.88
+    },
+    {
+      "rank": 71,
+      "outlet": "Chat Sports",
+      "name": "Tom Downey",
+      "score": 27.88
+    },
+    {
+      "rank": 72,
+      "outlet": "Fantasy Pros",
+      "name": "Russell Brown",
+      "score": 27.88
+    },
+    {
+      "rank": 73,
+      "outlet": "FField 2 Court",
+      "name": "Jake Rosen",
+      "score": 27.88
+    },
+    {
+      "rank": 74,
+      "outlet": "Mass Live",
+      "name": "Karen Guregian",
+      "score": 27.88
+    },
+    {
+      "rank": 75,
+      "outlet": "NBC Sports Philadelphia",
+      "name": "Reuben Frank",
+      "score": 27.88
+    },
+    {
+      "rank": 76,
+      "outlet": "NFL.com",
+      "name": "Dan Parr",
+      "score": 27.88
+    },
+    {
+      "rank": 77,
+      "outlet": "NFL Trade Rumors",
+      "name": "Nate Bouda",
+      "score": 27.88
+    },
+    {
+      "rank": 78,
+      "outlet": "San Diego Union Tribune",
+      "name": "Eddie Brown",
+      "score": 27.88
+    },
+    {
+      "rank": 79,
+      "outlet": "Touchdown Wire",
+      "name": "Doug Farrar",
+      "score": 27.88
+    },
+    {
+      "rank": 80,
+      "outlet": "UD Review",
+      "name": "Jared Wasserman",
+      "score": 27.88
+    },
+    {
+      "rank": 82,
+      "outlet": "Buccaneers.com",
+      "name": "Brianna Dix",
+      "score": 27.64
+    },
+    {
+      "rank": 83,
+      "outlet": "Bucs Wire",
+      "name": "Staff",
+      "score": 27.64
+    },
+    {
+      "rank": 84,
+      "outlet": "CBS",
+      "name": "Ryan Wilson",
+      "score": 27.64
+    },
+    {
+      "rank": 85,
+      "outlet": "Drafttek",
+      "name": "Staff",
+      "score": 27.64
+    },
+    {
+      "rank": 86,
+      "outlet": "ESPN",
+      "name": "Staff",
+      "score": 27.64
+    },
+    {
+      "rank": 87,
+      "outlet": "Fantasy Life",
+      "name": "Matthew Freedman",
+      "score": 27.64
+    },
+    {
+      "rank": 88,
+      "outlet": "Fantasy Pros",
+      "name": "Andrew Erickson",
+      "score": 27.64
+    },
+    {
+      "rank": 89,
+      "outlet": "LA Times",
+      "name": "Sam Farmer",
+      "score": 27.64
+    },
+    {
+      "rank": 90,
+      "outlet": "NFL Spin Zone",
+      "name": "Sayre Bedinger",
+      "score": 27.64
+    },
+    {
+      "rank": 91,
+      "outlet": "Outkick",
+      "name": "Dan Zaksheske",
+      "score": 27.64
+    },
+    {
+      "rank": 92,
+      "outlet": "Star Telegram",
+      "name": "Clarence E. Hill Jr.",
+      "score": 27.64
+    },
+    {
+      "rank": 93,
+      "outlet": "Walter Football",
+      "name": "Walter Cherepinsky",
+      "score": 27.64
+    },
+    {
+      "rank": 94,
+      "outlet": "Action Network",
+      "name": "Nick Guarisco",
+      "score": 27.4
+    },
+    {
+      "rank": 95,
+      "outlet": "Bengals Wire",
+      "name": "Chris Roling",
+      "score": 27.4
+    },
+    {
+      "rank": 96,
+      "outlet": "Bleacher Nation",
+      "name": "Matt Rooney",
+      "score": 27.4
+    },
+    {
+      "rank": 97,
+      "outlet": "Bleeding Green Nation",
+      "name": "Ben Natan",
+      "score": 27.4
+    },
+    {
+      "rank": 98,
+      "outlet": "Cards Wire",
+      "name": "Jess Root",
+      "score": 27.4
+    },
+    {
+      "rank": 99,
+      "outlet": "CBS",
+      "name": "Tom Fornelli",
+      "score": 27.4
+    },
+    {
+      "rank": 100,
+      "outlet": "Clutch Points",
+      "name": "Mike Johrendt",
+      "score": 27.4
+    },
+    {
+      "rank": 101,
+      "outlet": "Cowboys Wire",
+      "name": "Tim Lettiero",
+      "score": 27.4
+    },
+    {
+      "rank": 102,
+      "outlet": "Fox Sports",
+      "name": "Rob Rang",
+      "score": 27.4
+    },
+    {
+      "rank": 103,
+      "outlet": "Last Word on Sports",
+      "name": "Rashad Tatum",
+      "score": 27.4
+    },
+    {
+      "rank": 104,
+      "outlet": "MMy NFL Draft",
+      "name": "Staff",
+      "score": 27.4
+    },
+    {
+      "rank": 105,
+      "outlet": "Tankathon",
+      "name": "Staff",
+      "score": 27.4
+    },
+    {
+      "rank": 106,
+      "outlet": "VSIN",
+      "name": "Tim Murray",
+      "score": 27.4
+    },
+    {
+      "rank": 107,
+      "outlet": "33rd Team",
+      "name": "Marcus Mosher",
+      "score": 27.16
+    },
+    {
+      "rank": 108,
+      "outlet": "Audacity Sports",
+      "name": "Chris Emma",
+      "score": 27.16
+    },
+    {
+      "rank": 109,
+      "outlet": "Bengals Wire",
+      "name": "Chris Roling",
+      "score": 27.16
+    },
+    {
+      "rank": 110,
+      "outlet": "Bleacher Nation",
+      "name": "Matt Rooney",
+      "score": 27.16
+    },
+    {
+      "rank": 111,
+      "outlet": "Las Vegas Review-Journal",
+      "name": "Adam Hill",
+      "score": 27.16
+    },
+    {
+      "rank": 112,
+      "outlet": "Mile High Report",
+      "name": "Scotty Payne",
+      "score": 27.16
+    },
+    {
+      "rank": 113,
+      "outlet": "NFL.com",
+      "name": "Bucky Brooks",
+      "score": 27.16
+    },
+    {
+      "rank": 114,
+      "outlet": "NFL.com",
+      "name": "Bucky Brooks",
+      "score": 27.16
+    },
+    {
+      "rank": 115,
+      "outlet": "NFL Spin Zone",
+      "name": "Lou Scataglia",
+      "score": 27.16
+    },
+    {
+      "rank": 116,
+      "outlet": "NFL Spin Zone",
+      "name": "Sayre Bedinger",
+      "score": 27.16
+    },
+    {
+      "rank": 117,
+      "outlet": "Sharp Football Analysis",
+      "name": "Ryan McCrystal",
+      "score": 27.16
+    },
+    {
+      "rank": 118,
+      "outlet": "Sporting News",
+      "name": "Vinnie Iyer",
+      "score": 27.16
+    },
+    {
+      "rank": 119,
+      "outlet": "Uproxx",
+      "name": "Staff",
+      "score": 27.16
+    },
+    {
+      "rank": 120,
+      "outlet": "USA Today",
+      "name": "Michael Middlehurst-Schwartz",
+      "score": 27.16
+    },
+    {
+      "rank": 121,
+      "outlet": "With The First Pick",
+      "name": "Chris McGlynn",
+      "score": 27.16
+    },
+    {
+      "rank": 122,
+      "outlet": "Bengals.com",
+      "name": "Staff",
+      "score": 26.92
+    },
+    {
+      "rank": 123,
+      "outlet": "Buccaneers.com",
+      "name": "Scott Smith",
+      "score": 26.92
+    },
+    {
+      "rank": 124,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 26.92
+    },
+    {
+      "rank": 125,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 26.92
+    },
+    {
+      "rank": 126,
+      "outlet": "ESPN",
+      "name": "James Meche",
+      "score": 26.92
+    },
+    {
+      "rank": 127,
+      "outlet": "Fantasy Pros",
+      "name": "Russell Brown",
+      "score": 26.92
+    },
+    {
+      "rank": 128,
+      "outlet": "FTN Fantasy",
+      "name": "Jeff Ratcliffe",
+      "score": 26.92
+    },
+    {
+      "rank": 129,
+      "outlet": "Lions Wire",
+      "name": "Russell Brown",
+      "score": 26.92
+    },
+    {
+      "rank": 130,
+      "outlet": "NFL Mocks",
+      "name": "John Blair",
+      "score": 26.92
+    },
+    {
+      "rank": 131,
+      "outlet": "Patriots Wire",
+      "name": "Jordy McElroy",
+      "score": 26.92
+    },
+    {
+      "rank": 132,
+      "outlet": "Rotoballer",
+      "name": "Chris Gregory",
+      "score": 26.92
+    },
+    {
+      "rank": 133,
+      "outlet": "Baltimore Sun",
+      "name": "C.J. Doon",
+      "score": 26.68
+    },
+    {
+      "rank": 134,
+      "outlet": "CBS",
+      "name": "Josh Edwards",
+      "score": 26.68
+    },
+    {
+      "rank": 135,
+      "outlet": "CBS",
+      "name": "Staff",
+      "score": 26.68
+    },
+    {
+      "rank": 136,
+      "outlet": "Dolphins Wire",
+      "name": "Adam Stites",
+      "score": 26.68
+    },
+    {
+      "rank": 137,
+      "outlet": "Fantasy Data",
+      "name": "T.J. Besler",
+      "score": 26.68
+    },
+    {
+      "rank": 138,
+      "outlet": "NBC Sports",
+      "name": "Connor Rogers",
+      "score": 26.68
+    },
+    {
+      "rank": 139,
+      "outlet": "CBS",
+      "name": "Tom Fornelli",
+      "score": 26.44
+    },
+    {
+      "rank": 140,
+      "outlet": "Draft Sharks",
+      "name": "Jared Smola",
+      "score": 26.44
+    },
+    {
+      "rank": 141,
+      "outlet": "NBC Sports Chicago",
+      "name": "Glynn Morgan",
+      "score": 26.44
+    },
+    {
+      "rank": 142,
+      "outlet": "NY Post",
+      "name": "Erich Richter",
+      "score": 26.44
+    },
+    {
+      "rank": 143,
+      "outlet": "Pro Football Focus",
+      "name": "Trevor Sikkema",
+      "score": 26.44
+    },
+    {
+      "rank": 144,
+      "outlet": "SI",
+      "name": "Richie Bradshaw",
+      "score": 26.44
+    },
+    {
+      "rank": 145,
+      "outlet": "Underdog Fantasy",
+      "name": "Hayden Winks",
+      "score": 26.44
+    },
+    {
+      "rank": 146,
+      "outlet": "Dolphins Wire",
+      "name": "Adam Stites",
+      "score": 26.2
+    },
+    {
+      "rank": 147,
+      "outlet": "Fantasy First Down",
+      "name": "Staff",
+      "score": 26.2
+    },
+    {
+      "rank": 148,
+      "outlet": "Lombardi Ave",
+      "name": "Freddie Boston",
+      "score": 26.2
+    },
+    {
+      "rank": 149,
+      "outlet": "NBC Sports Chicago",
+      "name": "Glynn Morgan",
+      "score": 26.2
+    },
+    {
+      "rank": 150,
+      "outlet": "Draft Countdown",
+      "name": "Brad Menendez",
+      "score": 25.96
+    },
+    {
+      "rank": 151,
+      "outlet": "AL.com",
+      "name": "Mark Inabinett",
+      "score": 25.72
+    },
+    {
+      "rank": 152,
+      "outlet": "NBC Sports",
+      "name": "Chris Simms",
+      "score": 25.72
+    },
+    {
+      "rank": 153,
+      "outlet": "Pro Football Network",
+      "name": "Tony Catalina",
+      "score": 25.72
+    },
+    {
+      "rank": 154,
+      "outlet": "Still Curtain",
+      "name": "Andrew Falce",
+      "score": 25.72
+    },
+    {
+      "rank": 155,
+      "outlet": "Vikings Wire",
+      "name": "Saivion Mixson",
+      "score": 25.72
+    },
+    {
+      "rank": 156,
+      "outlet": "Bears Talk",
+      "name": "Pete Martuneac",
+      "score": 25.48
+    },
+    {
+      "rank": 157,
+      "outlet": "Bleacher Nation",
+      "name": "Matt Rooney",
+      "score": 25.48
+    },
+    {
+      "rank": 158,
+      "outlet": "Bleeding Green Nation",
+      "name": "Ben Natan",
+      "score": 25.48
+    },
+    {
+      "rank": 159,
+      "outlet": "Buccaneers.com",
+      "name": "Brianna Dix",
+      "score": 25.48
+    },
+    {
+      "rank": 160,
+      "outlet": "DraftBlaster",
+      "name": "John Ellsworth",
+      "score": 25.48
+    },
+    {
+      "rank": 161,
+      "outlet": "Fantasy Pros",
+      "name": "Matthew Jones",
+      "score": 25.48
+    },
+    {
+      "rank": 162,
+      "outlet": "NFL.com",
+      "name": "Charles Davis",
+      "score": 25.48
+    }
   ]
 }

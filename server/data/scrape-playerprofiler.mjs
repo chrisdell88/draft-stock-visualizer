@@ -68,6 +68,14 @@ async function scrapePlayerProfiler(url) {
   await browse('goto', url);
   await browse('wait', '--networkidle');
 
+  const data = {};
+
+  // Extract headshot image URL
+  const imgRaw = await browse('js',
+    `(function(){ var img = document.querySelector('.player-page__headshot img, .player-headshot img, img.headshot, .player-image img'); return img ? img.src : ''; })()`
+  );
+  if (imgRaw && imgRaw.startsWith('http')) data.imageUrl = imgRaw;
+
   // Extract core stats
   const raw = await browse('js',
     `JSON.stringify(Array.from(document.querySelectorAll('.player-page__core-stat, .player-page__key-stats-grid')).map(el => el.textContent.replace(/\\s+/g,' ').trim().slice(0,200)).filter(x=>x))`
@@ -77,8 +85,6 @@ async function scrapePlayerProfiler(url) {
 
   let items;
   try { items = JSON.parse(raw); } catch { return null; }
-
-  const data = {};
 
   for (const item of items) {
     // Height
@@ -163,6 +169,7 @@ async function main() {
     const vals = [];
     let idx = 1;
 
+    if (data.imageUrl  !== undefined) { fields.push(`image_url = $${idx++}`);           vals.push(data.imageUrl); }
     if (data.handSize  !== undefined) { fields.push(`hand_size = $${idx++}`);          vals.push(data.handSize); }
     if (data.age       !== undefined) { fields.push(`age = $${idx++}`);                vals.push(data.age); }
     if (data.collegeQbrPct !== undefined) { fields.push(`college_qbr_pct = $${idx++}`);vals.push(data.collegeQbrPct); }
