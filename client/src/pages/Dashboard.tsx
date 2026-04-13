@@ -26,6 +26,7 @@ type AdpWindowPlayer = {
   currentAdp: number | null;
   change3d: number | null; change7d: number | null; change30d: number | null;
   changeAll: number | null;
+  isNew?: boolean;
 };
 
 type OddsMover = {
@@ -255,16 +256,32 @@ function MoverRow({ player, rank, type, change }: {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <div className="text-right">
-            <p className={cn("font-mono text-base font-bold leading-tight", isUp ? "text-stock-up" : "text-stock-down")}>
-              #{player.currentAdp?.toFixed(1)}
-            </p>
-            <p className={cn("text-[10px] font-mono flex items-center gap-0.5 justify-end", isUp ? "text-stock-up" : "text-stock-down")}>
-              {isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-              {isUp ? "+" : "-"}{abs.toFixed(1)} spots
-            </p>
-          </div>
-          <div className={cn("w-1 h-10 rounded-full opacity-60", isUp ? "bg-stock-up" : "bg-stock-down")} />
+          {player.isNew ? (
+            <>
+              <div className="text-right">
+                <p className="font-mono text-base font-bold leading-tight text-white">
+                  #{player.currentAdp?.toFixed(1)}
+                </p>
+                <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider bg-primary/20 text-primary border border-primary/30">
+                  NEW
+                </span>
+              </div>
+              <div className="w-1 h-10 rounded-full opacity-60 bg-primary" />
+            </>
+          ) : (
+            <>
+              <div className="text-right">
+                <p className={cn("font-mono text-base font-bold leading-tight", isUp ? "text-stock-up" : "text-stock-down")}>
+                  #{player.currentAdp?.toFixed(1)}
+                </p>
+                <p className={cn("text-[10px] font-mono flex items-center gap-0.5 justify-end", isUp ? "text-stock-up" : "text-stock-down")}>
+                  {isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {isUp ? "+" : "-"}{abs.toFixed(1)} spots
+                </p>
+              </div>
+              <div className={cn("w-1 h-10 rounded-full opacity-60", isUp ? "bg-stock-up" : "bg-stock-down")} />
+            </>
+          )}
         </div>
       </div>
     </Link>

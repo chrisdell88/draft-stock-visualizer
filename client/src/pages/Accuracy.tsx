@@ -38,7 +38,6 @@ function ScoreCell({ score, site }: { score: ScoreRow | undefined; site: string 
     <td className="px-3 py-2 text-center" title={`Score: ${Math.round(score.rawScore)}/${meta.max} (${pct}%) · Z: ${z.toFixed(2)}`}>
       <span className={cn("text-xs font-mono font-medium", color)}>
         {rank ? `#${rank}` : `${Math.round(score.rawScore)}`}
-        <span className="text-white/30 text-[10px]"> ({pct}%)</span>
       </span>
     </td>
   );

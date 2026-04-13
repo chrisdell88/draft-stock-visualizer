@@ -284,23 +284,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const result = await pool.query(`
         SELECT p.id, p.name, p.position, p.college, p.image_url,
           latest.adp_value::numeric as current_adp,
+          snap_info.snap_count,
+          snap_info.days_tracked,
           CASE
-            WHEN latest.adp_value IS NOT NULL AND ago3d.adp_value IS NOT NULL
+            WHEN latest.adp_value IS NOT NULL AND ago3d.adp_value IS NOT NULL AND snap_info.days_tracked >= 2
             THEN (ago3d.adp_value::numeric - latest.adp_value::numeric)
             ELSE NULL
           END as change3d,
           CASE
-            WHEN latest.adp_value IS NOT NULL AND ago7d.adp_value IS NOT NULL
+            WHEN latest.adp_value IS NOT NULL AND ago7d.adp_value IS NOT NULL AND snap_info.days_tracked >= 2
             THEN (ago7d.adp_value::numeric - latest.adp_value::numeric)
             ELSE NULL
           END as change7d,
           CASE
-            WHEN latest.adp_value IS NOT NULL AND ago30d.adp_value IS NOT NULL
+            WHEN latest.adp_value IS NOT NULL AND ago30d.adp_value IS NOT NULL AND snap_info.days_tracked >= 2
             THEN (ago30d.adp_value::numeric - latest.adp_value::numeric)
             ELSE NULL
           END as change30d,
           CASE
-            WHEN latest.adp_value IS NOT NULL AND first_snap.adp_value IS NOT NULL
+            WHEN latest.adp_value IS NOT NULL AND first_snap.adp_value IS NOT NULL AND snap_info.days_tracked >= 2
             THEN (first_snap.adp_value::numeric - latest.adp_value::numeric)
             ELSE NULL
           END as change_all
@@ -320,6 +322,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         LEFT JOIN LATERAL (
           SELECT adp_value FROM adp_history WHERE player_id = p.id ORDER BY date ASC LIMIT 1
         ) first_snap ON true
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*) as snap_count,
+            EXTRACT(EPOCH FROM (MAX(date) - MIN(date))) / 86400 as days_tracked
+          FROM adp_history WHERE player_id = p.id
+        ) snap_info ON true
         ORDER BY latest.adp_value::numeric ASC NULLS LAST
       `);
       const windowPlayers = result.rows.map((r: any) => ({
@@ -329,6 +336,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         college: r.college,
         imageUrl: r.image_url ?? null,
         currentAdp: r.current_adp !== null ? Number(r.current_adp) : null,
+        isNew: Number(r.days_tracked ?? 0) < 2,
         change3d: r.change3d !== null ? Number(r.change3d) : null,
         change7d: r.change7d !== null ? Number(r.change7d) : null,
         change30d: r.change30d !== null ? Number(r.change30d) : null,
