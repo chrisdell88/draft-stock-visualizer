@@ -9,3 +9,4 @@ vite.config.ts.*
 *.tar.gz
 MEMORY.md
 .gstack/
+.vercel
