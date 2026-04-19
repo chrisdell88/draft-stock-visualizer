@@ -10,3 +10,6 @@ vite.config.ts.*
 MEMORY.md
 .gstack/
 .vercel
+
+# Full MDDB scrape output — too large to commit, regenerated via scrape-nflmdd-all.mjs
+server/data/accuracy/nflmdd-full.json
