@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import pg from "pg";
+// Static imports so Vercel's bundler includes these in the function payload.
+// Previously these were `await import()` inside the /internal/cron handler,
+// which the bundler didn't follow — the deployed function couldn't resolve
+// `./server/scrapers/index` at runtime and the endpoint returned 500.
+import { runAllScrapers } from "../server/scrapers/index";
+import { storage } from "../server/storage";
+import { scrapeOdds } from "../server/scrapers/odds";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -225,7 +232,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (path === "/accuracy/leaderboard" || path === "/accuracy/leaderboard/") {
-      const minYears = parseInt(url.searchParams.get("minYears") || "1");
+      // ═══════════════════════════════════════════════════════════════════════
+      // ⚠️  DUPLICATED LOGIC — KEEP IN SYNC with:
+      //     - server/storage.ts `getAccuracyLeaderboard` (local dev path)
+      //     - server/data/accuracy/recompute-xscores.mjs (writes to analysts table)
+      // If you change site weights, year weights, or qualification rules, update
+      // all three or the behavior will diverge between local dev, prod API, and
+      // the stored a.x_score column. Production (THIS file) is what mockx.co
+      // actually runs. TODO post-draft: extract to shared/xscore.ts.
+      // ═══════════════════════════════════════════════════════════════════════
+      // NOTE: minYears query param is no longer used for filtering (kept for
+      // backward compat). Qualification is enforced in the computation below.
+      const _minYears = parseInt(url.searchParams.get("minYears") || "1");
       const analysts_result = await pool.query(`
         SELECT a.id, a.name, a.outlet,
           a.x_score, a.x_score_rank, a.x_score_sites_count,
@@ -482,9 +500,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (secret && authHeader !== `Bearer ${secret}`) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const { runAllScrapers } = await import("../server/scrapers/index");
-      const { storage } = await import("../server/storage");
-      const { scrapeOdds } = await import("../server/scrapers/odds");
       const results = await runAllScrapers();
       await storage.synthesizeAdpFromPicks();
       await scrapeOdds();

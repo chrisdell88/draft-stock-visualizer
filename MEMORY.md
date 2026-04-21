@@ -55,10 +55,17 @@ Until the 4 steps above are done on a given device, you can only do **code edits
 - **X-score 3-year rule:** `recompute-xscores.mjs` now requires ≥3 DISTINCT draft years (not site-years) + 2025 data. Before: 584 ranked (164 were one-hit wonders at top). After: 344 ranked, all with sustained multi-year presence. Analysts with <3 distinct years keep raw per-year scores but `x_score`/`x_score_rank` = NULL.
 - **Live ADP refresh:** `scripts/run-scrapers-now.ts` runs all 13 scrapers + `synthesizeAdpFromPicks()` against live Supabase. 56 sec end-to-end. Use this as a manual trigger — see KNOWN ISSUE below.
 
-### KNOWN ISSUE — prod cron is broken
-- `POST /api/internal/cron` on mockx.co returns 500: `Cannot find module '/var/task/server/scrapers/index'`. Vercel build isn't packaging `server/scrapers/*` into the serverless function output. Daily 6am cron is dead until someone fixes the build config.
-- Workaround: run `npx tsx scripts/run-scrapers-now.ts` locally (from any device with `.env` set up).
-- TODO: debug the Vercel bundle — likely a `vercel.json` includeFiles or `vite`/`esbuild` config issue.
+### KNOWN ISSUE — prod cron was broken (FIXED 2026-04-20 late)
+- `POST /api/internal/cron` was returning 500: `Cannot find module '/var/task/server/scrapers/index'`.
+- Root cause: the handler used `await import("../server/scrapers/index")` (dynamic imports). Vercel's bundler doesn't follow dynamic imports reliably, so the files weren't packaged into the serverless function.
+- Fix: hoisted to static imports at the top of `api/index.ts`. Vercel now bundles server/scrapers/ and server/storage into the function.
+- Cron is wired via `vercel.json` at `0 11 * * *` UTC (7am ET DST) hitting `/api/internal/cron`.
+- Manual on-demand trigger still works: `npx tsx scripts/run-scrapers-now.ts`.
+
+### KNOWN FOOTGUN — parallel X-score implementations
+- Production uses `api/index.ts` (Vercel serverless function). Local dev uses `server/storage.ts`. Both have their own `/accuracy/leaderboard` logic with duplicate site/year weights and qualification rules.
+- When the 3-year rule was added to `recompute-xscores.mjs` + `server/storage.ts`, the live site still showed Freddy Branson #1 for hours because `api/index.ts` was missed. Headers on both files warn future-us.
+- Post-draft TODO: extract to `shared/xscore.ts` and import from both. Risky to do now (3 days pre-draft) — leave it.
 
 ### Known good (do NOT re-scrape)
 - WalterFootball 2021–2025 — complete (WF only has ~30/year, take-everyone site): `seed-wf-historical.mjs` + `seed-accuracy.mjs` lines 216–251

@@ -630,8 +630,14 @@ export class DatabaseStorage implements IStorage {
     return totalRemoved;
   }
 
-  async getAccuracyLeaderboard(minSiteYears = 2): Promise<AccuracyRow[]> {
-    // Get analysts with enough data, ordered by X Score
+  async getAccuracyLeaderboard(_minSiteYears = 3): Promise<AccuracyRow[]> {
+    // ⚠️  KEEP IN SYNC WITH api/index.ts `/accuracy/leaderboard` handler.
+    // Qualification rule (applied by recompute-xscores.mjs when writing x_score):
+    //   1. has ≥1 score from 2025
+    //   2. has scores across ≥3 distinct draft years
+    // Anyone not meeting these has a_score = NULL, so `a.x_score IS NOT NULL` below
+    // is sufficient. The minSiteYears arg is accepted for backward compatibility
+    // with callers but is no longer used for filtering — the DB column does it.
     const rows = await db.execute(sql`
       SELECT
         a.id, a.name, a.outlet,
@@ -654,7 +660,6 @@ export class DatabaseStorage implements IStorage {
       FROM analysts a
       LEFT JOIN analyst_accuracy_scores s ON s.analyst_id = a.id
       WHERE a.x_score IS NOT NULL
-        AND a.x_score_sites_count >= ${minSiteYears}
       GROUP BY a.id, a.name, a.outlet, a.x_score, a.x_score_rank, a.x_score_sites_count, a.huddle_score_5_year
       ORDER BY a.x_score DESC NULLS LAST
       LIMIT 100
