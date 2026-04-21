@@ -249,26 +249,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           zScore: row.z_score !== null ? Number(row.z_score) : null,
         });
       }
-      // Weighted formula: all sites equal (1x), WF=0.5x · 2025=3x, 2024=2x, 2023=1.5x, 2022=1x, 2021=0.75x
-      // Qualification rule: must have at least 1 score entry from 2025 to appear on leaderboard
+      // Weighted formula: all sites equal (1x), WF=0.5x · 2025=3.25x, 2024=2x, 2023=1.5x, 2022=1x, 2021=0.75x
+      // Qualification rules:
+      //   1. Must have at least 1 score entry from 2025
+      //   2. Must have scores across ≥3 DISTINCT draft years (not site-years) — prevents
+      //      one-lucky-submission analysts from ranking above sustained performers
+      // Analysts who don't qualify keep their raw per-year scores (returned via /analysts
+      // endpoints for profile pages) but are excluded from the ranked leaderboard.
       const SITE_W: Record<string, number> = { thr: 1, fp: 1, wf: 0.5, nflmdd: 1, thr_bigboard: 1 };
       const YEAR_W: Record<number, number> = { 2025: 3.25, 2024: 2, 2023: 1.5, 2022: 1, 2021: 0.75 };
       const withWeighted = analysts_result.rows.map((a: any) => {
         const scores = scoresByAnalyst[a.id] ?? [];
         const zEntries = scores.filter((s: any) => s.zScore !== null);
         const has2025 = zEntries.some((s: any) => s.year === 2025);
+        const distinctYears = new Set(zEntries.map((s: any) => s.year)).size;
         let wSum = 0, wTotal = 0;
         for (const s of zEntries) {
           const w = (SITE_W[s.site] ?? 1) * (YEAR_W[s.year] ?? 1);
           wSum += s.zScore * w;
           wTotal += w;
         }
-        const xScoreWeighted = has2025 && wTotal > 0 ? wSum / wTotal : null;
+        const qualifies = has2025 && distinctYears >= 3 && wTotal > 0;
+        const xScoreWeighted = qualifies ? wSum / wTotal : null;
         return {
           id: a.id, name: a.name, outlet: a.outlet,
           xScore: xScoreWeighted,
           xScoreRank: null,         // computed below after sort
           xScoreSitesCount: zEntries.length,
+          xScoreDistinctYears: distinctYears,
           has2025,
           huddleScore5Year: a.huddle_score_5_year,
           scores,
