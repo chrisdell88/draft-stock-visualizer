@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState, useEffect } from "react";
+import { WindowToggle } from "@/components/WindowToggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Analyst = {
@@ -711,6 +712,9 @@ export default function Dashboard() {
           <p className="text-muted-foreground max-w-2xl text-sm">
             Consensus ADP based on {mockDraftCount > 0 ? mockDraftCount : analysts.length} compiled mock drafts, accuracy-weighted using The Huddle Report, FantasyPros, WalterFootball & NFL Mock Draft Database.
           </p>
+          <div className="mt-4">
+            <WindowToggle />
+          </div>
         </header>
 
         {/* Stats Strip */}

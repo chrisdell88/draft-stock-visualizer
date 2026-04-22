@@ -5,6 +5,7 @@ import { usePlayers } from "@/hooks/use-players";
 import { Search, TrendingUp, TrendingDown, Minus, ArrowUpDown, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { WindowToggle } from "@/components/WindowToggle";
 
 // ─── Position config ───────────────────────────────────────────────────────
 const POS_ORDER = ["QB", "RB", "WR", "TE", "OT", "OG", "IOL", "C", "EDGE", "DL", "DT", "LB", "CB", "S"];
@@ -98,16 +99,19 @@ export default function Players() {
               {filteredPlayers.length} prospects · <span className="text-emerald-400">{totalRising} rising</span> · <span className="text-red-400">{totalFalling} falling</span>
             </p>
           </div>
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search prospects..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              data-testid="input-search-players"
-              className="bg-card/50 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all w-full md:w-64"
-            />
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <WindowToggle />
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search prospects..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                data-testid="input-search-players"
+                className="bg-card/50 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all w-full md:w-64"
+              />
+            </div>
           </div>
         </div>
 

@@ -116,24 +116,64 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (path.startsWith("/players/") && path.split("/").length === 3) {
       const id = parseInt(path.split("/")[2]);
       if (isNaN(id)) return res.status(400).json({ message: "Invalid player ID" });
-      const result = await pool.query("SELECT * FROM players WHERE id = $1", [id]);
+      // Include windowed ADPs (same filter + formula as /players list) so the
+      // detail page respects the active window toggle too.
+      const result = await pool.query(`
+        WITH qualifying_picks AS (
+          SELECT mdp.player_id, mdp.pick_number, md.published_at
+          FROM mock_draft_picks mdp
+          JOIN mock_drafts md ON md.id = mdp.mock_draft_id
+          JOIN analysts a ON a.id = md.analyst_id
+          WHERE (a.x_score_rank <= 150 OR a.manually_included_in_adp = true)
+            AND mdp.player_id = $1
+        ),
+        adps AS (
+          SELECT
+            AVG(pick_number) FILTER (WHERE published_at >= NOW() - INTERVAL '24 hours')::numeric AS adp_l24,
+            COUNT(*) FILTER (WHERE published_at >= NOW() - INTERVAL '24 hours')::int AS n_l24,
+            AVG(pick_number) FILTER (WHERE published_at >= NOW() - INTERVAL '3 days')::numeric AS adp_l3,
+            COUNT(*) FILTER (WHERE published_at >= NOW() - INTERVAL '3 days')::int AS n_l3,
+            AVG(pick_number) FILTER (WHERE published_at >= NOW() - INTERVAL '7 days')::numeric AS adp_l7,
+            COUNT(*) FILTER (WHERE published_at >= NOW() - INTERVAL '7 days')::int AS n_l7,
+            AVG(pick_number) FILTER (WHERE published_at >= NOW() - INTERVAL '30 days')::numeric AS adp_l30,
+            COUNT(*) FILTER (WHERE published_at >= NOW() - INTERVAL '30 days')::int AS n_l30,
+            AVG(pick_number)::numeric AS adp_all,
+            COUNT(*)::int AS n_all
+          FROM qualifying_picks
+        )
+        SELECT p.*,
+          adps.adp_l24, adps.n_l24, adps.adp_l3, adps.n_l3,
+          adps.adp_l7, adps.n_l7, adps.adp_l30, adps.n_l30,
+          adps.adp_all, adps.n_all,
+          COALESCE(adps.adp_l24, adps.adp_l3, adps.adp_l7, adps.adp_l30, adps.adp_all) AS current_adp
+        FROM players p
+        LEFT JOIN adps ON true
+        WHERE p.id = $1
+      `, [id]);
       if (result.rows.length === 0) return res.status(404).json({ message: "Player not found" });
       const r = result.rows[0];
+      const toNum = (v: any) => v !== null && v !== undefined ? Number(v) : null;
       return res.json({
         ...r,
+        currentAdp: toNum(r.current_adp),
+        adpL24: toNum(r.adp_l24), nL24: r.n_l24 ?? 0,
+        adpL3: toNum(r.adp_l3), nL3: r.n_l3 ?? 0,
+        adpL7: toNum(r.adp_l7), nL7: r.n_l7 ?? 0,
+        adpL30: toNum(r.adp_l30), nL30: r.n_l30 ?? 0,
+        adpAll: toNum(r.adp_all), nAll: r.n_all ?? 0,
         imageUrl: r.image_url ?? null,
-        rasScore: r.ras_score !== null ? Number(r.ras_score) : null,
-        fortyYard: r.forty_yard !== null ? Number(r.forty_yard) : null,
+        rasScore: toNum(r.ras_score),
+        fortyYard: toNum(r.forty_yard),
         benchPress: r.bench_press ?? null,
-        verticalJump: r.vertical_jump !== null ? Number(r.vertical_jump) : null,
+        verticalJump: toNum(r.vertical_jump),
         broadJump: r.broad_jump ?? null,
-        coneDrill: r.cone_drill !== null ? Number(r.cone_drill) : null,
-        shuttleRun: r.shuttle_run !== null ? Number(r.shuttle_run) : null,
+        coneDrill: toNum(r.cone_drill),
+        shuttleRun: toNum(r.shuttle_run),
         comparablePlayer: r.comparable_player ?? null,
-        dominatorRating: r.dominator_rating !== null ? Number(r.dominator_rating) : null,
-        breakoutAge: r.breakout_age !== null ? Number(r.breakout_age) : null,
+        dominatorRating: toNum(r.dominator_rating),
+        breakoutAge: toNum(r.breakout_age),
         playerProfilerUrl: r.player_profiler_url ?? null,
-        age: r.age !== null ? Number(r.age) : null,
+        age: toNum(r.age),
         handSize: r.hand_size ?? null,
         collegeQbrPct: r.college_qbr_pct ?? null,
         collegeYpaPct: r.college_ypa_pct ?? null,

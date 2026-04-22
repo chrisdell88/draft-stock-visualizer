@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
+import { useAdpWindow, applyWindowToPlayers } from "@/hooks/use-adp-window";
 
-// Utility to safely parse JSON that might contain stringified Dates 
+// Utility to safely parse JSON that might contain stringified Dates
 // bypassing strict Zod instance checks for simplicity in this context
 function safeParse<T>(schema: z.ZodType<any>, data: unknown, fallback: T): T {
   try {
@@ -19,23 +20,31 @@ function safeParse<T>(schema: z.ZodType<any>, data: unknown, fallback: T): T {
 }
 
 export function usePlayers() {
-  return useQuery({
+  const { window } = useAdpWindow();
+  const query = useQuery({
     queryKey: [api.players.list.path],
     queryFn: async () => {
       const res = await fetch(api.players.list.path, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch players");
       const data = await res.json();
       return safeParse<z.infer<typeof api.players.list.responses[200]>>(
-        api.players.list.responses[200], 
-        data, 
+        api.players.list.responses[200],
+        data,
         data
       );
     },
   });
+  // Remap currentAdp to the active window's value + re-sort.
+  // Uses React Query's built-in caching — no extra fetch when window changes.
+  return {
+    ...query,
+    data: query.data ? applyWindowToPlayers(query.data as any[], window) : query.data,
+  };
 }
 
 export function usePlayer(id: number) {
-  return useQuery({
+  const { window } = useAdpWindow();
+  const query = useQuery({
     queryKey: [api.players.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.players.get.path, { id });
@@ -44,13 +53,19 @@ export function usePlayer(id: number) {
       if (!res.ok) throw new Error("Failed to fetch player");
       const data = await res.json();
       return safeParse<z.infer<typeof api.players.get.responses[200]>>(
-        api.players.get.responses[200], 
-        data, 
+        api.players.get.responses[200],
+        data,
         data
       );
     },
     enabled: !!id,
   });
+  // Remap currentAdp on the single player object so PlayerDetail reflects
+  // the active window.
+  const transformed = query.data
+    ? applyWindowToPlayers([query.data as any], window)[0]
+    : query.data;
+  return { ...query, data: transformed };
 }
 
 export function usePlayerTrends(id: number) {

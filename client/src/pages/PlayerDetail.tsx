@@ -1,5 +1,6 @@
 import { useRoute, useParams } from "wouter";
 import { usePlayer, usePlayerTrends, usePlayerRankings } from "@/hooks/use-players";
+import { WindowToggle } from "@/components/WindowToggle";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import { format, subDays } from "date-fns";
@@ -232,8 +233,13 @@ export default function PlayerDetail() {
     return Array.from(new Set(trends.odds.map(e => e.marketType)));
   }, [trends]);
 
-  // ── ADP trend stats (overall, not window-specific) ────────────────────────
-  const currentAdp = allAdpChartData.length > 0 ? allAdpChartData[allAdpChartData.length - 1].adp : null;
+  // ── ADP trend stats ────────────────────────────────────────────────────────
+  // currentAdp comes from the windowed API (reflects L24/L3/L7/L30/All toggle).
+  // Falls back to the last chart snapshot if the windowed value is null (e.g.
+  // no qualifying mocks in the active window for this player).
+  const windowedAdp = (player as any)?.currentAdp ?? null;
+  const chartLatest = allAdpChartData.length > 0 ? allAdpChartData[allAdpChartData.length - 1].adp : null;
+  const currentAdp = typeof windowedAdp === "number" ? windowedAdp : chartLatest;
   const prevAdp    = allAdpChartData.length > 1 ? allAdpChartData[allAdpChartData.length - 2].adp : null;
   const trend      = currentAdp && prevAdp ? (currentAdp < prevAdp ? "up" : currentAdp > prevAdp ? "down" : "flat") : "flat";
   const totalChange = allAdpChartData.length >= 2
@@ -324,12 +330,13 @@ export default function PlayerDetail() {
 
   return (
     <Layout>
-      {/* Back link */}
-      <div className="mb-6">
+      {/* Back link + global ADP window toggle */}
+      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
         <Link href="/players" data-testid="link-back-to-board" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           Back to Board
         </Link>
+        <WindowToggle />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
